@@ -195,7 +195,24 @@
   "error": {
     "title": "An Error Occured: {{msg}}",
     "unknown": "Unknown",
-    "support_message": "If the issue persists, press \"Copy to clipboard\" and send the copied error to the <discord>Discord</discord> or a <github>GitHub issue</github> for support."
+    "support_message": "If the issue persists, press \"Copy to clipboard\" and send the copied error to the <discord>Discord</discord> or a <github>GitHub issue</github> for support.",
+    "pairing_invalid_host": "InvalidHostID — Trust broken",
+    "pairing_device_locked": "Device Locked",
+    "pairing_diagnostics": "Pairing diagnostics",
+    "pairing_broken": "This computer's pairing with the device is broken or missing.",
+    "pairing_click_repair": "Click Re-pair Device below — unlock the device and tap Trust if prompted.",
+    "pairing_reset_hint": "If that fails: on iOS go to Settings → General → Transfer or Reset → Reset Location & Privacy, replug USB, then click Re-pair again.",
+    "locked_unlock": "Unlock the device screen (enter passcode / Face ID / Touch ID).",
+    "locked_keep_home": "Keep the device on the home screen while connected.",
+    "locked_retry": "Retry the operation in iLoader.",
+    "generic_unlock": "Unlock the iPhone/iPad and keep it on the home screen.",
+    "generic_reconnect": "Reconnect USB and tap Trust if the prompt appears.",
+    "generic_retry": "Retry Export or Place pairing after refreshing installed apps.",
+    "generic_unpair_hint": "If this repeats, unpair/trust again from iOS and reconnect.",
+    "repair_in_progress": "Re-pairing device — unlock the screen and tap Trust if prompted...",
+    "repair_success": "Device re-paired successfully! Retry your operation.",
+    "repair_failed": "Re-pair failed: ",
+    "repair_button": "Re-pair Device"
   },
   "update": {
     "new_version_available": "A new version is available: {{version}}. Do you want to update?",

@@ -1,10 +1,10 @@
 use std::sync::Mutex;
 
 use idevice::{
+    IdeviceService,
     lockdown::LockdownClient,
     provider::UsbmuxdProvider,
     usbmuxd::{Connection, UsbmuxdAddr, UsbmuxdConnection},
-    IdeviceService,
 };
 use serde::{Deserialize, Serialize};
 use tauri::State;
@@ -28,7 +28,10 @@ pub async fn list_devices() -> Result<Vec<DeviceInfo>, String> {
         format!("Failed to connect to usbmuxd: {}", e)
     })?;
 
-    let devs = usbmuxd.get_devices().await.unwrap();
+    let devs = usbmuxd.get_devices().await.map_err(|e| {
+        error!(target: "device", error = %e, "Failed to list devices");
+        format!("Failed to list devices: {}", e)
+    })?;
     if devs.is_empty() {
         debug!(target: "device", "No devices found");
         return Ok(vec![]);

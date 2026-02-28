@@ -29,6 +29,7 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
     lowerError.includes("does not have pairing file") ||
     lowerError.includes("devicelocked") ||
     lowerError.includes("device lockded") ||
+    lowerError.includes("device locked") ||
     lowerError.includes("sessioninactive") ||
     lowerError.includes("re-pair") ||
     lowerError.includes("pair record");
@@ -39,6 +40,7 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
   const hasDeviceLocked =
     lowerError.includes("devicelocked") ||
     lowerError.includes("device lockded") ||
+    lowerError.includes("device locked") ||
     lowerError.includes("unlock the device");
 
   useEffect(() => {
@@ -139,48 +141,46 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
           {hasPairingError && (
             <div style={{ marginBottom: "0.75rem" }}>
               <p style={{ margin: "0 0 0.25rem 0" }}>
-                <strong>{hasInvalidHostId ? "InvalidHostID — Trust broken" : hasDeviceLocked ? "Device Locked" : "Pairing diagnostics"}</strong>
+                <strong>{hasInvalidHostId ? t("error.pairing_invalid_host") : hasDeviceLocked ? t("error.pairing_device_locked") : t("error.pairing_diagnostics")}</strong>
               </p>
               <ul style={{ margin: 0, paddingLeft: "1.2rem" }}>
                 {hasInvalidHostId ? (
                   <>
-                    <li>This computer's pairing with the device is broken or missing.</li>
-                    <li>Click <strong>Re-pair Device</strong> below — unlock the device and tap <strong>Trust</strong> if prompted.</li>
-                    <li>If that fails: on iOS go to <em>Settings → General → Transfer or Reset → Reset Location & Privacy</em>, replug USB, then click Re-pair again.</li>
+                    <li>{t("error.pairing_broken")}</li>
+                    <li>{t("error.pairing_click_repair")}</li>
+                    <li>{t("error.pairing_reset_hint")}</li>
                   </>
                 ) : hasDeviceLocked ? (
                   <>
-                    <li><strong>Unlock</strong> the device screen (enter passcode / Face ID / Touch ID).</li>
-                    <li>Keep the device on the home screen while connected.</li>
-                    <li>Retry the operation in iLoader.</li>
+                    <li>{t("error.locked_unlock")}</li>
+                    <li>{t("error.locked_keep_home")}</li>
+                    <li>{t("error.locked_retry")}</li>
                   </>
                 ) : (
                   <>
-                    <li>Unlock the iPhone/iPad and keep it on the home screen.</li>
-                    <li>Reconnect USB and tap Trust if the prompt appears.</li>
-                    <li>Retry Export or Place pairing after refreshing installed apps.</li>
-                    <li>If this repeats, unpair/trust again from iOS and reconnect.</li>
+                    <li>{t("error.generic_unlock")}</li>
+                    <li>{t("error.generic_reconnect")}</li>
+                    <li>{t("error.generic_retry")}</li>
+                    <li>{t("error.generic_unpair_hint")}</li>
                   </>
                 )}
               </ul>
-              {hasPairingError && (
-                <button
-                  style={{ marginTop: "0.5rem" }}
-                  onClick={async () => {
-                    toast.info("Re-pairing device — unlock the screen and tap Trust if prompted...");
-                    try {
-                      await invoke("repair_cmd");
-                      toast.success("Device re-paired successfully! Retry your operation.");
-                      setError(null);
-                      setMsg(null);
-                    } catch (e: any) {
-                      toast.error("Re-pair failed: " + (e?.toString() ?? "unknown error"));
-                    }
-                  }}
-                >
-                  Re-pair Device
-                </button>
-              )}
+              <button
+                style={{ marginTop: "0.5rem" }}
+                onClick={async () => {
+                  toast.info(t("error.repair_in_progress"));
+                  try {
+                    await invoke("repair_cmd");
+                    toast.success(t("error.repair_success"));
+                    setError(null);
+                    setMsg(null);
+                  } catch (e: any) {
+                    toast.error(t("error.repair_failed") + (e?.toString() ?? t("error.unknown")));
+                  }
+                }}
+              >
+                {t("error.repair_button")}
+              </button>
             </div>
           )}
           <button

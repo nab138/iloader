@@ -98,10 +98,13 @@ async fn repair_device(
         format!("Failed to serialize new pair record: {}", e)
     })?;
 
-    usbmuxd.save_pair_record(&provider.udid, serialized).await.map_err(|e| {
-        error!(target: "pairing", error = %e, "Failed to save new pair record to usbmuxd");
-        format!("Failed to save new pair record to usbmuxd: {}", e)
-    })?;
+    usbmuxd
+        .save_pair_record(&provider.udid, serialized)
+        .await
+        .map_err(|e| {
+            error!(target: "pairing", error = %e, "Failed to save new pair record to usbmuxd");
+            format!("Failed to save new pair record to usbmuxd: {}", e)
+        })?;
 
     info!(
         target: "pairing",
@@ -157,22 +160,20 @@ async fn pairing_file(
         }
     };
 
-    let mut lc = LockdownClient::connect(&provider)
-        .await
-        .map_err(|e| {
-            error!(
-                target: "pairing",
-                device_name = %device.name,
-                device_uuid = %device.uuid,
-                provider_udid = %provider.udid,
-                error = %e,
-                "Failed to connect to lockdown service"
-            );
-            format!(
-                "Failed to connect to lockdown for device {} (uuid: {}, udid: {}): {}",
-                device.name, device.uuid, provider.udid, e
-            )
-        })?;
+    let mut lc = LockdownClient::connect(&provider).await.map_err(|e| {
+        error!(
+            target: "pairing",
+            device_name = %device.name,
+            device_uuid = %device.uuid,
+            provider_udid = %provider.udid,
+            error = %e,
+            "Failed to connect to lockdown service"
+        );
+        format!(
+            "Failed to connect to lockdown for device {} (uuid: {}, udid: {}): {}",
+            device.name, device.uuid, provider.udid, e
+        )
+    })?;
 
     debug!(
         target: "pairing",
@@ -227,43 +228,17 @@ async fn pairing_file(
             ));
         }
         Err(e) => {
-            warn!(
+            error!(
                 target: "pairing",
                 device_name = %device.name,
                 device_uuid = %device.uuid,
                 error = %e,
-                "Session failed — attempting re-pair as fallback"
+                "Failed to start lockdown session"
             );
-
-            // Try re-pair for any session error (stale pair record, etc.)
-            match repair_device(&device, usbmuxd).await {
-                Ok(new_pf) => {
-                    pairing_file = new_pf;
-                    lc = LockdownClient::connect(&provider).await.map_err(|e2| {
-                        error!(target: "pairing", error = %e2, "Failed to reconnect lockdown after re-pair");
-                        format!("Failed to start lockdown session: {} (re-pair also failed: {})", e, e2)
-                    })?;
-                    lc.start_session(&pairing_file).await.map_err(|e2| {
-                        error!(target: "pairing", error = %e2, "Session still fails after re-pair");
-                        format!(
-                            "Failed to start session even after re-pairing device {} (uuid: {}): original error: {}, post-repair error: {}",
-                            device.name, device.uuid, e, e2
-                        )
-                    })?;
-                    info!(
-                        target: "pairing",
-                        provider_udid = %provider.udid,
-                        "Lockdown session started after successful re-pair (was: {})", e
-                    );
-                }
-                Err(repair_err) => {
-                    return Err(format!(
-                        "Failed to start lockdown session for device {} (uuid: {}, udid: {}): {}\n\n\
-                        Automatic re-pair also failed: {}",
-                        device.name, device.uuid, provider.udid, e, repair_err
-                    ));
-                }
-            }
+            return Err(format!(
+                "Failed to start lockdown session for device {} (uuid: {}, udid: {}): {}",
+                device.name, device.uuid, provider.udid, e
+            ));
         }
     }
 
@@ -311,21 +286,19 @@ pub async fn place_pairing(
         "Starting pairing file placement"
     );
 
-    let mut usbmuxd = UsbmuxdConnection::default()
-        .await
-        .map_err(|e| {
-            error!(
-                target: "pairing",
-                device_name = %device.name,
-                device_uuid = %device.uuid,
-                error = %e,
-                "Failed to connect to usbmuxd"
-            );
-            format!(
-                "Failed to connect to usbmuxd for device {} (uuid: {}): {}",
-                device.name, device.uuid, e
-            )
-        })?;
+    let mut usbmuxd = UsbmuxdConnection::default().await.map_err(|e| {
+        error!(
+            target: "pairing",
+            device_name = %device.name,
+            device_uuid = %device.uuid,
+            error = %e,
+            "Failed to connect to usbmuxd"
+        );
+        format!(
+            "Failed to connect to usbmuxd for device {} (uuid: {}): {}",
+            device.name, device.uuid, e
+        )
+    })?;
 
     let provider = get_provider_from_connection(&device, &mut usbmuxd).await?;
     debug!(
@@ -336,22 +309,20 @@ pub async fn place_pairing(
 
     let pairing_file = pairing_file(device.clone(), &mut usbmuxd).await?;
 
-    let house_arrest_client = HouseArrestClient::connect(&provider)
-        .await
-        .map_err(|e| {
-            error!(
-                target: "pairing",
-                device_name = %device.name,
-                device_uuid = %device.uuid,
-                provider_udid = %provider.udid,
-                error = %e,
-                "Failed to connect to house arrest"
-            );
-            format!(
-                "Failed to connect to house arrest for device {} (uuid: {}, udid: {}): {}",
-                device.name, device.uuid, provider.udid, e
-            )
-        })?;
+    let house_arrest_client = HouseArrestClient::connect(&provider).await.map_err(|e| {
+        error!(
+            target: "pairing",
+            device_name = %device.name,
+            device_uuid = %device.uuid,
+            provider_udid = %provider.udid,
+            error = %e,
+            "Failed to connect to house arrest"
+        );
+        format!(
+            "Failed to connect to house arrest for device {} (uuid: {}, udid: {}): {}",
+            device.name, device.uuid, provider.udid, e
+        )
+    })?;
 
     let mut afc_client = house_arrest_client
         .vend_documents(bundle_id)
@@ -425,26 +396,22 @@ pub async fn place_pairing(
             )
         })?;
 
-    let serialized_pairing = pairing_file
-        .serialize()
-        .map_err(|e| {
-            error!(
-                target: "pairing",
-                device_name = %device.name,
-                device_uuid = %device.uuid,
-                provider_udid = %provider.udid,
-                error = %e,
-                "Failed to serialize pairing file"
-            );
-            format!(
-                "Failed to serialize pairing file for device {} (uuid: {}, udid: {}): {}",
-                device.name, device.uuid, provider.udid, e
-            )
-        })?;
+    let serialized_pairing = pairing_file.serialize().map_err(|e| {
+        error!(
+            target: "pairing",
+            device_name = %device.name,
+            device_uuid = %device.uuid,
+            provider_udid = %provider.udid,
+            error = %e,
+            "Failed to serialize pairing file"
+        );
+        format!(
+            "Failed to serialize pairing file for device {} (uuid: {}, udid: {}): {}",
+            device.name, device.uuid, provider.udid, e
+        )
+    })?;
 
-    file.write_entire(&serialized_pairing)
-    .await
-    .map_err(|e| {
+    file.write_entire(&serialized_pairing).await.map_err(|e| {
         error!(
             target: "pairing",
             device_name = %device.name,
@@ -461,23 +428,21 @@ pub async fn place_pairing(
         )
     })?;
 
-    file.close()
-        .await
-        .map_err(|e| {
-            error!(
-                target: "pairing",
-                device_name = %device.name,
-                device_uuid = %device.uuid,
-                provider_udid = %provider.udid,
-                destination_path = %destination_path,
-                error = %e,
-                "Failed to close pairing file"
-            );
-            format!(
-                "Failed to close destination file {} for device {} (uuid: {}, udid: {}): {}",
-                destination_path, device.name, device.uuid, provider.udid, e
-            )
-        })?;
+    file.close().await.map_err(|e| {
+        error!(
+            target: "pairing",
+            device_name = %device.name,
+            device_uuid = %device.uuid,
+            provider_udid = %provider.udid,
+            destination_path = %destination_path,
+            error = %e,
+            "Failed to close pairing file"
+        );
+        format!(
+            "Failed to close destination file {} for device {} (uuid: {}, udid: {}): {}",
+            destination_path, device.name, device.uuid, provider.udid, e
+        )
+    })?;
 
     info!(
         target: "pairing",
@@ -530,21 +495,19 @@ pub async fn export_pairing_cmd(
     );
 
     let pairing_file = {
-        let mut usbmuxd = UsbmuxdConnection::default()
-            .await
-            .map_err(|e| {
-                error!(
-                    target: "pairing",
-                    device_name = %device.name,
-                    device_uuid = %device.uuid,
-                    error = %e,
-                    "Failed to connect to usbmuxd for export"
-                );
-                format!(
-                    "Failed to connect to usbmuxd for device {} (uuid: {}): {}",
-                    device.name, device.uuid, e
-                )
-            })?;
+        let mut usbmuxd = UsbmuxdConnection::default().await.map_err(|e| {
+            error!(
+                target: "pairing",
+                device_name = %device.name,
+                device_uuid = %device.uuid,
+                error = %e,
+                "Failed to connect to usbmuxd for export"
+            );
+            format!(
+                "Failed to connect to usbmuxd for device {} (uuid: {}): {}",
+                device.name, device.uuid, e
+            )
+        })?;
 
         pairing_file(device.clone(), &mut usbmuxd).await?
     };
@@ -566,42 +529,40 @@ pub async fn export_pairing_cmd(
             "Selected pairing export destination"
         );
 
-        let serialized_pairing = pairing_file
-            .serialize()
+        let serialized_pairing = pairing_file.serialize().map_err(|e| {
+            error!(
+                target: "pairing",
+                device_name = %device.name,
+                device_uuid = %device.uuid,
+                error = %e,
+                "Failed to serialize pairing file for export"
+            );
+            format!(
+                "Failed to serialize pairing file for device {} (uuid: {}): {}",
+                device.name, device.uuid, e
+            )
+        })?;
+
+        tokio::fs::write(save_path, &serialized_pairing)
+            .await
             .map_err(|e| {
                 error!(
                     target: "pairing",
                     device_name = %device.name,
                     device_uuid = %device.uuid,
+                    save_path = %save_path.display(),
+                    bytes = serialized_pairing.len(),
                     error = %e,
-                    "Failed to serialize pairing file for export"
+                    "Failed to write pairing file to disk"
                 );
                 format!(
-                    "Failed to serialize pairing file for device {} (uuid: {}): {}",
-                    device.name, device.uuid, e
+                    "Failed to write pairing file to {} for device {} (uuid: {}): {}",
+                    save_path.display(),
+                    device.name,
+                    device.uuid,
+                    e
                 )
             })?;
-
-        tokio::fs::write(
-            save_path,
-            &serialized_pairing,
-        )
-        .await
-        .map_err(|e| {
-            error!(
-                target: "pairing",
-                device_name = %device.name,
-                device_uuid = %device.uuid,
-                save_path = %save_path.display(),
-                bytes = serialized_pairing.len(),
-                error = %e,
-                "Failed to write pairing file to disk"
-            );
-            format!(
-                "Failed to write pairing file to {} for device {} (uuid: {}): {}",
-                save_path.display(), device.name, device.uuid, e
-            )
-        })?;
 
         info!(
             target: "pairing",
@@ -624,9 +585,7 @@ pub async fn export_pairing_cmd(
 }
 
 #[tauri::command]
-pub async fn repair_cmd(
-    device_state: State<'_, DeviceInfoMutex>,
-) -> Result<(), String> {
+pub async fn repair_cmd(device_state: State<'_, DeviceInfoMutex>) -> Result<(), String> {
     let device = {
         let device_guard = device_state.lock().unwrap();
         match &*device_guard {
@@ -635,9 +594,9 @@ pub async fn repair_cmd(
         }
     };
 
-    let mut usbmuxd = UsbmuxdConnection::default().await.map_err(|e| {
-        format!("Failed to connect to usbmuxd: {}", e)
-    })?;
+    let mut usbmuxd = UsbmuxdConnection::default()
+        .await
+        .map_err(|e| format!("Failed to connect to usbmuxd: {}", e))?;
 
     repair_device(&device, &mut usbmuxd).await?;
     Ok(())
@@ -679,14 +638,19 @@ pub async fn installed_pairing_apps(
                 device_name = %device.name,
                 "Installation proxy InvalidHostID — attempting automatic re-pair"
             );
-            let mut usbmuxd = UsbmuxdConnection::default().await.map_err(|e| {
-                format!("Failed to connect to usbmuxd for re-pair: {}", e)
-            })?;
+            let mut usbmuxd = UsbmuxdConnection::default()
+                .await
+                .map_err(|e| format!("Failed to connect to usbmuxd for re-pair: {}", e))?;
             repair_device(&device, &mut usbmuxd).await?;
             // Retry after re-pair
-            InstallationProxyClient::connect(&provider).await.map_err(|e| {
-                format!("Failed to connect to installation proxy after re-pair: {}", e)
-            })?
+            InstallationProxyClient::connect(&provider)
+                .await
+                .map_err(|e| {
+                    format!(
+                        "Failed to connect to installation proxy after re-pair: {}",
+                        e
+                    )
+                })?
         }
         Err(IdeviceError::DeviceLocked) => {
             return Err("Failed to connect to installation proxy: device locked\n\n\
@@ -751,13 +715,18 @@ pub async fn get_sidestore_info(
                 device_name = %device.name,
                 "Installation proxy InvalidHostID in get_sidestore_info — attempting automatic re-pair"
             );
-            let mut usbmuxd = UsbmuxdConnection::default().await.map_err(|e| {
-                format!("Failed to connect to usbmuxd for re-pair: {}", e)
-            })?;
+            let mut usbmuxd = UsbmuxdConnection::default()
+                .await
+                .map_err(|e| format!("Failed to connect to usbmuxd for re-pair: {}", e))?;
             repair_device(&device, &mut usbmuxd).await?;
-            InstallationProxyClient::connect(&provider).await.map_err(|e| {
-                format!("Failed to connect to installation proxy after re-pair: {}", e)
-            })?
+            InstallationProxyClient::connect(&provider)
+                .await
+                .map_err(|e| {
+                    format!(
+                        "Failed to connect to installation proxy after re-pair: {}",
+                        e
+                    )
+                })?
         }
         Err(IdeviceError::DeviceLocked) => {
             return Err("Failed to connect to installation proxy: device locked\n\n\

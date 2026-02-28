@@ -760,7 +760,7 @@ pub async fn get_sidestore_info(
             })?
         }
         Err(IdeviceError::DeviceLocked) => {
-            return Err("Failed to connect to installation proxy: device lockded\n\n\
+            return Err("Failed to connect to installation proxy: device locked\n\n\
                 DeviceLocked: unlock the device screen and try again.".to_string());
         }
         Err(e) => {

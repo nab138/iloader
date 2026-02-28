@@ -8,6 +8,7 @@ use idevice::{
 };
 use serde::{Deserialize, Serialize};
 use tauri::State;
+use tracing::{debug, error, warn};
 
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -22,17 +23,17 @@ pub type DeviceInfoMutex = Mutex<Option<DeviceInfo>>;
 
 #[tauri::command]
 pub async fn list_devices() -> Result<Vec<DeviceInfo>, String> {
-    let usbmuxd = UsbmuxdConnection::default().await;
-    if usbmuxd.is_err() {
-        eprintln!("Failed to connect to usbmuxd: {:?}", usbmuxd.err());
-        return Err("Failed to connect to usbmuxd".to_string());
-    }
-    let mut usbmuxd = usbmuxd.unwrap();
+    let mut usbmuxd = UsbmuxdConnection::default().await.map_err(|e| {
+        error!(target: "device", error = %e, "Failed to connect to usbmuxd");
+        format!("Failed to connect to usbmuxd: {}", e)
+    })?;
 
     let devs = usbmuxd.get_devices().await.unwrap();
     if devs.is_empty() {
+        debug!(target: "device", "No devices found");
         return Ok(vec![]);
     }
+    debug!(target: "device", count = devs.len(), "Found devices");
 
     let device_info_futures: Vec<_> = devs
         .iter()
@@ -49,7 +50,13 @@ pub async fn list_devices() -> Result<Vec<DeviceInfo>, String> {
             let mut lockdown_client = match LockdownClient::connect(&provider).await {
                 Ok(l) => l,
                 Err(e) => {
-                    eprintln!("Unable to connect to lockdown: {e:?}");
+                    warn!(
+                        target: "device",
+                        udid = %d.udid,
+                        device_id = device_uid,
+                        error = %e,
+                        "Unable to connect to lockdown — returning Unknown Device"
+                    );
                     return DeviceInfo {
                         connection_type,
                         name: String::from("Unknown Device"),

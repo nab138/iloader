@@ -26,8 +26,11 @@ export const Pairing = () => {
     const promise = async () => {
       loadingRef.current = true;
       setLoading(true);
+      console.debug("[Pairing] installed_pairing_apps: start");
       let list = await invoke<PairingAppInfo[]>("installed_pairing_apps");
-      console.log(list);
+      console.debug("[Pairing] installed_pairing_apps: success", {
+        count: list.length,
+      });
       setApps(list);
       setLoading(false);
       loadingRef.current = false;
@@ -41,14 +44,27 @@ export const Pairing = () => {
 
   const pair = useCallback(
     async (app: PairingAppInfo) => {
+      console.debug("[Pairing] place_pairing_cmd: start", {
+        name: app.name,
+        bundleId: app.bundleId,
+        path: app.path,
+      });
       const promise = invoke<void>("place_pairing_cmd", {
         bundleId: app.bundleId,
         path: app.path,
       });
       toast.promise(promise, {
         loading: t("pairing.placing_pairing_file"),
-        success: t("pairing.pairing_file_placed_success"),
-        error: (e) => err(t("pairing.failed_place_pairing"), e),
+        success: () => {
+          console.debug("[Pairing] place_pairing_cmd: success", {
+            bundleId: app.bundleId,
+          });
+          return t("pairing.pairing_file_placed_success");
+        },
+        error: (e) => {
+          console.error("[Pairing] place_pairing_cmd: failed", e);
+          return err(t("pairing.failed_place_pairing"), e);
+        },
       });
     },
     [setApps, loadApps, t],
@@ -107,11 +123,18 @@ export const Pairing = () => {
             t("pairing.advanced_export_title"),
             t("pairing.advanced_export_message"),
             () => {
+              console.debug("[Pairing] export_pairing_cmd: start");
               const promise = invoke<void>("export_pairing_cmd");
               toast.promise(promise, {
                 loading: t("pairing.exporting_pairing_file"),
-                success: t("pairing.pairing_file_exported_success"),
-                error: (e) => err(t("pairing.failed_export_pairing_file"), e),
+                success: () => {
+                  console.debug("[Pairing] export_pairing_cmd: success");
+                  return t("pairing.pairing_file_exported_success");
+                },
+                error: (e) => {
+                  console.error("[Pairing] export_pairing_cmd: failed", e);
+                  return err(t("pairing.failed_export_pairing_file"), e);
+                },
               });
             },
           );

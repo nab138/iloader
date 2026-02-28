@@ -4,6 +4,7 @@ import "./ErrorContext.css";
 import { toast } from "sonner";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { Trans, useTranslation } from "react-i18next";
+import { invoke } from "@tauri-apps/api/core";
 
 export const ErrorContext = createContext<{
   err: (msg: string, err: string | null) => string;
@@ -17,6 +18,28 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
   const [error, setError] = useState<string | null>(null);
   const [simpleError, setSimpleError] = useState<string | null>(null);
   const [moreDetailsOpen, setMoreDetailsOpen] = useState<boolean>(false);
+
+  const lowerError = error?.toLowerCase() ?? "";
+  const hasPairingError =
+    lowerError.includes("pairing") ||
+    lowerError.includes("lockdown session") ||
+    lowerError.includes("mobiledevicepairing") ||
+    lowerError.includes("invalidhostid") ||
+    lowerError.includes("invalid host") ||
+    lowerError.includes("does not have pairing file") ||
+    lowerError.includes("devicelocked") ||
+    lowerError.includes("device lockded") ||
+    lowerError.includes("sessioninactive") ||
+    lowerError.includes("re-pair") ||
+    lowerError.includes("pair record");
+  const hasInvalidHostId =
+    lowerError.includes("invalidhostid") ||
+    lowerError.includes("invalid host") ||
+    lowerError.includes("does not have pairing file");
+  const hasDeviceLocked =
+    lowerError.includes("devicelocked") ||
+    lowerError.includes("device lockded") ||
+    lowerError.includes("unlock the device");
 
   useEffect(() => {
     if (!error) {
@@ -112,6 +135,53 @@ export const ErrorProvider: React.FC<{ children: React.ReactNode }> = ({
             >
               {error?.replace(/^\n+/, "")}
             </pre>
+          )}
+          {hasPairingError && (
+            <div style={{ marginBottom: "0.75rem" }}>
+              <p style={{ margin: "0 0 0.25rem 0" }}>
+                <strong>{hasInvalidHostId ? "InvalidHostID — Trust broken" : hasDeviceLocked ? "Device Locked" : "Pairing diagnostics"}</strong>
+              </p>
+              <ul style={{ margin: 0, paddingLeft: "1.2rem" }}>
+                {hasInvalidHostId ? (
+                  <>
+                    <li>This computer's pairing with the device is broken or missing.</li>
+                    <li>Click <strong>Re-pair Device</strong> below — unlock the device and tap <strong>Trust</strong> if prompted.</li>
+                    <li>If that fails: on iOS go to <em>Settings → General → Transfer or Reset → Reset Location & Privacy</em>, replug USB, then click Re-pair again.</li>
+                  </>
+                ) : hasDeviceLocked ? (
+                  <>
+                    <li><strong>Unlock</strong> the device screen (enter passcode / Face ID / Touch ID).</li>
+                    <li>Keep the device on the home screen while connected.</li>
+                    <li>Retry the operation in iLoader.</li>
+                  </>
+                ) : (
+                  <>
+                    <li>Unlock the iPhone/iPad and keep it on the home screen.</li>
+                    <li>Reconnect USB and tap Trust if the prompt appears.</li>
+                    <li>Retry Export or Place pairing after refreshing installed apps.</li>
+                    <li>If this repeats, unpair/trust again from iOS and reconnect.</li>
+                  </>
+                )}
+              </ul>
+              {hasPairingError && (
+                <button
+                  style={{ marginTop: "0.5rem" }}
+                  onClick={async () => {
+                    toast.info("Re-pairing device — unlock the screen and tap Trust if prompted...");
+                    try {
+                      await invoke("repair_cmd");
+                      toast.success("Device re-paired successfully! Retry your operation.");
+                      setError(null);
+                      setMsg(null);
+                    } catch (e: any) {
+                      toast.error("Re-pair failed: " + (e?.toString() ?? "unknown error"));
+                    }
+                  }}
+                >
+                  Re-pair Device
+                </button>
+              )}
+            </div>
           )}
           <button
             onClick={() => {

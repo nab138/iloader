@@ -221,7 +221,7 @@ async fn pairing_file(
         }
         Err(IdeviceError::DeviceLocked) => {
             return Err(format!(
-                "Failed to start lockdown session for device {} (uuid: {}, udid: {}): device lockded\n\n\
+                "Failed to start lockdown session for device {} (uuid: {}, udid: {}): device locked\n\n\
                 DeviceLocked: unlock the device screen and try again.",
                 device.name, device.uuid, provider.udid
             ));

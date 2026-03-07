@@ -26,6 +26,7 @@ const PAIRING_APPS: &[(&str, &str)] = &[
     ("SparseBox", "pairingFile.plist"),
     ("StikStore", "pairingFile.plist"),
     ("ByeTunes", "pairing file/pairingFile.plist"),
+    ("NexStore", "pairingFile.plist"),
 ];
 
 async fn pairing_file(

@@ -31,7 +31,7 @@ export const Settings = ({ showHeading = true }: SettingsProps) => {
   const { t } = useTranslation();
   const [anisetteServer, setAnisetteServer] = useStore<string>(
     "anisetteServer",
-    "ani.sidestore.io",
+    "ani.stikstore.app",
   );
 
   const [logsOpen, setLogsOpen] = useState(false);

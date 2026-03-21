@@ -17,5 +17,9 @@ fn main() {
         .install_default()
         .expect("Failed to install rustls crypto provider");
     isideload::init().expect("Failed to initialize error reporting");
-    iloader_lib::run()
+
+    // Run iloader safely in a blocking context
+    tokio::task::block_in_place(|| {
+        iloader_lib::run()
+    });
 }

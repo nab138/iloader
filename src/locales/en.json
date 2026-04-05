@@ -83,14 +83,16 @@
   },
   "device": {
     "title": "iDevice",
-    "failed_select_prefix": "Failed to select device: ",
     "loading_devices": "Loading devices...",
     "no_devices_found": "No devices found",
     "found_device": "Found device",
     "found_devices": "Found devices",
     "unable_load_devices_prefix": "Unable to load devices: ",
     "no_devices_found_period": "No devices found.",
-    "selected": "Selected"
+    "selected": "Selected",
+    "pairing_in_progress_header": "Pairing with {{device}}...",
+    "pairing_in_progress_hint": "Please unlock your device and click \"Trust,\" then enter your passcode if prompted.",
+    "pairing_cancel": "Cancel"
   },
   "operation": {
     "failed": "Operation failed.",
@@ -168,7 +170,6 @@
     "place_all": "Place In All Apps"
   },
   "settings": {
-    "title": "Settings",
     "anisette_server": "Anisette Server:",
     "custom_anisette_placeholder": "Custom Anisette Server",
     "custom_anisette": "Custom",
@@ -180,7 +181,6 @@
     "anisette_state_reset_success": "Anisette state reset successfully",
     "anisette_state_not_found": "No anisette state to reset",
     "failed_reset_anisette_state": "Failed to reset anisette state",
-    "reset_anisette_state": "Reset anisette state",
     "view_logs": "View Logs",
     "logs": "Logs",
     "log_level": "Log Level:",
@@ -189,7 +189,14 @@
     "info": "Info",
     "warn": "Warn",
     "error": "Error",
-    "language_hint": "You can help with translations <translation>here</translation>."
+    "language_hint": "You can help with translations <translation>here</translation>.",
+    "delete_stored_rppairing": "Delete Stored Pairing",
+    "delete_stored_rppairing_message": "Are you sure you want to delete the stored pairing file for this device? This will require you to pair again.",
+    "deleting_stored_rppairing": "Deleting stored pairing...",
+    "stored_rppairing_deleted_success": "Stored pairing deleted successfully!",
+    "failed_delete_stored_rppairing": "Failed to delete stored pairing",
+    "dont_use_keyring": "Don't use keyring",
+    "dont_use_keyring_message": "This makes iloader less secure by storing pairing files, anisette state, and certitficates on disk. Enable this only if the default keyring storage doesn't work and you understand the risks."
   },
   "dialog": {
     "confirm": "Confirm",

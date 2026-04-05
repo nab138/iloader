@@ -44,6 +44,23 @@ function App() {
   );
   const refreshDevicesRef = useRef<(() => void) | null>(null);
 
+  const [noKeyringAvailable, setNoKeyringAvailable] = useState<boolean>(false);
+
+  const checkKeyring = useCallback(async () => {
+    try {
+      let available = await invoke<boolean>("keyring_available");
+      console.log(available);
+      setNoKeyringAvailable(!available);
+    } catch (e) {
+      console.error("Unable to check keyring availability:", e);
+      setNoKeyringAvailable(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkKeyring();
+  }, [checkKeyring]);
+
   useEffect(() => {
     const fetchVersion = async () => {
       const version = await getVersion();
@@ -216,7 +233,11 @@ function App() {
               </span>
             </div>
             <GlassCard className="panel">
-              <AppleID loggedInAs={loggedInAs} setLoggedInAs={setLoggedInAs} />
+              <AppleID
+                loggedInAs={loggedInAs}
+                setLoggedInAs={setLoggedInAs}
+                noKeyringAvailable={noKeyringAvailable}
+              />
             </GlassCard>
           </section>
           <section className="workspace-section">
@@ -362,7 +383,13 @@ function App() {
           <section className="workspace-section">
             <p className="section-label">{t("app.settings")}</p>
             <GlassCard className="panel settings-panel">
-              <Settings showHeading={false} />
+              <Settings
+                ensureSelectedDevice={ensureSelectedDevice}
+                setSelectedDevice={setSelectedDevice}
+                platform={platform}
+                shortcutLabel={shortcutLabel}
+                checkKeyring={checkKeyring}
+              />
             </GlassCard>
           </section>
           {operationState && (

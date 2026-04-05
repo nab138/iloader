@@ -166,7 +166,6 @@
     "refresh_installed_apps": "Aggiorna app installate"
   },
   "settings": {
-    "title": "Impostazioni",
     "anisette_server": "Server Anisette:",
     "custom_anisette_placeholder": "Server Anisette personalizzato",
     "custom_anisette": "Personalizzato",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Resettando stato anisette...",
     "anisette_state_reset_success": "Stato anisette resettato correttamente",
     "failed_reset_anisette_state": "Impossibile resettare stato anisette",
-    "reset_anisette_state": "Resetta stato anisette",
     "view_logs": "Vedi Log",
     "logs": "Log",
     "log_level": "Livello Log:",

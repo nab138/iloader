@@ -166,7 +166,6 @@
     "refresh_installed_apps": "インストール済みアプリを更新"
   },
   "settings": {
-    "title": "設定",
     "anisette_server": "Anisette サーバー:",
     "custom_anisette_placeholder": "カスタム Anisette サーバー",
     "custom_anisette": "カスタム",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Anisette の状態をリセット中...",
     "anisette_state_reset_success": "Anisette の状態を正常にリセットしました",
     "failed_reset_anisette_state": "Anisette の状態のリセットに失敗しました",
-    "reset_anisette_state": "Anisette の状態をリセットする",
     "view_logs": "ログを表示",
     "logs": "ログ",
     "log_level": "ログレベル:",

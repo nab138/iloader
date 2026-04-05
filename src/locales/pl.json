@@ -78,7 +78,8 @@
     "max_certs_desc": "iloader unieważni Twoje istniejące certyfikaty i wygeneruje nowy.",
     "hide_certificate_list": "Ukryj listę certyfikatów",
     "choose_what_to_revoke": "Wybierz, co unieważnić",
-    "continue": "Kontynuuj"
+    "continue": "Kontynuuj",
+    "no_keyring_available": "Nie można zapisać danych logowania na tym urządzeniu."
   },
   "device": {
     "title": "iDevice",
@@ -163,10 +164,10 @@
     "pairing_file_exported_success": "Plik parowania wyeksportowano pomyślnie!",
     "failed_export_pairing_file": "Nie udało się wyeksportować pliku parowania",
     "export_not_recommended": "Eksportuj (niezalecane)",
-    "refresh_installed_apps": "Odśwież zainstalowane aplikacje"
+    "refresh_installed_apps": "Odśwież zainstalowane aplikacje",
+    "place_all": "Umieść we wszystkich aplikacjach"
   },
   "settings": {
-    "title": "Ustawienia",
     "anisette_server": "Serwer Anisette:",
     "custom_anisette_placeholder": "Własny serwer Anisette",
     "custom_anisette": "Własny",
@@ -176,8 +177,8 @@
     "reset_anisette_message": "Czy na pewno chcesz zresetować stan Anisette? Konieczne będzie ponowne wprowadzenie kodu 2FA.",
     "resetting_anisette_state": "Resetowanie stanu Anisette...",
     "anisette_state_reset_success": "Stan Anisette został pomyślnie zresetowany",
+    "anisette_state_not_found": "Brak stanu Anisette do zresetowania",
     "failed_reset_anisette_state": "Nie udało się zresetować stanu Anisette",
-    "reset_anisette_state": "Zresetuj stan Anisette",
     "view_logs": "Pokaż logi",
     "logs": "Logi",
     "log_level": "Poziom logów:",

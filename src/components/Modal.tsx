@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import "./Modal.css";
 
 export const Modal = ({
@@ -15,6 +16,24 @@ export const Modal = ({
   hideClose?: boolean;
   zIndex?: number;
 }) => {
+  useEffect(() => {
+    if (!isOpen || !close) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, close]);
+
   return (
     <>
       {isOpen && (

@@ -166,7 +166,6 @@
     "refresh_installed_apps": "Installierte Apps aktualisieren"
   },
   "settings": {
-    "title": "Einstellungen",
     "anisette_server": "Anisette-Server:",
     "custom_anisette_placeholder": "Benutzerdefinierter Anisette-Server",
     "custom_anisette": "Benutzerdefiniert",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Anisette-Zustand wird zurückgesetzt...",
     "anisette_state_reset_success": "Anisette-Zustand erfolgreich zurückgesetzt",
     "failed_reset_anisette_state": "Anisette-Zustand konnte nicht zurückgesetzt werden",
-    "reset_anisette_state": "Anisette-Zustand zurücksetzen",
     "view_logs": "Logs anzeigen",
     "logs": "Logs",
     "log_level": "Log-Stufe:",

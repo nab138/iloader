@@ -15,9 +15,11 @@ const store = await load("data.json");
 export const AppleID = ({
   loggedInAs,
   setLoggedInAs,
+  noKeyringAvailable,
 }: {
   loggedInAs: string | null;
   setLoggedInAs: (id: string | null) => void;
+  noKeyringAvailable: boolean;
 }) => {
   const { t } = useTranslation();
   const [storedIds, setStoredIds] = useState<string[]>([]);
@@ -36,21 +38,6 @@ export const AppleID = ({
   const [selectedSerials, setSelectedSerials] = useState<string[]>([]);
   const [chooseCertsOpen, setChooseCertsOpen] = useState<boolean>(false);
   const { err } = useError();
-
-  const [noKeyringAvailable, setNoKeyringAvailable] = useState<boolean>(false);
-
-  useEffect(() => {
-    const checkKeyring = async () => {
-      try {
-        let available = await invoke<boolean>("keyring_available");
-        setNoKeyringAvailable(!available);
-      } catch (e) {
-        console.error("Unable to check keyring availability:", e);
-        setNoKeyringAvailable(true);
-      }
-    };
-    checkKeyring();
-  }, []);
 
   useEffect(() => {
     let getLoggedInAs = async () => {

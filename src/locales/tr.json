@@ -168,7 +168,6 @@
     "place_all": "Tüm uygulamalara koy"
   },
   "settings": {
-    "title": "Ayarlar",
     "anisette_server": "Anisette Sunucusu:",
     "custom_anisette_placeholder": "Özel Anisette Sunucusu",
     "custom_anisette": "Özel",
@@ -180,7 +179,6 @@
     "anisette_state_reset_success": "Anisette durumu yenilendi",
     "anisette_state_not_found": "Yenilenecek Anisette durumu bulunamadı",
     "failed_reset_anisette_state": "Anisette durumu yenileme başarısız",
-    "reset_anisette_state": "Anisette Durumu Yenile",
     "view_logs": "Kayıtları Görüntüle",
     "logs": "Kayıtlar",
     "log_level": "Kayıt Seviyesi:",

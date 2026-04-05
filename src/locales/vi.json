@@ -106,7 +106,7 @@
     "install_sidestore_step_pairing": "Đặt tệp ghép máy",
     "install_livecontainer_title": "Đang tải LiveContainer+SideStore",
     "install_livecontainer_success_title": "Tải LiveContainer+SideStore thành công",
-      "install_livecontainer_success_message": "Để hoàn thanh quá trình cài đặt, mở LiveContainer, vào Settings và chọn \"Import Certificate From SideStore.\" Sau đó, chọn Apps rồi SideStore, sau đó làm mới LiveContainer.",
+    "install_livecontainer_success_message": "Để hoàn thanh quá trình cài đặt, mở LiveContainer, vào Settings và chọn \"Import Certificate From SideStore.\" Sau đó, chọn Apps rồi SideStore, sau đó làm mới LiveContainer.",
     "install_livecontainer_step_download": "Tải LiveContainer+SideStore",
     "install_livecontainer_step_install": "Kí & tải LiveContainer+SideStore",
     "install_livecontainer_step_pairing": "Đặt tệp ghép máy",
@@ -166,7 +166,6 @@
     "refresh_installed_apps": "Làm mới các ứng dụng đã tải"
   },
   "settings": {
-    "title": "Cài đặt",
     "anisette_server": "Máy chủ Anisette:",
     "custom_anisette_placeholder": "Máy chủ Anisette thủ công",
     "custom_anisette": "Thủ công, Tùy chỉnh",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Đang đặt lại trạng thái máy chủ Anisette",
     "anisette_state_reset_success": "Đã đặt lại trạng thát máy chủ Anisette thành công",
     "failed_reset_anisette_state": "Đặt lại trạng thái máy chủ Anisette thất bại",
-    "reset_anisette_state": "Đặt lại trạng thái máy chủ Anisette",
     "view_logs": "Xem Logs",
     "logs": "Logs",
     "log_level": "Log Level:",

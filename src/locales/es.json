@@ -166,7 +166,6 @@
     "refresh_installed_apps": "Actualizar aplicaciones instaladas"
   },
   "settings": {
-    "title": "Configuración",
     "anisette_server": "Servidor Anisette:",
     "custom_anisette_placeholder": "Servidor Anisette personalizado",
     "custom_anisette": "Personalizado",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Restableciendo estado de Anisette...",
     "anisette_state_reset_success": "Estado de Anisette restablecido con éxito",
     "failed_reset_anisette_state": "Error al restablecer el estado de Anisette",
-    "reset_anisette_state": "Restablecer estado de Anisette",
     "view_logs": "Ver registros",
     "logs": "Registros",
     "log_level": "Nivel de registro:",
@@ -204,4 +202,3 @@
     "failed_download": "Error al descargar la actualización: {{error}}"
   }
 }
-

@@ -125,7 +125,6 @@ body {
   gap: 0.5rem;
 }
 
-
 .toolbar-button {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 14px;
@@ -176,6 +175,10 @@ body {
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.13em;
+  color: var(--text-muted);
+}
+
+.text-muted {
   color: var(--text-muted);
 }
 
@@ -235,12 +238,17 @@ button {
   box-shadow: none;
 }
 
-button:hover {
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+button:hover:not(:disabled) {
   background: #3a3a3c;
   border-color: var(--accent-primary);
 }
 
-button:active {
+button:active:not(:disabled) {
   transform: translateY(1px);
 }
 
@@ -325,8 +333,8 @@ button:active {
   background: rgba(255, 255, 255, 0.02);
 }
 
-.section-label+.panel,
-.section-header+.panel {
+.section-label + .panel,
+.section-header + .panel {
   margin-top: 0.25rem;
 }
 

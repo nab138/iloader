@@ -166,7 +166,6 @@
     "refresh_installed_apps": "Actualiser les applications installées"
   },
   "settings": {
-    "title": "Paramètres",
     "anisette_server": "Serveur Anisette :",
     "custom_anisette_placeholder": "Serveur Anisette personnalisé",
     "custom_anisette": "Personnalisé",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Réinitialisation de l'état d'Anisette...",
     "anisette_state_reset_success": "État d'Anisette réinitialisé avec succès",
     "failed_reset_anisette_state": "Échec de la réinitialisation de l'état d'Anisette",
-    "reset_anisette_state": "Réinitialiser l'état d'Anisette",
     "view_logs": "Voir les journaux",
     "logs": "Journaux",
     "log_level": "Niveau de journalisation :",

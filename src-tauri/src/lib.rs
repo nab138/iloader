@@ -6,17 +6,23 @@ mod device;
 mod sideload;
 #[macro_use]
 mod pairing;
+#[macro_use]
+mod secure_storage;
 mod logging;
 mod operation;
 
 use crate::{
     account::{
-        delete_account, delete_app_id, get_certificates, invalidate_account, keyring_available,
-        list_app_ids, logged_in_as, login_new, login_stored, reset_anisette_state,
-        revoke_certificate,
+        delete_account, delete_app_id, get_certificates, invalidate_account, list_app_ids,
+        logged_in_as, login_new, login_stored, reset_anisette_state, revoke_certificate,
     },
-    device::{DeviceInfoMutex, list_devices, set_selected_device},
-    pairing::{export_pairing_cmd, installed_pairing_apps, place_pairing_cmd},
+    device::{
+        DeviceInfoMutex, PairingCancelToken, cancel_pairing, list_devices, set_selected_device,
+    },
+    pairing::{
+        delete_stored_rppairing, export_pairing_cmd, installed_pairing_apps, place_pairing_cmd,
+    },
+    secure_storage::{force_disable_keyring, keyring_available},
     sideload::{SideloaderMutex, install_sidestore_operation, sideload_operation},
 };
 use tauri::Manager;
@@ -92,6 +98,7 @@ pub fn run() {
 
             app.manage(DeviceInfoMutex::new(None));
             app.manage(SideloaderMutex::new(None));
+            app.manage(PairingCancelToken::new(None));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -112,7 +119,10 @@ pub fn run() {
             place_pairing_cmd,
             reset_anisette_state,
             export_pairing_cmd,
-            keyring_available
+            delete_stored_rppairing,
+            keyring_available,
+            force_disable_keyring,
+            cancel_pairing
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

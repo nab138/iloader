@@ -130,56 +130,56 @@ jobs:
           xcrun stapler staple "$DMG_PATH"
 
       - name: Upload macOS DMG
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.platform == 'macos-latest'
         with:
           name: macos-dmg-universal
           path: ${{ github.workspace }}/src-tauri/target/**/release/bundle/**/*.dmg
 
       - name: Upload Linux DEB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.platform == 'ubuntu-22.04' && matrix.args == '--bundles deb'
         with:
           name: linux-deb
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/**/*.deb
 
       - name: Upload Linux RPM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.platform == 'ubuntu-22.04' && matrix.args == '--bundles rpm'
         with:
           name: linux-rpm
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/**/*.rpm
 
       - name: Upload Linux AppImage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.platform == 'ubuntu-22.04' && matrix.args == '--bundles appimage'
         with:
           name: linux-appimage
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/**/*.AppImage
 
       - name: Upload Linux DEB (ARM)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.platform == 'ubuntu-22.04-arm' && matrix.args == '--bundles deb'
         with:
           name: linux-deb-arm
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/**/*.deb
 
       - name: Upload Linux RPM (ARM)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.platform == 'ubuntu-22.04-arm' && matrix.args == '--bundles rpm'
         with:
           name: linux-rpm-arm
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/**/*.rpm
 
       - name: Upload Linux AppImage (ARM)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.platform == 'ubuntu-22.04-arm' && matrix.args == '--bundles appimage'
         with:
           name: linux-appimage-arm
           path: ${{ github.workspace }}/src-tauri/target/release/bundle/**/*.AppImage
 
       - name: Upload Windows EXE
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.platform == 'windows-latest'
         with:
           name: windows-exe

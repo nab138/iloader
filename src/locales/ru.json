@@ -166,7 +166,6 @@
     "refresh_installed_apps": "Обновить установленные приложения"
   },
   "settings": {
-    "title": "Настройки",
     "anisette_server": "Сервер Anisette:",
     "custom_anisette_placeholder": "Пользовательский сервер Anisette",
     "custom_anisette": "Пользовательский",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Сброс Anisette...",
     "anisette_state_reset_success": "Anisette сброшен",
     "failed_reset_anisette_state": "Не удалось сбросить Anisette",
-    "reset_anisette_state": "Сбросить Anisette",
     "view_logs": "Посмотреть логи",
     "logs": "Логи",
     "log_level": "Уровень ведения логов:",

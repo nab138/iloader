@@ -7,17 +7,19 @@ use isideload::{
         developer_session::DeveloperSession,
     },
     sideload::{SideloaderBuilder, builder::MaxCertsBehavior, sideloader::Sideloader},
-    util::{fs_storage::FsStorage, keyring_storage::KeyringStorage, storage::SideloadingStorage},
 };
 use keyring::Entry;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{path::PathBuf, sync::OnceLock, time::Duration};
-use tauri::{AppHandle, Emitter, Listener, Manager, State, Window};
+use std::time::Duration;
+use tauri::{AppHandle, Emitter, Listener, State, Window};
 use tauri_plugin_store::StoreExt;
-use tracing::{debug, warn};
+use tracing::debug;
 
-use crate::sideload::{SideloaderGuard, SideloaderMutex};
+use crate::{
+    secure_storage::create_sideloading_storage,
+    sideload::{SideloaderGuard, SideloaderMutex},
+};
 
 #[tauri::command]
 pub async fn login_new(
@@ -79,23 +81,39 @@ pub async fn login_stored(
 
 #[tauri::command]
 pub fn delete_account(handle: AppHandle, email: String) -> Result<(), String> {
-    let pass_entry = Entry::new("iloader", &email)
-        .map_err(|e| format!("Failed to create keyring entry for credentials: {:?}.", e))?;
-    pass_entry
-        .delete_credential()
-        .map_err(|e| format!("Failed to delete credentials: {:?}", e))?;
-    let store = handle
-        .store("data.json")
-        .map_err(|e| format!("Failed to get store: {:?}", e))?;
-    let mut existing_ids = store
-        .get("ids")
-        .unwrap_or_else(|| Value::Array(vec![]))
-        .as_array()
-        .cloned()
-        .unwrap_or_else(std::vec::Vec::new);
-    existing_ids.retain(|v| v.as_str().is_none_or(|s| s != email));
-    store.set("ids", Value::Array(existing_ids));
-    Ok(())
+    let mut errors: Vec<String> = Vec::new();
+
+    match Entry::new("iloader", &email) {
+        Ok(pass_entry) => {
+            if let Err(e) = pass_entry.delete_credential() {
+                errors.push(format!("Failed to delete credentials: {:?}.", e));
+            }
+        }
+        Err(e) => errors.push(format!(
+            "Failed to create keyring entry for credentials: {:?}.",
+            e
+        )),
+    }
+
+    match handle.store("data.json") {
+        Ok(store) => {
+            let mut existing_ids = store
+                .get("ids")
+                .unwrap_or_else(|| Value::Array(vec![]))
+                .as_array()
+                .cloned()
+                .unwrap_or_else(std::vec::Vec::new);
+            existing_ids.retain(|v| v.as_str().is_none_or(|s| s != email));
+            store.set("ids", Value::Array(existing_ids));
+        }
+        Err(e) => errors.push(format!("Failed to get store: {:?}.", e)),
+    }
+
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors.join("\n"))
+    }
 }
 
 #[tauri::command]
@@ -168,31 +186,11 @@ async fn login(
         anisette_server
     };
 
-    let (anisette_storage, sideloader_storage): (
-        Box<dyn SideloadingStorage>,
-        Box<dyn SideloadingStorage>,
-    ) = if keyring_available() {
-        (
-            Box::new(KeyringStorage::new("iloader".to_string())),
-            Box::new(KeyringStorage::new("iloader".to_string())),
-        )
-    } else {
-        warn!("Keyring storage is not available, falling back to file storage (less secure)");
-        let data_dir = app
-            .path()
-            .app_data_dir()
-            .unwrap_or_else(|_| PathBuf::from("Failed to get app data directory"));
-        (
-            Box::new(FsStorage::new(data_dir.clone())),
-            Box::new(FsStorage::new(data_dir)),
-        )
-    };
-
     let mut account = AppleAccount::builder(&email.to_lowercase())
         .anisette_provider(
             RemoteV3AnisetteProvider::default()
                 .set_serial_number("0".to_string())
-                .set_storage(anisette_storage)
+                .set_storage(create_sideloading_storage(app)?)
                 .set_url(&anisette_url),
         )
         .login(password, tfa_closure)
@@ -241,7 +239,7 @@ async fn login(
 
     let sideloader = SideloaderBuilder::new(dev_session, email.to_lowercase())
         .machine_name("iloader".to_string())
-        .storage(sideloader_storage)
+        .storage(create_sideloading_storage(app)?)
         .max_certs_behavior(MaxCertsBehavior::Prompt(Box::new(max_certs_callback)))
         .build();
 
@@ -353,19 +351,4 @@ pub async fn delete_app_id(
         .map_err(|e| format!("Failed to delete App ID: {:?}.", e))?;
 
     Ok(())
-}
-
-static KEYRING_AVAILABLE: OnceLock<bool> = OnceLock::new();
-
-#[tauri::command]
-pub fn keyring_available() -> bool {
-    *KEYRING_AVAILABLE.get_or_init(check_keyring_available)
-}
-
-fn check_keyring_available() -> bool {
-    let entry = keyring::Entry::new("iloader", "test");
-    if let Ok(entry) = entry {
-        return entry.set_password("test").is_ok() && entry.get_password().is_ok();
-    }
-    false
 }

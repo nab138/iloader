@@ -166,7 +166,6 @@
     "refresh_installed_apps": "重新整理已安裝的應用程式"
   },
   "settings": {
-    "title": "設定",
     "anisette_server": "Anisette 伺服器：",
     "custom_anisette_placeholder": "自訂 Anisette 伺服器",
     "custom_anisette": "自訂",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "正在重設 anisette 狀態...",
     "anisette_state_reset_success": "Anisette 狀態重設成功",
     "failed_reset_anisette_state": "重設 anisette 狀態失敗",
-    "reset_anisette_state": "重設 anisette 狀態",
     "view_logs": "檢視日誌",
     "logs": "日誌",
     "log_level": "日誌層級：",

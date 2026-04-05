@@ -1,6 +1,6 @@
 [package]
 name = "iloader"
-version = "2.0.11"
+version = "2.1.1"
 description = "User-friendly sideloader"
 authors = ["nab138"]
 edition = "2024"
@@ -22,7 +22,7 @@ tauri = { version = "2", features = ["devtools"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-idevice = { version = "0.1.54", features = ["usbmuxd", "house_arrest", "afc"] }
+idevice = { version = "0.1.56", features = ["usbmuxd", "house_arrest", "afc", "core_device_proxy", "remote_pairing", "tcp", "tunnel_tcp_stack", "xpc", "rsd", "pair"] }
 isideload = { version = "0.2.20", features = ["fs-storage"] }
 keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "linux-native-sync-persistent"] }
 tauri-plugin-store = "2"
@@ -37,6 +37,9 @@ tracing-subscriber = "0.3.22"
 tracing = "0.1.44"
 tracing-appender = "0.2"
 rustls = "0.23.36"
+plist = "1.8.0"
+plist-macro = "0.1.6"
+tokio-util = "0.7.18"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"

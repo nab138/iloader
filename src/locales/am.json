@@ -166,7 +166,6 @@
     "refresh_installed_apps": "Թարմացնել տեղադրված հավելվածները"
   },
   "settings": {
-    "title": "Կարգավորումներ",
     "anisette_server": "Anisette Սերվեր։",
     "custom_anisette_placeholder": "Անհատական Anisette Սերվեր",
     "custom_anisette": "Անհատական",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Anisette-ի կարգավիճակի վերակայում...",
     "anisette_state_reset_success": "Anisette-ի կարգավիճակը հաջողությամբ վերակայվեց",
     "failed_reset_anisette_state": "Չհաջողվեց վերակայել anisette-ի կարգավիճակը",
-    "reset_anisette_state": "Վերակայել anisette-ի կարգավիճակը",
     "view_logs": "Դիտել մատյանները (Logs)",
     "logs": "Մատյաններ (Logs)",
     "log_level": "Մատյանի մակարդակը՝",

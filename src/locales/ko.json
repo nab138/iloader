@@ -168,7 +168,6 @@
     "place_all": "모든 앱에 배치"
   },
   "settings": {
-    "title": "설정",
     "anisette_server": "Anisette 서버:",
     "custom_anisette_placeholder": "사용자 지정 Anisette 서버",
     "custom_anisette": "사용자 지정",
@@ -179,7 +178,6 @@
     "resetting_anisette_state": "Anisette 상태 초기화 중...",
     "anisette_state_reset_success": "Anisette 상태 초기화 성공",
     "failed_reset_anisette_state": "Anisette 상태 초기화 실패",
-    "reset_anisette_state": "Anisette 상태 초기화",
     "view_logs": "로그 보기",
     "logs": "로그",
     "log_level": "로그 레벨:",

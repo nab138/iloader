@@ -75,6 +75,15 @@ You can also add your name to the translators section of the README.
 
 Thank you for translating!
 
+## Building from source=
+
+1. Install [bun](https://bun.sh) (or [Node.js](https://nodejs.org)) and [Rust](https://www.rust-lang.org/tools/install)
+2. Clone the repository and `cd` into it
+3. Run `bun i` (or `npm i`)
+
+For development with hot reload: `bun tauri dev` (or `npm run tauri dev`)
+Make a production build: `bun tauri build` (or `npm run tauri build`)
+
 ## Credits
 
 - Icon made by [Transistor](https://github.com/transistor-exe)
@@ -87,7 +96,7 @@ Thank you for translating!
 - [idevice_pair](https://github.com/jkcoxson/idevice_pair) was used as a reference for pairing file management
 - App made with [tauri](https://tauri.app)
 
-### Translators
+## Translators
 
 Thank you to everyone who has contributed translations! See the [Translating](#translating) section if you would like to contribute as well.
 
@@ -110,6 +119,16 @@ Thank you to everyone who has contributed translations! See the [Translating](#t
 - [marcusherelammonstyle-cmd](https://github.com/marcusherelammonstyle-cmd): Swedish (sv)
 - [MCI49312](https://github.com/MCI49312): Hungarian (hu)
 
+## License
+
+Copyright (C) 2026 nab138
+
+The source code of this repository is licensed under the MIT License. See the [LICENSE](/LICENSE) file for the full text.
+
+Branding, logos, media assets, and the name “iloader” are not licensed under the MIT License and are subject to separate restrictions.
+
+You may retain or use branding materials in forks, tutorials, or documentation if you include a clear link to either the official site (https://iloader.app) or the iloader source code repository (https://github.com/nab138/iloader) and do not imply official endorsement. See [LICENSE-BRANDING](/LICENSE-BRANDING) for full details.
+
 ## Future Plans
 
 - Better error handling
@@ -124,13 +143,3 @@ Thank you to everyone who has contributed translations! See the [Translating](#t
 - Set a "default" account to automatically log into
 - Import SideStore account info automatically
 - Mount DDI and open sidestore after installation
-
-## License
-
-Copyright (C) 2026 nab138
-
-The source code of this repository is licensed under the MIT License. See the [LICENSE](/LICENSE) file for the full text.
-
-Branding, logos, media assets, and the name “iloader” are not licensed under the MIT License and are subject to separate restrictions.
-
-You may retain or use branding materials in forks, tutorials, or documentation if you include a clear link to either the official site (https://iloader.app) or the iloader source code repository (https://github.com/nab138/iloader) and do not imply official endorsement. See [LICENSE-BRANDING](/LICENSE-BRANDING) for full details.

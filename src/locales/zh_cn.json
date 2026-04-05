@@ -166,7 +166,6 @@
     "refresh_installed_apps": "刷新已安装的应用"
   },
   "settings": {
-    "title": "设置",
     "anisette_server": "Anisette 服务器：",
     "custom_anisette_placeholder": "自定义 Anisette 服务器",
     "custom_anisette": "自定义",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "正在重置 anisette 状态...",
     "anisette_state_reset_success": "Anisette 状态重置成功",
     "failed_reset_anisette_state": "重置 anisette 状态失败",
-    "reset_anisette_state": "重置 anisette 状态",
     "view_logs": "查看日志",
     "logs": "日志",
     "log_level": "日志级别：",

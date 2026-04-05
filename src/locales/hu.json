@@ -168,7 +168,6 @@
     "place_all": "Telepítés összes alkalmazásba"
   },
   "settings": {
-    "title": "Beállítások",
     "anisette_server": "Anisette Szerver:",
     "custom_anisette_placeholder": "Egyéni Anisette Server",
     "custom_anisette": "Egyéni",
@@ -180,7 +179,6 @@
     "anisette_state_reset_success": "Anisette állapot visszaállítva sikeresen",
     "anisette_state_not_found": "Nincs Anisette állapot amit visszaállítsunk",
     "failed_reset_anisette_state": "Nem sikerült visszaállítani az Anisette állapotát",
-    "reset_anisette_state": "Anisette állapot visszaállítása",
     "view_logs": "Log megtekintése",
     "logs": "Logok",
     "log_level": "Log szint:",

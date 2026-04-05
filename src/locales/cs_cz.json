@@ -166,7 +166,6 @@
     "refresh_installed_apps": "Obnovit nainstalované aplikace"
   },
   "settings": {
-    "title": "Nastavení",
     "anisette_server": "Server Anisette:",
     "custom_anisette_placeholder": "Vlastní server Anisette",
     "custom_anisette": "Vlastní",
@@ -177,7 +176,6 @@
     "resetting_anisette_state": "Resetování stavu Anisette...",
     "anisette_state_reset_success": "Stav Anisette úspěšně resetován",
     "failed_reset_anisette_state": "Chyba při resetování stavu Anisette",
-    "reset_anisette_state": "Resetovat stav Anisette",
     "view_logs": "Zobrazit logy",
     "logs": "Logy",
     "log_level": "Úroveň logování:",

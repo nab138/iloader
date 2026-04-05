@@ -168,7 +168,6 @@
     "place_all": "Placera i Alla Appar"
   },
   "settings": {
-    "title": "Inställningar",
     "anisette_server": "Anisette Server:",
     "custom_anisette_placeholder": "Egen Anisette Server",
     "custom_anisette": "Egen",
@@ -180,7 +179,6 @@
     "anisette_state_reset_success": "Anisette läge har återställt",
     "anisette_state_not_found": "Ingen anisette läge att återställa",
     "failed_reset_anisette_state": "Misslyckades att återställa anisette läge",
-    "reset_anisette_state": "Återställa anisette läge",
     "view_logs": "Vissa Loggar",
     "logs": "Loggar",
     "log_level": "Log Nivå:",

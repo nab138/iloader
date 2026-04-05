@@ -12,7 +12,7 @@ fn main() {
         }
     }
 
-    // To be quite honest, I have no idea how ring has made its way into the dependence tree in some cases.
+    // To be quite honest, I have no idea how ring has made its way into the dependency tree in some cases.
     rustls::crypto::aws_lc_rs::default_provider()
         .install_default()
         .expect("Failed to install rustls crypto provider");

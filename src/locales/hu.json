@@ -91,6 +91,9 @@
     "unable_load_devices_prefix": "Nem sikerült betölteni az eszközt: ",
     "no_devices_found_period": "Nincs talált eszköz.",
     "selected": "Kiválasztva"
+    "pairing_in_progress_header": "Párosítás a {{device}} készülékkel...",
+    "pairing_in_progress_hint": "Kérjük, oldja fel a készülék zárolását és kattintson a \"Trust,\" gombra, majd ha a rendszer kéri, írja be a jelszavát.",
+    "pairing_cancel": "Megszakítás"
   },
   "operation": {
     "failed": "Sikertelen művelet.",
@@ -188,6 +191,13 @@
     "warn": "Figyelmeztetés",
     "error": "Hiba",
     "language_hint": "Tudsz segíteni fordítással <translation>itt</translation>."
+    "delete_stored_rppairing": "Eltárolt párosítófájlok törlése",
+    "delete_stored_rppairing_message": "Biztosan törölni szeretné az eszközhöz mentett párosítási fájlt? Ez esetben újra kell párosítania az eszközt.",
+    "deleting_stored_rppairing": "Tárolt párosítófájlok törlése...",
+    "stored_rppairing_deleted_success": "Tárolt párosítófáljok törölve!",
+    "failed_delete_stored_rppairing": "Nem sikerült törölni a tárolt párosítófájlokat",
+    "dont_use_keyring": "Ne használjon keyringet",
+    "dont_use_keyring_message": "Ezáltal az iloader kevésbé biztonságos lesz, mivel a párosítási fájlokat, az Anisette állapotát és a tanúsítványokat a merevlemezen tárolja. Ezt a beállítást csak akkor kapcsolja be, ha az alapértelmezett kulcstartó-tárolás nem működik, és tisztában van a kockázatokkal."
   },
   "dialog": {
     "confirm": "Megerősítés",

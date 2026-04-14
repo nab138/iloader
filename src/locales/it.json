@@ -1,5 +1,5 @@
 {
-  "subtitle": "Aiutante del Sideloading",
+  "subtitle": "Aiuto nel Sideloading",
   "version": "Versione",
   "common": {
     "confirm": "Conferma",
@@ -22,9 +22,9 @@
   "app": {
     "language": "Lingua",
     "github": "GitHub",
-    "open_github_failed": "Impossibile aprire link GitHub",
+    "open_github_failed": "Impossibile aprire il link GitHub",
     "section_account": "Account",
-    "section_placeholder": "Placeholder",
+    "section_placeholder": "Segnalibro",
     "section_management": "Gestione",
     "manage_pairing_file": "Gestisci Pairing File",
     "refresh_devices": "Aggiorna dispositivi",
@@ -35,9 +35,9 @@
     "select_device": "Seleziona un dispositivo",
     "installers": "Installer",
     "choose_build": "Scegli una build",
-    "sidestore_stable": "SideStore (Stable)",
+    "sidestore_stable": "SideStore (Stabile)",
     "sidestore_nightly": "SideStore (Nightly)",
-    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stable)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stabile)",
     "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
     "import_ipa": "Importa IPA",
     "settings": "Impostazioni",
@@ -50,15 +50,15 @@
     "title": "Apple ID",
     "logged_in_as": "Eseguito l'accesso come",
     "sign_out": "Disconnetti",
-    "signing_out": "Disconnettendo...",
+    "signing_out": "Disconnessione in corso...",
     "sign_out_failed": "Disconnessione fallita",
     "signed_out_success": "Disconnessione completata!",
     "saved_logins": "Login salvati",
     "sign_in": "Accedi",
-    "logging_in": "Accedendo...",
+    "logging_in": "Accesso in corso...",
     "logged_in_success": "Accesso completato!",
     "login_failed": "Accesso fallito",
-    "deleting": "Cancellando...",
+    "deleting": "Cancellazione in corso...",
     "deletion_failed": "Cancellazione fallita",
     "deleted_success": "Cancellazione riuscita!",
     "add_account": "Aggiungi account +",
@@ -68,14 +68,14 @@
     "save_credentials": "Salva credenziali",
     "enter_email_password": "Inserisci email e password.",
     "valid_email": "Inserisci un indirizzo mail valido.",
-    "login": "Login",
-    "two_factor_title": "Autenticazione a Due Fattori",
+    "login": "Accedi",
+    "two_factor_title": "Autenticazione a due fattori",
     "two_factor_prompt": "Inserisci il codice di verifica inviato al tuo dispositivo.",
     "verification_placeholder": "Codice di verifica...",
     "valid_6digit": "Inserisci un codice a 6 cifre valido.",
     "submit": "Invia",
     "max_certs_title": "Raggiunto numero massimo di certificati",
-    "max_certs_desc": "iloader revocherà i certificati esistenti e ne genererà uno nuovo",
+    "max_certs_desc": "iloader revocherà i certificati esistenti e ne genererà uno nuovo.",
     "hide_certificate_list": "Nascondi lista certificati",
     "choose_what_to_revoke": "Scegli quale revocare",
     "continue": "Continua"
@@ -103,14 +103,14 @@
     "install_sidestore_success_message": "Apri SideStore e aggiornalo per completare l'installazione!",
     "install_sidestore_step_download": "Scarica SideStore",
     "install_sidestore_step_install": "Accedi ed Installa SideStore",
-    "install_sidestore_step_pairing": "Posiziona Pairing File",
+    "install_sidestore_step_pairing": "Applica Pairing File",
     "install_livecontainer_title": "Installando LiveContainer+SideStore",
     "install_livecontainer_success_title": "LiveContainer+SideStore Installati!",
     "install_livecontainer_success_message": "Per completare l'installazione, apri LiveContainer, scegli impostazioni e clicca \"Importa Certificato da SideStore\". Poi, vai su app, clicca l'icona SideStore e aggiorna LiveContainer",
     "install_livecontainer_step_download": "Scarica LiveContainer+SideStore",
     "install_livecontainer_step_install": "Accedi ed Installa LiveContainer+SideStore",
-    "install_livecontainer_step_pairing": "Posiziona Pairing File",
-    "sideload_title": "Installando App",
+    "install_livecontainer_step_pairing": "Applica Pairing File",
+    "sideload_title": "Installazione App",
     "sideload_step_install": "Accedi ed Installa App"
   },
   "certificates": {
@@ -118,7 +118,7 @@
     "loading": "Carico certificati...",
     "loaded_success": "Certificati caricati correttamente!",
     "failed_load": "Impossibile caricare i certificati",
-    "revoking": "Revoco certificato...",
+    "revoking": "Revoca in corso...",
     "revoked_success": "Certificato revocato correttamente!",
     "failed_revoke": "Impossibile revocare il certificato: ",
     "none_found": "Nessun certificato trovato",
@@ -135,7 +135,7 @@
     "failed_load": "Impossibile caricare App ID",
     "deleted_success": "App ID cancellati correttamente!",
     "failed_delete": "Impossibile cancellare App ID",
-    "available": "{{disponibili}}/{{massimo}} ID disponibili",
+    "available": "{{available}}/{{max}} ID disponibili",
     "none_found": "Nessun App ID trovato.",
     "name": "Nome",
     "expiration": "Scadenza",
@@ -184,7 +184,14 @@
     "info": "Info",
     "warn": "Attenzione",
     "error": "Errore",
-    "language_hint": "Puoi aiutare ad aggiornare o aggiungere traduzioni <translation>qui</translation>."
+    "language_hint": "Puoi aiutare ad aggiornare o aggiungere traduzioni <translation>qui</translation>.",
+    "delete_stored_rppairing": "Elimina memoria Pairing",
+    "delete_stored_rppairing_message": "Sei sicuro di voler eliminare i Pairing File memorizzati di questo dispositivo? Dovrai accoppiare il telefono di nuovo.",
+    "deleting_stored_rppairing": "Elimino memoria pairing...",
+    "stored_rppairing_deleted_success": "File pairing memorizzati eliminati correttamente!",
+    "failed_delete_stored_rppairing": "Errore durante l'eliminazione dei file di pairing memorizzati.",
+    "dont_use_keyring": "Non usare Keyring",
+    "dont_use_keyring_message": "Questo rende iloader meno sicuro per memorizzare i pairing file, stato Anisette, e certificati sul disco. Abilita l'opzione solo se il Keyring di default non funziona e comprendi i rischi."
   },
   "dialog": {
     "confirm": "Conferma",
@@ -193,7 +200,76 @@
   "error": {
     "title": "Si è verificato un errore: {{msg}}",
     "unknown": "Sconosciuto",
-    "support_message": "Se il problema persiste, premi \"Copia negli appunti\" e invia l'errore copiato nel <discord>Discord</discord> o invia un'<github>issue GitHub</github> per supporto."
+    "support_message": "Se il problema persiste, premi \"Copia negli appunti\" e invia l'errore copiato nel <discord>Discord</discord> o invia un'<github>issue GitHub</github> per supporto.",
+    "suggestions_heading": "Suggerimenti",
+    "suggestions": {
+      "underage": [
+        "Il tuo Apple Account può essere sotto l'età minima per usare i servizi sviluppatore."
+      ],
+      "account_locked": [
+        "Niente panico! Questo di solito si verifica quando numerosi tentativi di accesso falliscono, ma non accade nulla.",
+        "Visita ((link:https://iforgot.apple.com/)) per sbloccare il tuo Account."
+      ],
+      "auth": [
+        "Controlla se le tue credenziali siano corrette e riprova, anche se sono corrette.",
+        "Se il problema persiste, prova usare un altro Apple ID.",
+        "La chiave di sicurezza 2FA non è supportata. Se possibile, usa un Apple Account senza l'autenticazione 2FA o con un dispositivo 2FA autorizzato."
+      ],
+      "download": [
+        "Scarica SideStore manualmente da ((link:https://github.com/SideStore/SideStore/releases)) ed usa il pulsante \"Importa IPA\" per installarlo."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Verifica che il tuo dispositivo non sia aggiornato alla beta sviluppatore di iOS 26.3, contiene un bug con house arrest."
+      ],
+      "pairing": [
+        "Prova a ricollegare il dispositivo e eseguire di nuovo l'azione.",
+        "Verifica che il tuo dispositivo abbia impostato un codice.",
+        "Verifica che il tuo dispositivo sia connesso tramite USB, non Wireless."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]Verifica di avere((link:https://apple.co/ms:iTunes)) installato e controlla se riesce a trovare il tuo dispositivo.",
+        "[platform::windows]Disinstalla iTunes e Apple Mobile Device Support, poi installa \"Apple Devices\" dal Microsoft Store.",
+        "[platform::linux]Controlla che usbmuxd sia installato ed in esecuzione."
+      ],
+      "trust": [
+        "Sblocca il tuo telefono, vai nella Home Screen ed accetta ogni avviso di autorizzazione che appare."
+      ],
+      "device_coms": [
+        "Verifica che il dispositivo sia connesso correttamente al computer.",
+        "Disconnetti e riconnetti il dispositivo. Se il problema persiste, prova un altra porta USB oppure un altro cavo."
+      ],
+      "not_logged_in": ["Accedi al tuo Apple Account prima."],
+      "no_device_selected": ["Seleziona un dispositivo per continuare."],
+      "anisette": [
+        "Verifica che il computer è connesso ad Internet.",
+        "Change your anisette server. Try several different servers.",
+        "Make sure you can access ((link:{{anisetteServerUrl}})) in a browser."
+      ],
+      "keyring": [
+        "Prova ad abilitare \"Non usare keyring\" nelle impostazioni per risolvere questo problema. Nota che è meno sicuro."
+      ],
+      "misc": [
+        "Riprova. Riavviare l'app, il computer e/o il telefono potrebbe aiutare."
+      ],
+      "admin": [
+        "Prova ad eseguire l'app con maggior permessi (come amministratore/root)."
+      ],
+      "filesystem": [
+        "Controlla che iloader ha il permesso di scrivere e leggere file sul tuo sistema."
+      ],
+      "not_enough_app_ids": [
+        "Non hai abbastanza App IDs disponibili per installare quest'app.",
+        "Attendi che gli App IDs scadano dopo 7 giorni (non puoi eliminarli prima), poi riprova.",
+        "Installare app da SideStore a volte permette di usare meno App IDs, quindi prova ad installarle da lì."
+      ],
+      "max_apps": [
+        "Puoi avere solo 3 app sideloaded installate alla volta con un Apple Account gratis.",
+        "Elimina altre app sideloaded per liberare spazio per questa applicazione.",
+        "Le app scadute vengono contate nel limite di 3 app."
+      ]
+    }
   },
   "update": {
     "new_version_available": "È disponibile una nuova versione: {{version}}. Vuoi aggiornare?",

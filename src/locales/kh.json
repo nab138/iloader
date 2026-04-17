@@ -1,0 +1,286 @@
+{
+  "subtitle": "កម្មវិធីជំនួយ ការតម្លើងApp",
+  "version": "កំណែ",
+  "common": {
+    "confirm": "បញ្ជាក់",
+    "cancel": "បោះបង់",
+    "dismiss": "បិទ",
+    "refresh": "ធ្វើឱ្យថ្មី",
+    "delete": "លុប",
+    "copy_to_clipboard": "ចម្លងទៅ clipboard",
+    "more_details": "ព័ត៌មានបន្ថែម",
+    "no_error": "គ្មានកំហុស",
+    "copied_success": "បានចម្លងទៅ clipboard"
+  },
+  "dropdown": {
+    "custom_value": "កំណត់តម្លៃខ្លួនឯង",
+    "custom": "ដាក់ខ្លួនឯង",
+    "use_custom_value": "ប្រើតម្លៃផ្ទាល់ខ្លួន",
+    "back_preset_options": "ត្រឡប់ទៅជម្រើសដើម",
+    "select": "ជ្រើសរើស"
+  },
+  "app": {
+    "language": "ភាសា",
+    "github": "GitHub",
+    "open_github_failed": "មិនអាចបើកតំណ GitHub បាន",
+    "section_account": "គណនី",
+    "section_placeholder": "កន្លែងទំនេរ",
+    "section_management": "ការគ្រប់គ្រង",
+    "manage_pairing_file": "គ្រប់គ្រងឯកសារ Pairing",
+    "refresh_devices": "ធ្វើឱ្យឧបករណ៍ថ្មី",
+    "certificates": "វិញ្ញាបនបត្រ",
+    "app_ids": "App IDs",
+    "devices": "ឧបករណ៍",
+    "active_device": "កំពុងប្រើ: {{name}}",
+    "select_device": "ជ្រើសរើសឧបករណ៍",
+    "installers": "កម្មវិធីដំឡើង",
+    "choose_build": "ជ្រើសរើស កំណែ",
+    "sidestore_stable": "SideStore (កំណែល្អ)",
+    "sidestore_nightly": "SideStore (កំណែសាកល្បង)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (កំណែល្អ)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (កំណែសាកល្បង)",
+    "import_ipa": "តម្លើងAppខាងក្រៅ(IPA)",
+    "settings": "ការកំណត់",
+    "must_be_logged_in": "សូមបញ្ចូលចូលគណនី!",
+    "must_select_device": "សូមជ្រើសរើសឧបករណ៍!",
+    "ipa_files": "ឯកសារ IPA",
+    "logo_alt": "រូបសញ្ញា iloader"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "បានចូលជា",
+    "sign_out": "ចេញពីគណនី",
+    "signing_out": "កំពុងចេញ...",
+    "sign_out_failed": "ការចេញពីគណនីបរាជ័យ",
+    "signed_out_success": "បានចេញដោយជោគជ័យ!",
+    "saved_logins": "គណនីដែលបានរក្សាទុក",
+    "sign_in": "ចូលគណនី",
+    "logging_in": "កំពុងចូល...",
+    "logged_in_success": "បានចូលដោយជោគជ័យ!",
+    "login_failed": "ការចូលបរាជ័យ",
+    "deleting": "កំពុងលុប...",
+    "deletion_failed": "ការលុបបរាជ័យ",
+    "deleted_success": "បានលុបដោយជោគជ័យ!",
+    "add_account": "បន្ថែមគណនី +",
+    "new_login": "ចូលគណនីថ្មី",
+    "email_placeholder": "អ៊ីមែល Apple ID...",
+    "password_placeholder": "ពាក្យសម្ងាត់ Apple ID...",
+    "save_credentials": "រក្សាទុកព័ត៌មានគណនី",
+    "enter_email_password": "សូមបញ្ចូលអ៊ីមែល និងពាក្យសម្ងាត់",
+    "valid_email": "សូមបញ្ចូលអ៊ីមែលត្រឹមត្រូវ",
+    "login": "ចូល",
+    "two_factor_title": "ការផ្ទៀងផ្ទាត់ពីរដំណាក់កាល",
+    "two_factor_prompt": "សូមបញ្ចូលកូដផ្ទៀងផ្ទាត់ដែលបានផ្ញើទៅឧបករណ៍របស់អ្នក",
+    "verification_placeholder": "កូដផ្ទៀងផ្ទាត់...",
+    "valid_6digit": "សូមបញ្ចូលកូដ 6 ខ្ទង់ត្រឹមត្រូវ",
+    "submit": "បញ្ជូន",
+    "max_certs_title": "ឈានដល់ចំនួនវិញ្ញាបនបត្រអតិបរមា",
+    "max_certs_desc": "iloader នឹងលុបវិញ្ញាបនបត្រចាស់ ហើយបង្កើតថ្មីមួយ",
+    "hide_certificate_list": "លាក់បញ្ជីវិញ្ញាបនបត្រ",
+    "choose_what_to_revoke": "ជ្រើសរើសអ្វីត្រូវលុប",
+    "continue": "បន្ត",
+    "no_keyring_available": "មិនអាចរក្សាទុកព័ត៌មានគណនីនៅលើឧបករណ៍នេះបាន"
+  },
+  "device": {
+    "title": "ឧបករណ៍ iDevice",
+    "loading_devices": "កំពុងផ្ទុកឧបករណ៍...",
+    "no_devices_found": "រកមិនឃើញឧបករណ៍",
+    "found_device": "រកឃើញឧបករណ៍",
+    "found_devices": "រកឃើញឧបករណ៍",
+    "unable_load_devices_prefix": "មិនអាចផ្ទុកឧបករណ៍",
+    "no_devices_found_period": "រកមិនឃើញឧបករណ៍។",
+    "selected": "បានជ្រើសរើស",
+    "pairing_in_progress_header": "កំពុងភ្ជាប់ជាមួយ {{device}}...",
+    "pairing_in_progress_hint": "សូមបើកសោឧបករណ៍របស់អ្នក ហើយចុច \"Trust\" បន្ទាប់មកបញ្ចូលលេខសម្ងាត់ ប្រសិនបើត្រូវការ។",
+    "pairing_cancel": "បោះបង់",
+    "failed_select": "ជ្រើសរើសឧបករណ៍បរាជ័យ"
+  },
+  "operation": {
+    "failed": "ប្រតិបត្តិការបរាជ័យ។",
+    "completed": "ប្រតិបត្តិការបានបញ្ចប់",
+    "please_wait": "សូមរង់ចាំ...",
+    "copy_error_clipboard": "ចម្លងកំហុសទៅ clipboard"
+  },
+  "operations": {
+    "install_sidestore_title": "កំពុងដំឡើង SideStore",
+    "install_sidestore_success_title": "បានដំឡើង SideStore!",
+    "install_sidestore_success_message": "បើក SideStore ហើយធ្វើការ refresh ដើម្បីបញ្ចប់ការដំឡើង!",
+    "install_sidestore_step_download": "ទាញយក SideStore",
+    "install_sidestore_step_install": "បញ្ជាក់ និងដំឡើង SideStore",
+    "install_sidestore_step_pairing": "ដាក់ឯកសារ Pairing",
+    "install_livecontainer_title": "កំពុងដំឡើង LiveContainer+SideStore",
+    "install_livecontainer_success_title": "បានដំឡើង LiveContainer+SideStore!",
+    "install_livecontainer_success_message": "ដើម្បីបញ្ចប់ សូមបើក LiveContainer ទៅកាន់ settings ហើយចុច \"Import Certificate From SideStore\" បន្ទាប់មកទៅ apps ចុចរូបសញ្ញា sidestore ហើយធ្វើការធ្វើឱ្យថ្មី LiveContainer។",
+    "install_livecontainer_step_download": "ទាញយក LiveContainer+SideStore",
+    "install_livecontainer_step_install": "បញ្ជាក់ និងដំឡើង LiveContainer+SideStore",
+    "install_livecontainer_step_pairing": "ដាក់ឯកសារ Pairing",
+    "sideload_title": "កំពុងដំឡើងកម្មវិធី",
+    "sideload_step_install": "បញ្ជាក់ និងដំឡើងកម្មវិធី"
+  },
+  "certificates": {
+    "manage": "គ្រប់គ្រងវិញ្ញាបនបត្រ",
+    "loading": "កំពុងផ្ទុកវិញ្ញាបនបត្រ...",
+    "loaded_success": "ផ្ទុកវិញ្ញាបនបត្របានជោគជ័យ!",
+    "failed_load": "ផ្ទុកវិញ្ញាបនបត្របរាជ័យ",
+    "revoking": "កំពុងលុបវិញ្ញាបនបត្រ...",
+    "revoked_success": "បានលុបវិញ្ញាបនបត្រដោយជោគជ័យ!",
+    "failed_revoke": "លុបវិញ្ញាបនបត្របរាជ័យ: ",
+    "none_found": "មិនមានវិញ្ញាបនបត្រណាមួយទេ",
+    "name": "ឈ្មោះ",
+    "serial_number": "លេខសៀរៀល",
+    "machine_name": "ឈ្មោះម៉ាស៊ីន",
+    "machine_id": "លេខសម្គាល់ម៉ាស៊ីន",
+    "revoke": "លុប"
+  },
+  "app_ids": {
+    "manage": "គ្រប់គ្រង App IDs",
+    "loading": "កំពុងផ្ទុក App IDs...",
+    "loaded_success": "ការផ្ទុក App IDs បានជោគជ័យ!",
+    "failed_load": "ការផ្ទុក App IDs បរាជ័យ",
+    "deleted_success": "បានលុប App ID ដោយជោគជ័យ!",
+    "failed_delete": "ការលុប App ID បរាជ័យ",
+    "available": "{{available}}/{{max}} IDs អាចប្រើបាន",
+    "none_found": "មិនមាន App IDs ទេ។",
+    "name": "ឈ្មោះ",
+    "expiration": "ការផុតកំណត់",
+    "id": "ID",
+    "identifier": "លេខសម្គាល់",
+    "never": "មិនដែល"
+  },
+  "pairing": {
+    "manage": "គ្រប់គ្រងឯកសារ Pairing",
+    "loading_apps": "កំពុងផ្ទុកកម្មវិធី...",
+    "apps_loaded_success": "ការផ្ទុកកម្មវិធីបានជោគជ័យ!",
+    "failed_load_apps": "ការផ្ទុកកម្មវិធីបរាជ័យ",
+    "placing_pairing_file": "កំពុងដាក់ឯកសារ pairing...",
+    "pairing_file_placed_success": "ការដាក់ឯកសារ pairing បានជោគជ័យ!",
+    "failed_place_pairing": "ការដាក់ pairing បរាជ័យ",
+    "loading_app": "កំពុងផ្ទុកកម្មវិធី...",
+    "no_supported_apps_found": "រកមិនឃើញកម្មវិធីដែលត្រូវគ្នា",
+    "name": "ឈ្មោះ",
+    "bundle_id": "Bundle ID",
+    "place_pairing_file": "ដាក់ឯកសារ Pairing",
+    "place": "ដាក់",
+    "advanced_export_title": "កម្រិតខ្ពស់: នាំចេញឯកសារ Pairing",
+    "advanced_export_message": "មិនណែនាំទេ លុះត្រាតែអ្នកដឹងអ្វីដែលកំពុងធ្វើ។ ចុច \"Place\" ជិតកម្មវិធី ដើម្បីផ្ទេរដោយស្វ័យប្រវត្តិ។ តើអ្នកប្រាកដថាចង់នាំចេញឯកសារ pairing?",
+    "exporting_pairing_file": "កំពុងនាំចេញឯកសារ pairing...",
+    "pairing_file_exported_success": "នាំចេញឯកសារ pairing បានជោគជ័យ!",
+    "failed_export_pairing_file": "នាំចេញឯកសារ pairing បរាជ័យ",
+    "export_not_recommended": "នាំចេញ (មិនណែនាំ)",
+    "refresh_installed_apps": "ស្កេនកម្មវិធីដែលបានដំឡើងឡើងវិញ",
+    "place_all": "ដាក់ទៅកម្មវិធីទាំងអស់"
+  },
+  "settings": {
+    "anisette_server": "ម៉ាស៊ីនមេ Anisette:",
+    "custom_anisette_placeholder": "ម៉ាស៊ីនមេ Anisette ផ្ទាល់ខ្លួន",
+    "custom_anisette": "ផ្ទាល់ខ្លួន",
+    "use_custom_anisette": "ប្រើម៉ាស៊ីនមេ Anisette ផ្ទាល់ខ្លួន",
+    "back_preset_servers": "ត្រឡប់ទៅម៉ាស៊ីនមេដើម",
+    "reset_anisette_title": "កំណត់ Anisette ឡើងវិញ",
+    "reset_anisette_message": "តើអ្នកប្រាកដថាចង់កំណត់ Anisette ឡើងវិញ? អ្នកនឹងត្រូវបញ្ចូលកូដ 2FA ម្តងទៀត។",
+    "resetting_anisette_state": "កំពុងកំណត់ Anisette ឡើងវិញ...",
+    "anisette_state_reset_success": "បានកំណត់ Anisette ឡើងវិញដោយជោគជ័យ",
+    "anisette_state_not_found": "មិនមាន Anisette សម្រាប់កំណត់ឡើងវិញ",
+    "failed_reset_anisette_state": "កំណត់ Anisette ឡើងវិញបរាជ័យ",
+    "view_logs": "មើល Logs",
+    "logs": "Logs",
+    "log_level": "កម្រិត Log:",
+    "no_logs_yet": "មិនទាន់មាន Logs ទេ។",
+    "debug": "ខ្វះចន្លោះ",
+    "info": "ព័ត៌មានបន្ថែម",
+    "warn": "ការប្រមាន",
+    "error": "មានកំហុស",
+    "language_hint": "អ្នកអាចជួយបកប្រែ <translation>នៅទីនេះ</translation>។",
+    "delete_stored_rppairing": "ការលុប Pairing ដែលបានរក្សាទុក",
+    "delete_stored_rppairing_message": "តើអ្នកប្រាកដថាចង់លុប pairing សម្រាប់ឧបករណ៍នេះ? អ្នកនឹងត្រូវ pair ម្តងទៀត។",
+    "deleting_stored_rppairing": "កំពុងលុប pairing...",
+    "stored_rppairing_deleted_success": "ការលុប pairing បានជោគជ័យ!",
+    "failed_delete_stored_rppairing": "ការលុប pairing បរាជ័យ",
+    "dont_use_keyring": "កុំប្រើ keyring",
+    "dont_use_keyring_message": "វាធ្វើឱ្យ iloader មិនសុវត្ថិភាព ដោយរក្សាទុកទិន្នន័យលើ disk។ ប្រើតែបើចាំបាច់។"
+  },
+  "dialog": {
+    "confirm": "បញ្ជាក់",
+    "cancel": "បោះបង់"
+  },
+  "error": {
+    "title": "មានកំហុសកើតឡើង: {{msg}}",
+    "unknown": "មិនស្គាល់",
+    "suggestions_heading": "ការណែនាំ",
+    "suggestions": {
+      "underage": [
+        "Apple ID របស់អ្នកអាចមានអាយុមិនគ្រប់តាមលក្ខខណ្ឌ"
+      ],
+      "account_locked": [
+        "កុំភ័យ! វាធម្មតាកើតឡើងបន្ទាប់ពីបញ្ចូលខុសច្រើនដង។",
+        "ចូលទៅ ((link:https://iforgot.apple.com/)) ដើម្បីដោះសោគណនី។"
+      ],
+      "auth": [
+        "សូមប្រាកដថាព័ត៌មានចូលរបស់អ្នកត្រឹមត្រូវ ហើយព្យាយាមម្តងទៀត ទោះបីជាអ្នកគិតថាត្រឹមត្រូវក៏ដោយ។",
+        "បើបញ្ហានៅតែមាន សូមសាកល្បងប្រើ Apple ID ផ្សេង។",
+        "មិនគាំទ្រ Security Key 2FA ទេ។ ប្រសិនបើអាច សូមប្រើ Apple ID ដែលគ្មាន 2FA ឬប្រើ 2FA ជាមួយឧបករណ៍ដែលទុកចិត្ត។"
+      ],
+      "download": [
+        "ទាញយក SideStore ដោយដៃពី ((link:https://github.com/SideStore/SideStore/releases)) ហើយប្រើប៊ូតុង \"តម្លើងAppខាងក្រៅ(IPA)\" ដើម្បីដំឡើង។"
+      ],
+      "house_arrest": [
+        "[ios::26.3]សូមប្រាកដថាឧបករណ៍របស់អ្នកមិនប្រើ iOS 26.3 developer beta ព្រោះវាមានបញ្ហា house arrest"
+      ],
+      "pairing": [
+        "សូមភ្ជាប់ឧបករណ៍ឡើងវិញ ហើយដំណើរការឡើងវិញ។",
+        "សូមប្រាកដថាឧបករណ៍របស់អ្នកមាន passcode។",
+        "សូមប្រាកដថាអ្នកភ្ជាប់តាម USB មិនមែន wireless ទេ។"
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]សូមប្រាកដថាអ្នកបានដំឡើង ((link:https://apple.co/ms:iTunes)) ហើយពិនិត្យថាវាអាចរកឃើញឧបករណ៍របស់អ្នក។",
+        "[platform::windows]លុប iTunes និង Apple Mobile Device Support បន្ទាប់មកដំឡើង \"Apple Devices\" ពី Microsoft Store។",
+        "[platform::linux]សូមប្រាកដថា usbmuxd ត្រូវបានដំឡើង និងកំពុងដំណើរការ។"
+      ],
+      "trust": [
+        "បើកសោឧបករណ៍របស់អ្នក ទៅកាន់ home screen ហើយទទួលយកសារ trust ទាំងអស់។"
+      ],
+      "device_coms": [
+        "សូមប្រាកដថាឧបករណ៍របស់អ្នកភ្ជាប់ត្រឹមត្រូវជាមួយកុំព្យូទ័រ។",
+        "ដកចេញ ហើយភ្ជាប់វិញ។ បើបញ្ហានៅតែមាន សូមសាកល្បង USB port ឬខ្សែផ្សេង។"
+      ],
+      "not_logged_in": ["សូមចូល Apple ID ជាមុនសិន"],
+      "no_device_selected": ["សូមជ្រើសរើសឧបករណ៍មុននឹងបន្ត."],
+      "anisette": [
+        "សូមប្រាកដថាកុំព្យូទ័ររបស់អ្នកភ្ជាប់អ៊ីនធឺណិត។",
+        "ប្ដូរ anisette server ហើយសាកល្បងជាច្រើន។",
+        "សូមប្រាកដថាអ្នកអាចបើក ((link:{{anisetteServerUrl}})) នៅក្នុង browser បាន។"
+      ],
+      "keyring": [
+        "សូមសាកល្បងបើក \"កុំប្រើ keyring\" នៅក្នុង settings ដើម្បីជៀសវាងបញ្ហានេះ។ សូមចំណាំថាវាមិនសុវត្ថិភាពទេ។"
+      ],
+      "misc": [
+        "សូមព្យាយាមម្តងទៀត។ បិទបើកកម្មវិធីឡើងវិញ កុំព្យូទ័រ ឬទូរស័ព្ទអាចជួយបាន។"
+      ],
+      "admin": [
+        "សូមសាកល្បងដំណើរការកម្មវិធីជាមួយសិទ្ធិ (ជា administrator/root)."
+      ],
+      "filesystem": [
+        "សូមប្រាកដថា iloader មានសិទ្ធិអាន និងសរសេរឯកសារ។"
+      ],
+      "not_enough_app_ids": [
+        "អ្នកមិនមាន App IDs គ្រប់គ្រាន់សម្រាប់ដំឡើងកម្មវិធីនេះ។",
+        "រង់ចាំឲ្យ App IDs ផុតកំណត់ក្រោយ 7 ថ្ងៃ បន្ទាប់មកសាកល្បងម្តងទៀត។",
+        "ការដំឡើងពី SideStore អាចប្រើ App IDs តិចជាង ដូច្នេះសាកល្បងពីទីនោះ។"
+      ],
+      "max_apps": [
+        "អ្នកអាចដំឡើងបានតែ 3 កម្មវិធី sideloaded ជាមួយ Apple ID ឥតគិតថ្លៃ។",
+        "លុបកម្មវិធីផ្សេង ដើម្បីទទួលបានកន្លែង។",
+        "កម្មវិធីដែលផុតកំណត់ក៏ត្រូវបានគណនាក្នុងកំណត់នេះផងដែរ។"
+      ]
+    },
+    "support_message": "បើបញ្ហានៅតែមាន សូមចុច \"ចម្លងទៅ clipboard\" ហើយផ្ញើកំហុសទៅ <discord>Discord</discord> ឬ <github>GitHub issue</github> សម្រាប់ជំនួយ។"
+  },
+  "update": {
+    "new_version_available": "មានកំណែថ្មី: {{version}}។ តើអ្នកចង់អាប់ដេតទេ?",
+    "updating": "កំពុងអាប់ដេត...",
+    "downloaded_restarting": "បានទាញយកហើយ! កំពុងចាប់ផ្តើមកម្មវិធីឡើងវិញ...",
+    "failed_download": "ទាញយកអាប់ដេតបរាជ័យ: {{error}}"
+  }
+}

@@ -150,6 +150,17 @@ async fn generate_rppairing(
         .connect(async |_| "000000".to_string(), ())
         .await?;
 
+    // use it right away to try and convince the device to commmit it to the keychain
+    info!("Connecting to untrusted tunnel service again...");
+    let tunnel_service_stream = adapter.connect(tunnel_service.port).await?;
+    let mut remote_xpc = RemoteXpcClient::new(tunnel_service_stream).await?;
+    remote_xpc.do_handshake().await?;
+    let _ = remote_xpc.recv_root().await;
+    let mut pairing_client = RemotePairingClient::new(remote_xpc, hostname, &mut pairing_file);
+    pairing_client
+        .connect(async |_| "000000".to_string(), ())
+        .await?;
+
     Ok(pairing_file)
 }
 

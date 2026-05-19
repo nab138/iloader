@@ -106,6 +106,7 @@ Thank you to everyone who has contributed translations! See the [Translating](#t
 - [IamArayel](https://github.com/IamArayel): French (fr)
 - [kkula9999](https://github.com/kkula9999): Traditional & Simplified Chinese (zh_tw & zh_cn)
 - [sibwaze](https://github.com/sibwaze): Russian (ru)
+- [notmalicik](https://github.com/notmalicik): Română (ro)
 - [mirdukkkkk](https://github.com/mirdukkkkk): Improved Russian (ru)
 - [okinaau](https://github.com/okinaau): Arabic (ar)
 - [WingChunWong](https://github.com/WingChunWong): Cantonese (zh_hk) & Improved Chinese (zh_tw & zh_cn)

@@ -12,6 +12,7 @@ const languages = [
   ["pl", "Polski"],
   ["vi", "Tiếng Việt"],
   ["ru", "Русский"],
+  ["ro", "Română"],
   ["ar", "العربية"],
   ["tr", "Türkçe"],
   ["zh_tw", "Traditional Chinese （繁體中文)"],

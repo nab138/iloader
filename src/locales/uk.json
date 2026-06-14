@@ -1,0 +1,286 @@
+{
+  "subtitle": "Помічник зі встановлення",
+  "version": "Версія",
+  "common": {
+    "confirm": "Підтвердити",
+    "cancel": "Скасувати",
+    "dismiss": "Закрити",
+    "refresh": "Оновити",
+    "delete": "Видалити",
+    "copy_to_clipboard": "Скопіювати до буфера обміну",
+    "more_details": "Докладніше",
+    "no_error": "Помилок немає",
+    "copied_success": "Скопійовано до буфера обміну"
+  },
+  "dropdown": {
+    "custom_value": "Власне значення",
+    "custom": "Користувацьке",
+    "use_custom_value": "Використати власне значення",
+    "back_preset_options": "Повернути параметри за замовчуванням",
+    "select": "Вибрати"
+  },
+  "app": {
+    "language": "Мова",
+    "github": "GitHub",
+    "open_github_failed": "Не вдалося відкрити посилання на GitHub",
+    "section_account": "Обліковий запис",
+    "section_placeholder": "Заповнювач",
+    "section_management": "Керування",
+    "manage_pairing_file": "Файл сполучення",
+    "refresh_devices": "Оновити пристрої",
+    "certificates": "Сертифікати",
+    "app_ids": "ID застосунків",
+    "devices": "Пристрої",
+    "active_device": "Вибрано: {{name}}",
+    "select_device": "Виберіть пристрій",
+    "installers": "Інсталятори",
+    "choose_build": "Виберіть збірку",
+    "sidestore_stable": "SideStore (Stable)",
+    "sidestore_nightly": "SideStore (Nightly)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stable)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
+    "import_ipa": "Імпорт IPA",
+    "settings": "Налаштування",
+    "must_be_logged_in": "Необхідно увійти!",
+    "must_select_device": "Виберіть пристрій!",
+    "ipa_files": "Файли IPA",
+    "logo_alt": "Логотип iloader"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "Вхід виконано як",
+    "sign_out": "Вийти",
+    "signing_out": "Вихід...",
+    "sign_out_failed": "Не вдалося вийти",
+    "signed_out_success": "Вихід виконано успішно!",
+    "saved_logins": "Збережені облікові записи",
+    "sign_in": "Увійти",
+    "logging_in": "Вхід...",
+    "logged_in_success": "Вхід виконано успішно!",
+    "login_failed": "Не вдалося увійти",
+    "deleting": "Видалення...",
+    "deletion_failed": "Не вдалося видалити",
+    "deleted_success": "Видалено!",
+    "add_account": "Додати обліковий запис +",
+    "new_login": "Новий вхід",
+    "email_placeholder": "Електронна пошта Apple ID...",
+    "password_placeholder": "Пароль Apple ID...",
+    "save_credentials": "Зберегти дані входу",
+    "enter_email_password": "Будь ласка, введіть логін і пароль.",
+    "valid_email": "Будь ласка, введіть коректну електронну пошту.",
+    "login": "Вхід",
+    "two_factor_title": "Двофакторна автентифікація",
+    "two_factor_prompt": "Будь ласка, введіть код підтвердження, надісланий на ваш пристрій.",
+    "verification_placeholder": "Код підтвердження...",
+    "valid_6digit": "Будь ласка, введіть коректний 6-значний код.",
+    "submit": "Підтвердити",
+    "max_certs_title": "Досягнуто ліміту сертифікатів",
+    "max_certs_desc": "iloader відкличе ваші поточні сертифікати та створить новий.",
+    "hide_certificate_list": "Приховати список сертифікатів",
+    "choose_what_to_revoke": "Виберіть сертифікат для відкликання",
+    "continue": "Продовжити",
+    "no_keyring_available": "Не вдалося зберегти дані входу на цьому пристрої."
+  },
+  "device": {
+    "title": "iDevice",
+    "loading_devices": "Завантаження пристроїв...",
+    "no_devices_found": "Пристроїв не знайдено",
+    "found_device": "Виявлено пристрій",
+    "found_devices": "Виявлено пристрої",
+    "unable_load_devices_prefix": "Не вдалося завантажити пристрої",
+    "no_devices_found_period": "Пристроїв не знайдено.",
+    "selected": "Вибрано",
+    "pairing_in_progress_header": "Створення пари з {{device}}...",
+    "pairing_in_progress_hint": "Розблокуйте пристрій і натисніть \"Довіряти\", потім введіть пароль розблокування, якщо знадобиться.",
+    "pairing_cancel": "Скасувати",
+    "failed_select": "Не вдалося вибрати пристрій"
+  },
+  "operation": {
+    "failed": "Процес завершився помилкою.",
+    "completed": "Процес виконано",
+    "please_wait": "Будь ласка, зачекайте...",
+    "copy_error_clipboard": "Скопіювати помилку до буфера обміну"
+  },
+  "operations": {
+    "install_sidestore_title": "Встановлення SideStore",
+    "install_sidestore_success_title": "SideStore встановлено!",
+    "install_sidestore_success_message": "Відкрийте SideStore і оновіть його для завершення встановлення!",
+    "install_sidestore_step_download": "Завантажте SideStore",
+    "install_sidestore_step_install": "Підпишіть і встановіть SideStore",
+    "install_sidestore_step_pairing": "Виберіть файл сполучення",
+    "install_livecontainer_title": "Встановлення LiveContainer+SideStore",
+    "install_livecontainer_success_title": "LiveContainer+SideStore встановлено!",
+    "install_livecontainer_success_message": "Для продовження встановлення відкрийте LiveContainer, зайдіть у налаштування та виберіть \"Import Certificate From SideStore.\" Потім виберіть застосунки, натисніть на іконку SideStore і оновіть LiveContainer.",
+    "install_livecontainer_step_download": "Завантажте LiveContainer+SideStore",
+    "install_livecontainer_step_install": "Підпишіть і встановіть LiveContainer+SideStore",
+    "install_livecontainer_step_pairing": "Виберіть файл сполучення",
+    "sideload_title": "Встановлення застосунку",
+    "sideload_step_install": "Підпишіть і встановіть застосунок"
+  },
+  "certificates": {
+    "manage": "Керувати сертифікатами",
+    "loading": "Завантаження сертифікатів...",
+    "loaded_success": "Сертифікати успішно завантажено!",
+    "failed_load": "Не вдалося завантажити сертифікати",
+    "revoking": "Відкликання сертифіката...",
+    "revoked_success": "Сертифікат успішно відкликано!",
+    "failed_revoke": "Не вдалося відкликати сертифікат: ",
+    "none_found": "Сертифікатів не знайдено.",
+    "name": "Назва",
+    "serial_number": "Серійний номер",
+    "machine_name": "Назва пристрою",
+    "machine_id": "ID пристрою",
+    "revoke": "Відкликати"
+  },
+  "app_ids": {
+    "manage": "Керувати ID застосунків",
+    "loading": "Завантаження ID застосунків...",
+    "loaded_success": "ID застосунків успішно завантажено!",
+    "failed_load": "Не вдалося завантажити ID застосунків",
+    "deleted_success": "ID застосунку успішно видалено!",
+    "failed_delete": "Помилка видалення ID застосунку",
+    "available": "Доступно App ID: {{available}}/{{max}}",
+    "none_found": "ID застосунків не знайдено.",
+    "name": "Назва",
+    "expiration": "Термін дії",
+    "id": "ID",
+    "identifier": "Ідентифікатор",
+    "never": "Ніколи"
+  },
+  "pairing": {
+    "manage": "Керувати файлом сполучення",
+    "loading_apps": "Завантаження застосунків...",
+    "apps_loaded_success": "Застосунки успішно завантажено!",
+    "failed_load_apps": "Не вдалося завантажити застосунки",
+    "placing_pairing_file": "Виберіть файл сполучення...",
+    "pairing_file_placed_success": "Файл сполучення успішно вибрано!",
+    "failed_place_pairing": "Не вдалося розмістити файл сполучення",
+    "loading_app": "Завантаження застосунку...",
+    "no_supported_apps_found": "Відповідних застосунків не знайдено.",
+    "name": "Назва",
+    "bundle_id": "ID пакета",
+    "place_pairing_file": "Виберіть файл сполучення",
+    "place": "Розмістити",
+    "advanced_export_title": "Додатково: експорт файлу сполучення",
+    "advanced_export_message": "Не рекомендується, якщо ви не знаєте, що робите. Натомість натисніть \"Розмістити\" навпроти застосунку, щоб автоматично передати його на пристрій. Ви впевнені, що все ще хочете експортувати файл сполучення?",
+    "exporting_pairing_file": "Експорт файлу сполучення...",
+    "pairing_file_exported_success": "Файл сполучення успішно експортовано!",
+    "failed_export_pairing_file": "Не вдалося експортувати файл сполучення",
+    "export_not_recommended": "Експорт (Не рекомендується)",
+    "refresh_installed_apps": "Повторно сканувати встановлені застосунки",
+    "place_all": "Розмістити в усіх застосунках"
+  },
+  "settings": {
+    "anisette_server": "Сервер Anisette:",
+    "custom_anisette_placeholder": "Користувацький сервер Anisette",
+    "custom_anisette": "Користувацький",
+    "use_custom_anisette": "Використати користувацький сервер Anisette",
+    "back_preset_servers": "Повернутися до серверів за замовчуванням",
+    "reset_anisette_title": "Скинути стан Anisette",
+    "reset_anisette_message": "Ви впевнені, що хочете скинути стан Anisette? Вам потрібно буде знову ввести код двоетапної автентифікації.",
+    "resetting_anisette_state": "Скидання стану Anisette...",
+    "anisette_state_reset_success": "Стан Anisette успішно скинуто",
+    "anisette_state_not_found": "Немає стану Anisette для скидання",
+    "failed_reset_anisette_state": "Не вдалося скинути стан Anisette",
+    "view_logs": "Переглянути журнали",
+    "logs": "Журнали",
+    "log_level": "Рівень ведення журналу:",
+    "no_logs_yet": "Журналів поки немає.",
+    "debug": "Налагодження",
+    "info": "Інформація",
+    "warn": "Попередження",
+    "error": "Помилка",
+    "language_hint": "Ви можете допомогти з перекладом <translation>тут</translation>.",
+    "delete_stored_rppairing": "Видалити файл сполучення",
+    "delete_stored_rppairing_message": "Ви впевнені, що хочете видалити файл сполучення для цього пристрою? Вам потрібно буде виконати сполучення заново.",
+    "deleting_stored_rppairing": "Видалення файлу сполучення...",
+    "stored_rppairing_deleted_success": "Файл сполучення успішно видалено!",
+    "failed_delete_stored_rppairing": "Не вдалося видалити файл сполучення",
+    "dont_use_keyring": "Не використовувати сховище ключів",
+    "dont_use_keyring_message": "Це знижує безпеку iloader, оскільки файли сполучення, стан Anisette та сертифікати зберігатимуться на диску. Вмикайте цю опцію лише якщо стандартне сховище ключів не працює і ви усвідомлюєте ризики."
+  },
+  "dialog": {
+    "confirm": "Підтвердити",
+    "cancel": "Закрити"
+  },
+  "error": {
+    "title": "Сталася помилка: {{msg}}",
+    "unknown": "Невідома",
+    "suggestions_heading": "Рекомендації",
+    "suggestions": {
+      "underage": [
+        "Ваш Apple ID може не підходити за віком для використання сервісів для розробників."
+      ],
+      "account_locked": [
+        "Без паніки! Зазвичай це відбувається після кількох невдалих спроб входу і цілком безпечно.",
+        "Перейдіть на ((link:https://iforgot.apple.com/)), щоб розблокувати обліковий запис."
+      ],
+      "auth": [
+        "Переконайтеся, що дані для входу правильні, і спробуйте ще раз (навіть якщо ви впевнені в них).",
+        "Якщо проблема не зникне, спробуйте використати інший Apple ID.",
+        "Двофакторна автентифікація через ключі безпеки (Security Key) не підтримується. Використовуйте Apple ID без 2FA або з підтвердженням через довірений пристрій."
+      ],
+      "download": [
+        "Завантажте SideStore вручну з ((link:https://github.com/SideStore/SideStore/releases)) і скористайтеся кнопкою \"Import IPA\" для встановлення."
+      ],
+      "house_arrest": [
+        "[ios::26.3] Переконайтеся, що на пристрої не встановлено бета-версію iOS 26.3 для розробників, оскільки в ній є баг із house arrest."
+      ],
+      "pairing": [
+        "Спробуйте перепідключити пристрій і повторити дію.",
+        "Переконайтеся, що на пристрої встановлено пароль розблокування.",
+        "Переконайтеся, що пристрій підключено через USB, а не через Wi-Fi."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows] Переконайтеся, що ((link:https://apple.co/ms:iTunes)) встановлено і він бачить ваш пристрій.",
+        "[platform::windows] Видаліть iTunes і Apple Mobile Device Support, потім встановіть застосунок \"Пристрої Apple\" з Microsoft Store.",
+        "[platform::linux] Переконайтеся, що сервіс usbmuxd встановлено і запущено."
+      ],
+      "trust": [
+        "Розблокуйте пристрій, перейдіть на головний екран і прийміть запит кнопкою \"Довіряти\", якщо він з'явиться."
+      ],
+      "device_coms": [
+        "Переконайтеся, що пристрій правильно підключено до комп'ютера.",
+        "Відключіть і знову підключіть пристрій. Якщо проблема залишилася, спробуйте інший USB-порт або кабель."
+      ],
+      "not_logged_in": ["Спочатку увійдіть у свій Apple ID."],
+      "no_device_selected": ["Виберіть пристрій, перш ніж продовжити."],
+      "anisette": [
+        "Переконайтеся, що комп'ютер підключено до інтернету.",
+        "Змініть сервер Anisette. Спробуйте кілька різних серверів.",
+        "Перевірте, чи відкривається посилання ((link:{{anisetteServerUrl}})) у браузері."
+      ],
+      "keyring": [
+        "Спробуйте увімкнути опцію \"Не використовувати сховище ключів\" в налаштуваннях. Зважте, що це менш безпечно."
+      ],
+      "misc": [
+        "Спробуйте ще раз. Перезавантаження застосунку, комп'ютера або телефона також може допомогти."
+      ],
+      "admin": [
+        "Спробуйте запустити застосунок з підвищеними привілеями (від імені адміністратора або root)."
+      ],
+      "filesystem": [
+        "Переконайтеся, що iloader має права на читання та запис файлів у системі."
+      ],
+      "not_enough_app_ids": [
+        "У вас недостатньо вільних App ID для встановлення цього застосунку.",
+        "Зачекайте 7 днів, поки термін дії старих App ID закінчиться (їх не можна видалити раніше), і спробуйте знову.",
+        "Встановлення через SideStore іноді дозволяє використати менше App ID, спробуйте цей спосіб."
+      ],
+      "max_apps": [
+        "З безкоштовним Apple ID можна встановити не більше 3 сторонніх застосунків одночасно.",
+        "Видаліть інші встановлені застосунки, щоб звільнити слоти.",
+        "Застосунки із завершеним терміном дії також враховуються в ліміті з 3 застосунків."
+      ]
+    },
+    "support_message": "Якщо помилка не зникає, натисніть \"Скопіювати до буфера обміну\" і надішліть скопійовану помилку в <discord>Discord</discord> або <github>GitHub issue</github> для вирішення проблеми."
+  },
+  "update": {
+    "new_version_available": "Доступна нова версія: {{version}}. Оновити?",
+    "updating": "Оновлення...",
+    "downloaded_restarting": "Оновлення завантажено! Перезавантаження застосунку...",
+    "failed_download": "Не вдалося завантажити оновлення: {{error}}"
+  }
+}

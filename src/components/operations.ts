@@ -88,3 +88,33 @@ export const sideloadOperation = {
     },
   ],
 };
+
+export const refreshSideStoreAppOperation: Operation = {
+  id: "refresh_sidestore_app",
+  titleKey: "operations.refresh_sidestore_app_title",
+  successTitleKey: "operations.refresh_sidestore_app_success_title",
+  successMessageKey: "operations.refresh_sidestore_app_success_message",
+  steps: [
+    {
+      id: "refresh",
+      titleKey: "operations.refresh_sidestore_app_step_refresh",
+    },
+  ],
+};
+
+export const refreshAllSideStoreAppsOperation: Operation = {
+  id: "refresh_all_sidestore_apps",
+  titleKey: "operations.refresh_all_sidestore_apps_title",
+  successTitleKey: "operations.refresh_all_sidestore_apps_success_title",
+  successMessageKey: "operations.refresh_all_sidestore_apps_success_message",
+  steps: [
+    {
+      id: "collect",
+      titleKey: "operations.refresh_all_sidestore_apps_step_collect",
+    },
+    {
+      id: "refresh",
+      titleKey: "operations.refresh_all_sidestore_apps_step_refresh",
+    },
+  ],
+};

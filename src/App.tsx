@@ -21,6 +21,7 @@ import { Certificates } from "./pages/Certificates";
 import { AppIds } from "./pages/AppIds";
 import { Settings } from "./pages/Settings";
 import { Pairing } from "./pages/Pairing";
+import { SideStoreApps } from "./pages/SideStoreApps";
 import { getVersion } from "@tauri-apps/api/app";
 import { checkForUpdates } from "./update";
 import logo from "./iloader.svg";
@@ -37,7 +38,7 @@ function App() {
   const [loggedInAs, setLoggedInAs] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] = useState<DeviceInfo | null>(null);
   const [openModal, setOpenModal] = useState<
-    null | "certificates" | "appids" | "pairing"
+    null | "certificates" | "appids" | "pairing" | "sidestore_apps"
   >(null);
   const [version, setVersion] = useState<string>("");
 
@@ -168,6 +169,10 @@ function App() {
         event.preventDefault();
         if (!ensuredLoggedIn()) return;
         setOpenModal("appids");
+      } else if (event.shiftKey && key === "r") {
+        event.preventDefault();
+        if (!ensuredLoggedIn() || !ensureSelectedDevice()) return;
+        setOpenModal("sidestore_apps");
       } else if (!event.shiftKey && key === "r") {
         event.preventDefault();
         refreshDevicesRef.current?.();
@@ -239,6 +244,18 @@ function App() {
               >
                 {t("app.manage_pairing_file")}{" "}
                 <span aria-hidden="true">{shortcutLabel("⌘P", "Ctrl+P")}</span>
+              </button>
+              <button
+                className="workspace-list-item"
+                onClick={() => {
+                  if (!ensuredLoggedIn() || !ensureSelectedDevice()) return;
+                  setOpenModal("sidestore_apps");
+                }}
+              >
+                {t("app.sidestore_apps")}{" "}
+                <span aria-hidden="true">
+                  {shortcutLabel("⌘⇧R", "Ctrl+Shift+R")}
+                </span>
               </button>
               <button
                 className="workspace-list-item"
@@ -415,6 +432,12 @@ function App() {
       </Modal>
       <Modal isOpen={openModal === "pairing"} close={() => setOpenModal(null)}>
         <Pairing />
+      </Modal>
+      <Modal
+        isOpen={openModal === "sidestore_apps"}
+        close={() => setOpenModal(null)}
+      >
+        <SideStoreApps setOperationState={setOperationState} />
       </Modal>
     </main>
   );

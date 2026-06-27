@@ -11,6 +11,7 @@ mod secure_storage;
 mod error;
 mod logging;
 mod operation;
+mod refresh;
 
 use crate::{
     account::{
@@ -23,6 +24,10 @@ use crate::{
     pairing::{
         delete_stored_rppairing, export_pairing_cmd, has_stored_rppairing, installed_pairing_apps,
         place_pairing_cmd,
+    },
+    refresh::{
+        list_sidestore_apps, refresh_all_sidestore_apps_operation,
+        refresh_sidestore_app_operation,
     },
     secure_storage::{force_disable_keyring, keyring_available},
     sideload::{SideloaderMutex, install_sidestore_operation, sideload_operation},
@@ -126,6 +131,9 @@ pub fn run() {
             force_disable_keyring,
             cancel_pairing,
             has_stored_rppairing,
+            list_sidestore_apps,
+            refresh_sidestore_app_operation,
+            refresh_all_sidestore_apps_operation,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

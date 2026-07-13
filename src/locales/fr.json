@@ -78,18 +78,22 @@
     "max_certs_desc": "iloader révoquera vos certificats existants et en générera un nouveau.",
     "hide_certificate_list": "Masquer la liste des certificats",
     "choose_what_to_revoke": "Choisir quoi révoquer",
-    "continue": "Continuer"
+    "continue": "Continuer",
+    "no_keyring_available": "Impossible d'enregistrer les identifiants sur cet appareil."
   },
   "device": {
     "title": "iDevice",
-    "failed_select_prefix": "Échec de la sélection de l'appareil : ",
     "loading_devices": "Chargement des appareils...",
     "no_devices_found": "Aucun appareil trouvé",
     "found_device": "Appareil trouvé",
     "found_devices": "Appareils trouvés",
     "unable_load_devices_prefix": "Impossible de charger les appareils : ",
     "no_devices_found_period": "Aucun appareil trouvé.",
-    "selected": "Sélectionné"
+    "selected": "Sélectionné",
+    "pairing_in_progress_header": "Jumelage avec {{device}} en cours...",
+    "pairing_in_progress_hint": "Veuillez déverrouiller votre appareil et appuyer sur \"Faire confiance\", puis saisir votre code si demandé.",
+    "pairing_cancel": "Annuler",
+    "failed_select": "Échec de la sélection de l'appareil"
   },
   "operation": {
     "failed": "L'opération a échoué.",
@@ -163,7 +167,8 @@
     "pairing_file_exported_success": "Fichier de jumelage exporté avec succès !",
     "failed_export_pairing_file": "Échec de l'exportation du fichier de jumelage",
     "export_not_recommended": "Exporter (Non recommandé)",
-    "refresh_installed_apps": "Actualiser les applications installées"
+    "refresh_installed_apps": "Actualiser les applications installées",
+    "place_all": "Placer dans toutes les applications"
   },
   "settings": {
     "anisette_server": "Serveur Anisette :",
@@ -175,6 +180,7 @@
     "reset_anisette_message": "Êtes-vous sûr de vouloir réinitialiser l'état d'Anisette ? Vous devrez saisir à nouveau votre code 2FA.",
     "resetting_anisette_state": "Réinitialisation de l'état d'Anisette...",
     "anisette_state_reset_success": "État d'Anisette réinitialisé avec succès",
+    "anisette_state_not_found": "Aucun état Anisette à réinitialiser",
     "failed_reset_anisette_state": "Échec de la réinitialisation de l'état d'Anisette",
     "view_logs": "Voir les journaux",
     "logs": "Journaux",
@@ -184,7 +190,14 @@
     "info": "Info",
     "warn": "Avertissement",
     "error": "Erreur",
-    "language_hint": "Vous pouvez aider à la traduction <translation>ici</translation>."
+    "language_hint": "Vous pouvez aider à la traduction <translation>ici</translation>.",
+    "delete_stored_rppairing": "Supprimer le jumelage enregistré",
+    "delete_stored_rppairing_message": "Êtes-vous sûr de vouloir supprimer le fichier de jumelage enregistré pour cet appareil ? Vous devrez le jumeler à nouveau.",
+    "deleting_stored_rppairing": "Suppression du jumelage enregistré...",
+    "stored_rppairing_deleted_success": "Jumelage enregistré supprimé avec succès !",
+    "failed_delete_stored_rppairing": "Échec de la suppression du jumelage enregistré",
+    "dont_use_keyring": "Ne pas utiliser le trousseau",
+    "dont_use_keyring_message": "Cela rend iloader moins sécurisé en stockant les fichiers de jumelage, l'état d'Anisette et les certificats sur le disque. N'activez ceci que si le stockage par défaut via le trousseau ne fonctionne pas et que vous comprenez les risques encourus."
   },
   "dialog": {
     "confirm": "Confirmer",
@@ -193,6 +206,75 @@
   "error": {
     "title": "Une erreur est survenue : {{msg}}",
     "unknown": "Inconnu",
+    "suggestions_heading": "Suggestions",
+    "suggestions": {
+      "underage": [
+        "Votre identifiant Apple est peut-être en dessous de l'âge requis pour utiliser les services développeur."
+      ],
+      "account_locked": [
+        "Pas de panique ! Cela survient généralement après plusieurs tentatives de connexion échouées, mais c'est totalement sans danger.",
+        "Rendez-vous sur ((link:https://iforgot.apple.com/)) pour déverrouiller votre compte."
+      ],
+      "auth": [
+        "Vérifiez que vos identifiants sont corrects et réessayez, même s'ils semblaient corrects.",
+        "Si le problème persiste, essayez d'utiliser un autre identifiant Apple.",
+        "La 2FA par clé de sécurité n'est pas prise en charge. Si possible, utilisez un identifiant Apple sans 2FA ou avec la 2FA par appareil de confiance."
+      ],
+      "download": [
+        "Téléchargez SideStore manuellement depuis ((link:https://github.com/SideStore/SideStore/releases)) et utilisez le bouton \"Importer IPA\" pour l'installer."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Assurez-vous que votre appareil n'utilise pas une bêta développeur d'iOS 26.3, car elle contient un bug lié au house arrest"
+      ],
+      "pairing": [
+        "Essayez de reconnecter l'appareil puis relancez l'action.",
+        "Assurez-vous qu'un code d'accès est configuré sur votre appareil.",
+        "Assurez-vous que votre appareil est connecté en USB, et non en sans fil."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]Assurez-vous d'avoir ((link:https://apple.co/ms:iTunes)) installé et vérifiez qu'il détecte bien votre appareil.",
+        "[platform::windows]Désinstallez iTunes et Apple Mobile Device Support, puis installez \"Apple Devices\" depuis le Microsoft Store.",
+        "[platform::linux]Assurez-vous qu'usbmuxd est installé et en cours d'exécution."
+      ],
+      "trust": [
+        "Déverrouillez votre appareil, retournez à l'écran d'accueil, et acceptez les demandes de confiance qui apparaissent."
+      ],
+      "device_coms": [
+        "Assurez-vous que votre appareil est correctement connecté à votre ordinateur.",
+        "Débranchez puis rebranchez l'appareil. Si le problème persiste, essayez un autre port USB et un autre câble."
+      ],
+      "not_logged_in": ["Connectez-vous d'abord à votre identifiant Apple."],
+      "no_device_selected": ["Sélectionnez un appareil avant de continuer."],
+      "anisette": [
+        "Assurez-vous que votre ordinateur est connecté à internet.",
+        "Changez de serveur Anisette. Essayez plusieurs serveurs différents.",
+        "Assurez-vous de pouvoir accéder à ((link:{{anisetteServerUrl}})) depuis un navigateur."
+      ],
+      "keyring": [
+        "Essayez d'activer \"Ne pas utiliser le trousseau\" dans les paramètres pour contourner ce problème. Notez que cela est moins sécurisé."
+      ],
+      "misc": [
+        "Réessayez. Redémarrer l'application, votre ordinateur et/ou votre téléphone peut également aider."
+      ],
+      "admin": [
+        "Essayez de lancer l'application avec des permissions élevées (en tant qu'administrateur/root)."
+      ],
+      "filesystem": [
+        "Assurez-vous qu'iloader dispose des permissions nécessaires pour lire et écrire des fichiers sur votre système."
+      ],
+      "not_enough_app_ids": [
+        "Vous ne disposez pas de suffisamment d'identifiants d'application pour installer cette application.",
+        "Attendez que des identifiants d'application expirent après 7 jours (ils ne peuvent pas être supprimés plus tôt), puis réessayez.",
+        "Installer des applications depuis SideStore permet parfois d'utiliser moins d'identifiants d'application, essayez donc de l'installer depuis là-bas."
+      ],
+      "max_apps": [
+        "Vous ne pouvez avoir que 3 applications installées via sideload en même temps avec un identifiant Apple gratuit.",
+        "Supprimez d'autres applications installées via sideload pour libérer de la place pour celle-ci.",
+        "Les applications expirées comptent toujours dans la limite de 3 applications."
+      ]
+    },
     "support_message": "Si le problème persiste, appuyez sur \"Copier dans le presse-papiers\" et envoyez l'erreur copiée sur <discord>Discord</discord> ou dans un <github>ticket GitHub</github> pour obtenir de l'aide."
   },
   "update": {

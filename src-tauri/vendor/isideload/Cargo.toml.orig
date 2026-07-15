@@ -1,0 +1,60 @@
+[package]
+name = "isideload"
+description = "Sideload iOS/iPadOS applications"
+license = "MIT"
+authors = ["Nicholas Sharp <nab@nabdev.me>"]
+version = "0.2.22"
+edition = "2024"
+repository = "https://github.com/nab138/isideload"
+documentation = "https://docs.rs/isideload"
+keywords = ["ios", "sideload"]
+readme = "../README.md"
+
+[features]
+default = ["install", "keyring-storage"]
+install = ["dep:idevice"]
+keyring-storage = ["dep:keyring"]
+fs-storage = []
+
+# Unfortunately, dependencies are kinda a mess rn, since this requires a beta version of the srp crate.
+# Once that becomes stable, hopefuly duplicate dependencies should clean up.\
+# Until then, I will wince in pain every time I see how long the output of cargo tree -d is.
+[dependencies]
+idevice = { version = "0.1.58", optional = true, features = ["afc", "installation_proxy"]}
+plist = "1.8"
+plist-macro = "0.1.4"
+reqwest = { version = "0.13.2", features = ["json", "gzip"] }
+thiserror = "2.0.17"
+async-trait = "0.1.89"
+serde = "1.0.228"
+rand = "0.10.0"
+uuid = {version = "1.20.0", features = ["v4"] }
+tracing = "0.1.44"
+tokio-tungstenite = { version = "0.29.0", features = ["rustls-tls-webpki-roots"] }
+rootcause = "0.12.0"
+futures-util = "0.3.31"
+serde_json = "1.0.149"
+base64 = "0.22.1"
+hex = "0.4.3"
+sha2 = "0.11.0"
+srp = "0.7.0-rc.3"
+pbkdf2 = "0.13.0"
+hmac = "0.13.0"
+cbc = { version = "0.2.0", features = ["alloc"] }
+aes = "0.9.0"
+aes-gcm = "0.11.0-rc.3"
+rsa = { version = "0.10.0-rc.17" }
+tokio = { version = "1.49.0", features = ["fs", "rt-multi-thread"] }
+keyring = { version = "3.6.3", features = ["apple-native", "linux-native-sync-persistent", "windows-native"], optional = true }
+x509-certificate = { version = "0.25.0", package = "isideload-x509-certificate" }
+rcgen = { version = "0.14.7", default-features = false, features = ["aws_lc_rs", "pem"] }
+p12-keystore = { version = "0.3.0-rc4", package = "isideload-p12-keystore" }
+zip = { version = "8.3", default-features = false, features = ["deflate"] }
+apple-codesign = { version = "0.29.4", package = "isideload-apple-codesign" }
+sha1 = "0.11.0"
+
+# There is a bug in rustls-platform-verifier that causes an invalid certificate error with apple's root cert.
+# It has been fixed already but I am waiting for a new release before I can update the dependency.
+# Using native-tls avoids the issue.
+[target.'cfg(windows)'.dependencies]
+reqwest = { version = "0.13.2", features = ["json", "gzip", "native-tls"] }

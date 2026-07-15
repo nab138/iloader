@@ -178,6 +178,11 @@ function App() {
     return () => window.removeEventListener("keydown", handler);
   }, [platform, ensureSelectedDevice, ensuredLoggedIn]);
 
+  // A Vision Pro currently has only the patched stable SideStore build (there are no
+  // visionOS nightly / LiveContainer builds yet), so those installers are disabled for
+  // it. Import IPA still works over the tunnel.
+  const isVisionSelected = selectedDevice?.transport === "vision";
+
   return (
     <main className="workspace">
       <header className="workspace-header">
@@ -301,17 +306,30 @@ function App() {
           <section className="workspace-section">
             <div className="section-header">
               <p className="section-label">{t("app.installers")}</p>
-              <span className="section-hint">{t("app.choose_build")}</span>
+              <span className="section-hint">
+                {isVisionSelected
+                  ? t("app.vision_stable_only")
+                  : t("app.choose_build")}
+              </span>
             </div>
             <GlassCard className="panel">
               <div className="action-row single-row">
                 <button
                   onClick={() => {
                     if (!ensuredLoggedIn() || !ensureSelectedDevice()) return;
-                    startOperation(installSideStoreOperation, {
-                      nightly: false,
-                      liveContainer: false,
-                    }).catch((e) => {
+                    startOperation(
+                      isVisionSelected
+                        ? {
+                            ...installSideStoreOperation,
+                            successMessageKey:
+                              "operations.install_sidestore_success_message_vision",
+                          }
+                        : installSideStoreOperation,
+                      {
+                        nightly: false,
+                        liveContainer: false,
+                      },
+                    ).catch((e) => {
                       console.log(e.type);
                       console.error(e.message);
                     });
@@ -320,6 +338,8 @@ function App() {
                   {t("app.sidestore_stable")}
                 </button>
                 <button
+                  disabled={isVisionSelected}
+                  title={isVisionSelected ? t("app.vision_stable_only") : undefined}
                   onClick={() => {
                     if (!ensuredLoggedIn() || !ensureSelectedDevice()) return;
                     startOperation(installSideStoreOperation, {
@@ -336,10 +356,19 @@ function App() {
                 <button
                   onClick={() => {
                     if (!ensuredLoggedIn() || !ensureSelectedDevice()) return;
-                    startOperation(installLiveContainerOperation, {
-                      nightly: false,
-                      liveContainer: true,
-                    }).catch((e) => {
+                    startOperation(
+                      isVisionSelected
+                        ? {
+                            ...installLiveContainerOperation,
+                            successMessageKey:
+                              "operations.install_livecontainer_success_message_vision",
+                          }
+                        : installLiveContainerOperation,
+                      {
+                        nightly: false,
+                        liveContainer: true,
+                      },
+                    ).catch((e) => {
                       console.log(e.type);
                       console.error(e.message);
                     });
@@ -348,6 +377,8 @@ function App() {
                   {t("app.livecontainer_sidestore_stable")}
                 </button>
                 <button
+                  disabled={isVisionSelected}
+                  title={isVisionSelected ? t("app.vision_stable_only") : undefined}
                   onClick={() => {
                     if (!ensuredLoggedIn() || !ensureSelectedDevice()) return;
                     startOperation(installLiveContainerOperation, {

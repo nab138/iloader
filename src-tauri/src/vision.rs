@@ -1,0 +1,707 @@
+//! Apple Vision Pro over Wi-Fi — a parallel device path that does NOT go through
+//! usbmux. A Wi-Fi Vision Pro is not carried by usbmuxd, so it can't be reached via
+//! `UsbmuxdProvider` like an iPhone/iPad. Instead we:
+//!
+//!   1. discover it over mDNS (`_remotepairing-manual-pairing._tcp`),
+//!   2. first-time pair with the 6-digit code shown on the headset (`vision_pair`),
+//!   3. reach its install services over an RP tunnel:
+//!        pair-verify on RSD :49152 -> create_tcp_listener -> TLS-PSK CDTunnel
+//!        -> software TCP stack (Adapter) -> RSD handshake -> RSD services.
+//!
+//! This is lifted from the standalone `vision-sideload` CLI (its `vision_net.rs`,
+//! `install.rs`, `place.rs`, `pair.rs`), which was validated end-to-end against a
+//! real Vision Pro. The iOS/iPad path in `device.rs` is unchanged.
+
+use std::collections::HashMap;
+use std::future::Future;
+use std::hash::{Hash, Hasher};
+use std::path::Path;
+use std::pin::Pin;
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::Duration;
+
+use idevice::RsdService;
+use idevice::afc::AfcClient;
+use idevice::afc::opcode::AfcFopenMode;
+use idevice::house_arrest::HouseArrestClient;
+use idevice::installation_proxy::InstallationProxyClient;
+use idevice::remote_pairing::{
+    RemotePairingClient, RpPairingFile, RpPairingSocket, connect_tls_psk_tunnel_native,
+};
+use idevice::rsd::RsdHandshake;
+use idevice::tcp::adapter::Adapter;
+use idevice::tcp::handle::AdapterHandle;
+use mdns_sd::{ResolvedService, ServiceDaemon, ServiceEvent};
+use tokio::net::TcpStream;
+
+use tauri::{AppHandle, Emitter, Listener, State, Window};
+use tokio_util::sync::CancellationToken;
+
+use crate::device::{
+    DeviceInfo, DeviceInfoMutex, DeviceInfoWithPairing, DeviceTransport, PairingCancelToken,
+};
+use crate::error::AppError;
+use crate::pairing::{delete_pairing_data, retrieve_pairing_data, store_pairing_data};
+
+/// Manual-pairing service — INITIAL pairing only (pops the headset code). A Vision Pro
+/// advertises this ONLY while it is NOT yet paired to us; once paired it stops.
+pub const MANUAL_PAIRING_SERVICE: &str = "_remotepairing-manual-pairing._tcp.local.";
+/// RemotePairing (RSD) service — a PAIRED Vision Pro advertises this (SRV target is the
+/// device hostname on port 49152). Browsing it is how we keep listing a VP after it's
+/// paired (so users can reinstall). iPhones advertise it too, so we filter by hostname.
+pub const REMOTE_PAIRING_SERVICE: &str = "_remotepairing._tcp.local.";
+/// The port pair-verify + tunnel creation live on (the VP's RSD). Stable across the
+/// session; NOT the (dynamic) manual-pairing port and NOT 65000.
+pub const RSD_PORT: u16 = 49152;
+
+fn ap_err(context: &str, e: impl std::fmt::Debug) -> AppError {
+    AppError::RemotePairing(format!("{context}: {e:?}"))
+}
+
+/// A Vision Pro discovered over mDNS.
+#[derive(Clone, Debug)]
+pub struct Discovered {
+    pub name: String,
+    pub ip: String,
+    /// The manual-pairing port, present only when the manual-pairing service is being
+    /// advertised (i.e. the device is not yet paired to us and CAN be paired now). A
+    /// paired VP has `None` here — it's reached via the stored pairing over the RSD.
+    pub manual_pairing_port: Option<u16>,
+}
+
+impl Discovered {
+    /// A stable synthetic device id derived from the canonical name, kept in a high
+    /// range so it never collides with usbmux's small integer device ids. Using the
+    /// canonical form keeps the id stable across the manual-pairing (friendly name)
+    /// and remotepairing (hostname) views of the same device.
+    pub fn synthetic_id(&self) -> u32 {
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        canonical(&self.name).hash(&mut h);
+        0x5100_0000u32 | (h.finish() as u32 & 0x00FF_FFFF)
+    }
+}
+
+/// Canonical device identity: lowercase, alphanumerics only. This makes the two mDNS
+/// views of the same Vision Pro agree — the manual-pairing service reports the friendly
+/// name ("Austin's Apple Vision Pro") while the remotepairing service reports the
+/// hostname ("Austins-AppleVisionPro"); both canonicalize to "austinsapplevisionpro".
+fn canonical(name: &str) -> String {
+    name.chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .flat_map(|c| c.to_lowercase())
+        .collect()
+}
+
+/// The pairing-storage key under which a Vision Pro's RP pairing file is cached. Keyed
+/// on the canonical name so a paired VP (discovered by hostname) resolves to the same
+/// key it was stored under at pair time (discovered by friendly name).
+pub fn pairing_storage_key(name: &str) -> String {
+    format!("vision_pairing_{}", canonical(name))
+}
+
+/// Friendly instance name from a manual-pairing fullname
+/// ("Austin's Apple Vision Pro._remotepairing-manual-pairing._tcp.local." → the name).
+fn instance_name(fullname: &str) -> String {
+    fullname
+        .split("._remotepairing")
+        .next()
+        .unwrap_or("Vision Pro")
+        .replace('\u{a0}', " ")
+        .to_string()
+}
+
+/// The device label from an mDNS hostname ("Austins-AppleVisionPro.local." →
+/// "Austins AppleVisionPro"). Used for the remotepairing view, which carries only a
+/// UUID instance name, not the friendly name.
+fn hostname_label(hostname: &str) -> String {
+    hostname
+        .trim_end_matches('.')
+        .strip_suffix(".local")
+        .unwrap_or(hostname)
+        .replace(['-', '_'], " ")
+}
+
+/// True if a hostname looks like a Vision Pro (so we don't list iPhones, which also
+/// advertise `_remotepairing._tcp` and are handled over usbmux).
+fn is_vision_hostname(hostname: &str) -> bool {
+    let h = hostname.to_lowercase();
+    h.contains("visionpro") || h.contains("realitydevice")
+}
+
+/// A persistent mDNS browser. One long-lived `ServiceDaemon` browses BOTH the
+/// manual-pairing service (unpaired VPs — pops the code) and the remotepairing service
+/// (already-paired VPs), for the app's whole lifetime, keeping the current Vision Pro
+/// set up to date.
+///
+/// Persistent (not one-shot) browsing matters twice over: a cold one-shot browse races
+/// the multicast round-trip and returns nothing on first launch, and — since a VP stops
+/// advertising manual-pairing once paired — only continuous browsing of BOTH services
+/// keeps a paired VP visible so users can reinstall.
+struct VisionBrowser {
+    devices: Arc<Mutex<HashMap<String, Discovered>>>,
+    // Kept alive for the process lifetime; `None` if mDNS was unavailable, in which
+    // case `devices` simply stays empty (no Vision Pros) rather than erroring.
+    _daemon: Option<ServiceDaemon>,
+}
+
+impl VisionBrowser {
+    fn snapshot(&self) -> Vec<Discovered> {
+        self.devices.lock().unwrap().values().cloned().collect()
+    }
+
+    /// The named device if known, else any discovered device (single-VP convenience).
+    fn get(&self, name: &str) -> Option<Discovered> {
+        let key = canonical(name);
+        let guard = self.devices.lock().unwrap();
+        guard
+            .get(&key)
+            .cloned()
+            .or_else(|| guard.values().next().cloned())
+    }
+}
+
+static BROWSER: OnceLock<VisionBrowser> = OnceLock::new();
+
+fn browser() -> &'static VisionBrowser {
+    BROWSER.get_or_init(|| {
+        let daemon = ServiceDaemon::new().ok();
+        let devices: Arc<Mutex<HashMap<String, Discovered>>> = Arc::new(Mutex::new(HashMap::new()));
+        let by_fullname: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
+
+        if let Some(daemon) = &daemon {
+            for service in [MANUAL_PAIRING_SERVICE, REMOTE_PAIRING_SERVICE] {
+                if let Ok(recv) = daemon.browse(service) {
+                    let is_manual = service == MANUAL_PAIRING_SERVICE;
+                    let devices_bg = devices.clone();
+                    let by_fullname_bg = by_fullname.clone();
+                    // Blocking receive on a dedicated thread per service: no async
+                    // runtime needed, so this works from setup or from a command.
+                    std::thread::spawn(move || {
+                        while let Ok(event) = recv.recv() {
+                            match event {
+                                ServiceEvent::ServiceResolved(info) => {
+                                    if let Some((key, dev)) = parse_resolved(&info, is_manual) {
+                                        by_fullname_bg
+                                            .lock()
+                                            .unwrap()
+                                            .insert(info.get_fullname().to_string(), key.clone());
+                                        merge_device(&devices_bg, key, dev);
+                                    }
+                                }
+                                ServiceEvent::ServiceRemoved(_, fullname) => {
+                                    let key = by_fullname_bg.lock().unwrap().remove(&fullname);
+                                    if let Some(key) = key {
+                                        let still_present = by_fullname_bg
+                                            .lock()
+                                            .unwrap()
+                                            .values()
+                                            .any(|k| *k == key);
+                                        if !still_present {
+                                            devices_bg.lock().unwrap().remove(&key);
+                                        }
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        // `by_fullname` isn't stored on the struct: the browse threads (which run for
+        // the process lifetime) hold their own `Arc` clones, so the shared map stays
+        // alive without the struct holding a reference it never reads.
+        VisionBrowser {
+            devices,
+            _daemon: daemon,
+        }
+    })
+}
+
+/// Turn a resolved mDNS record into `(device key, Discovered)`, or `None` if it isn't a
+/// Vision Pro we can use.
+fn parse_resolved(info: &ResolvedService, is_manual: bool) -> Option<(String, Discovered)> {
+    let addr = info.get_addresses_v4().into_iter().next()?;
+    if is_manual {
+        // Manual-pairing: friendly name from the fullname, dynamic pairing port.
+        let name = instance_name(info.get_fullname());
+        Some((
+            canonical(&name),
+            Discovered {
+                name,
+                ip: addr.to_string(),
+                manual_pairing_port: Some(info.get_port()),
+            },
+        ))
+    } else {
+        // RemotePairing: iPhones advertise it too, so filter to Vision Pro hostnames.
+        let hostname = info.get_hostname();
+        if !is_vision_hostname(hostname) {
+            return None;
+        }
+        let name = hostname_label(hostname);
+        Some((
+            canonical(&name),
+            Discovered {
+                name,
+                ip: addr.to_string(),
+                manual_pairing_port: None,
+            },
+        ))
+    }
+}
+
+/// Insert/refresh a device, preserving a manual-pairing port if a concurrent
+/// remotepairing record (which has none) would otherwise clobber it.
+fn merge_device(devices: &Arc<Mutex<HashMap<String, Discovered>>>, key: String, mut dev: Discovered) {
+    let mut guard = devices.lock().unwrap();
+    if dev.manual_pairing_port.is_none()
+        && let Some(existing) = guard.get(&key)
+    {
+        dev.manual_pairing_port = existing.manual_pairing_port;
+    }
+    guard.insert(key, dev);
+}
+
+/// Start the persistent Vision Pro browser at app launch so the multicast group is
+/// warm well before the first device-list refresh. Idempotent.
+pub fn start_discovery() {
+    let _ = browser();
+}
+
+/// Poll the persistent browser's warm set until it's non-empty or the (short) budget
+/// runs out. Warm calls return immediately; only a cold first call after launch waits.
+async fn snapshot_soon() -> Vec<Discovered> {
+    let b = browser();
+    let mut snap = b.snapshot();
+    for _ in 0..16 {
+        if !snap.is_empty() {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(150)).await;
+        snap = b.snapshot();
+    }
+    snap
+}
+
+/// A live tunnel to a paired Vision Pro, over which RSD services can be opened.
+pub struct VisionSession {
+    pub adapter: AdapterHandle,
+    pub handshake: RsdHandshake,
+}
+
+impl VisionSession {
+    /// Establish the tunnel to `ip` using the RP pairing file bytes.
+    pub async fn connect(ip: &str, pairing: &[u8]) -> Result<Self, AppError> {
+        let mut pf = RpPairingFile::from_bytes(pairing)
+            .map_err(|e| AppError::RemotePairing(format!("Invalid pairing file: {e:?}")))?;
+
+        // 1. pair-verify on the RSD to derive the tunnel key.
+        let s1 = TcpStream::connect((ip, RSD_PORT))
+            .await
+            .map_err(|e| ap_err(&format!("connect {ip}:{RSD_PORT} (RSD)"), e))?;
+        let mut client = RemotePairingClient::new(RpPairingSocket::new(s1), "iloader");
+        client
+            .connect(&mut pf, || async { "000000".to_string() })
+            .await
+            .map_err(|e| {
+                AppError::RemotePairing(format!(
+                    "pair-verify failed (is the Vision Pro still paired?): {e:?}"
+                ))
+            })?;
+        let key = client.encryption_key().to_vec();
+
+        // 2. ask the device to open a tunnel listener, connect + TLS-PSK.
+        let tport = client
+            .create_tcp_listener()
+            .await
+            .map_err(|e| ap_err("create tunnel listener", e))?;
+        let s2 = TcpStream::connect((ip, tport))
+            .await
+            .map_err(|e| ap_err(&format!("connect tunnel {ip}:{tport}"), e))?;
+        let tunnel = connect_tls_psk_tunnel_native(s2, &key)
+            .await
+            .map_err(|e| ap_err("TLS-PSK tunnel", e))?;
+        let info = tunnel.info.clone();
+
+        // 3. software TCP stack over the tunnel.
+        let our_ip = info
+            .client_address
+            .parse()
+            .map_err(|e| ap_err("client ip", e))?;
+        let their_ip = info
+            .server_address
+            .parse()
+            .map_err(|e| ap_err("server ip", e))?;
+        let mut adapter = Adapter::new(Box::new(tunnel.into_inner()), our_ip, their_ip);
+        adapter.set_mss((info.mtu as usize).saturating_sub(60));
+        let mut adapter = adapter.to_async_handle();
+
+        // 4. RSD handshake -> service map.
+        let rsd_stream = adapter
+            .connect(info.server_rsd_port)
+            .await
+            .map_err(|e| ap_err("connect RSD over tunnel", e))?;
+        let handshake = RsdHandshake::new(rsd_stream)
+            .await
+            .map_err(|e| ap_err("RSD handshake", e))?;
+
+        Ok(Self { adapter, handshake })
+    }
+
+    /// Open an RSD service (e.g. `InstallationProxyClient`, `AfcClient`) over the tunnel.
+    pub async fn service<S: RsdService>(&mut self) -> Result<S, AppError> {
+        S::connect_rsd(&mut self.adapter, &mut self.handshake)
+            .await
+            .map_err(|e| ap_err(&format!("connect RSD service {}", S::rsd_service_name()), e))
+    }
+
+    /// The device UDID, read from the RSD handshake properties.
+    pub fn udid(&self) -> Result<String, AppError> {
+        self.handshake
+            .properties
+            .get("UniqueDeviceID")
+            .and_then(|v| v.as_string())
+            .map(str::to_string)
+            .ok_or_else(|| {
+                AppError::RemotePairing("could not read the device UDID over RSD".into())
+            })
+    }
+}
+
+/// Open a short-lived tunnel just to read the device UDID (needed to register the VP
+/// with the developer account before signing). Kept separate so it can be dropped
+/// before the network-bound signing that follows.
+pub async fn read_udid(ip: &str, pairing: &[u8]) -> Result<String, AppError> {
+    VisionSession::connect(ip, pairing).await?.udid()
+}
+
+/// Upload a signed `.app` bundle to PublicStaging over AFC, then install it via
+/// installation_proxy — all over the RP tunnel. `progress` receives 0..=100.
+pub async fn install_app(
+    session: &mut VisionSession,
+    app_path: &Path,
+    progress: impl Fn(u64),
+) -> Result<(), AppError> {
+    let mut afc = session.service::<AfcClient>().await?;
+
+    let name = app_path
+        .file_name()
+        .ok_or_else(|| AppError::RemotePairing("app path has no final component".into()))?
+        .to_string_lossy()
+        .to_string();
+    let dir = format!("PublicStaging/{name}");
+
+    afc_upload_dir(&mut afc, app_path, &dir).await?;
+
+    let mut inst = session.service::<InstallationProxyClient>().await?;
+
+    let mut options = plist::Dictionary::new();
+    options.insert("PackageType".into(), plist::Value::String("Developer".into()));
+
+    inst.install_with_callback(
+        dir,
+        Some(plist::Value::Dictionary(options)),
+        async |(percentage, _)| {
+            progress(percentage);
+        },
+        (),
+    )
+    .await
+    .map_err(|e| ap_err("installation_proxy install failed", e))?;
+
+    Ok(())
+}
+
+fn afc_upload_dir<'a>(
+    afc: &'a mut AfcClient,
+    path: &'a Path,
+    afc_path: &'a str,
+) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'a>> {
+    Box::pin(async move {
+        afc.mk_dir(afc_path)
+            .await
+            .map_err(|e| ap_err(&format!("AFC mkdir {afc_path}"), e))?;
+        for entry in std::fs::read_dir(path)
+            .map_err(|e| AppError::Filesystem(format!("read_dir {path:?}"), e.to_string()))?
+        {
+            let entry =
+                entry.map_err(|e| AppError::Filesystem("read dir entry".into(), e.to_string()))?;
+            let p = entry.path();
+            let child_name = p
+                .file_name()
+                .ok_or_else(|| AppError::Filesystem("dir entry has no name".into(), String::new()))?
+                .to_string_lossy()
+                .to_string();
+            let child_afc = format!("{afc_path}/{child_name}");
+            if p.is_dir() {
+                afc_upload_dir(afc, &p, &child_afc).await?;
+            } else {
+                let mut fh = afc
+                    .open(child_afc.clone(), AfcFopenMode::WrOnly)
+                    .await
+                    .map_err(|e| ap_err(&format!("AFC open {child_afc}"), e))?;
+                let bytes = std::fs::read(&p)
+                    .map_err(|e| AppError::Filesystem(format!("read {p:?}"), e.to_string()))?;
+                fh.write_entire(&bytes)
+                    .await
+                    .map_err(|e| ap_err(&format!("AFC write {child_afc}"), e))?;
+                fh.close().await.map_err(|e| ap_err("AFC close", e))?;
+            }
+        }
+        Ok(())
+    })
+}
+
+/// Find an installed app whose bundle id contains `needle` (case-insensitive).
+pub async fn find_app(session: &mut VisionSession, needle: &str) -> Result<String, AppError> {
+    let mut inst = session.service::<InstallationProxyClient>().await?;
+    let apps = inst
+        .get_apps(None, None)
+        .await
+        .map_err(|e| ap_err("get_apps", e))?;
+    apps.keys()
+        .find(|b| b.to_lowercase().contains(&needle.to_lowercase()))
+        .cloned()
+        .ok_or_else(|| AppError::RemotePairing(format!("no installed app matching '{needle}'")))
+}
+
+/// Write pairing bytes into `bundle`'s Documents as `path` (over the tunnel).
+pub async fn place_into(
+    session: &mut VisionSession,
+    bundle: &str,
+    path: &str,
+    pairing: &[u8],
+) -> Result<(), AppError> {
+    let ha = session.service::<HouseArrestClient>().await?;
+    let mut afc = ha
+        .vend_documents(bundle.to_string())
+        .await
+        .map_err(|e| ap_err(&format!("vend documents for {bundle}"), e))?;
+
+    // vend_documents roots AFC at the app CONTAINER, but only /Documents is
+    // accessible (HouseArrest semantics), so write there. Create any intermediate
+    // directories one level at a time — AFC mk_dir isn't recursive (LiveContainer's
+    // pairing path, SideStore/Documents/…, is nested).
+    if let Some((dir, _)) = path.rsplit_once('/') {
+        let mut cur = String::from("/Documents");
+        for comp in dir.split('/').filter(|c| !c.is_empty()) {
+            cur.push('/');
+            cur.push_str(comp);
+            let _ = afc.mk_dir(cur.clone()).await;
+        }
+    }
+    let mut fh = afc
+        .open(format!("/Documents/{path}"), AfcFopenMode::WrOnly)
+        .await
+        .map_err(|e| ap_err(&format!("open /Documents/{path}"), e))?;
+    fh.write_entire(pairing)
+        .await
+        .map_err(|e| ap_err("write pairing", e))?;
+    fh.close().await.map_err(|e| ap_err("close", e))?;
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Device-list integration + first-time pairing (the Tauri-facing surface).
+// ---------------------------------------------------------------------------
+
+/// Discover Vision Pro(s) over mDNS and present them as `DeviceInfo` for the unified
+/// device list. `paired` reflects whether a reusable RP pairing file is already
+/// stored, so the frontend can select the device directly instead of prompting for
+/// the headset code. Never errors — a discovery failure just yields an empty list so
+/// it can't hide usbmux devices.
+pub async fn list_vision_devices(app: &AppHandle) -> Vec<DeviceInfo> {
+    let discovered = snapshot_soon().await;
+    discovered
+        .into_iter()
+        .map(|d| {
+            let paired = retrieve_pairing_data(app, &pairing_storage_key(&d.name))
+                .ok()
+                .flatten()
+                .is_some();
+            DeviceInfo {
+                id: d.synthetic_id(),
+                name: d.name,
+                udid: String::new(),
+                connection_type: "Wireless".to_string(),
+                version: "visionOS".to_string(),
+                device_class: Some("RealityDevice".to_string()),
+                product_type: None,
+                transport: DeviceTransport::Vision,
+                ip: Some(d.ip),
+                paired,
+            }
+        })
+        .collect()
+}
+
+/// Select an already-paired Vision Pro: load its stored pairing file and verify it by
+/// opening a tunnel (which also yields the device UDID). Returns `(pairing, udid)`.
+pub async fn select_vision_device(
+    app: &AppHandle,
+    device: &DeviceInfo,
+) -> Result<(Vec<u8>, String), AppError> {
+    let ip = device
+        .ip
+        .clone()
+        .ok_or_else(|| AppError::RemotePairing("Vision Pro has no IP address".into()))?;
+    let key = pairing_storage_key(&device.name);
+    let pairing = retrieve_pairing_data(app, &key)?.ok_or_else(|| {
+        AppError::RemotePairing(
+            "This Vision Pro isn't paired yet — enter the code shown on the headset to pair.".into(),
+        )
+    })?;
+    // Verify the stored pairing. If pair-verify fails the pairing has gone stale (e.g.
+    // the host was removed from the VP's Remote Devices), so drop it — the frontend
+    // then treats the device as unpaired and re-prompts for the headset code.
+    match read_udid(&ip, &pairing).await {
+        Ok(udid) => Ok((pairing, udid)),
+        Err(e) => {
+            let _ = delete_pairing_data(app, &key);
+            Err(AppError::RemotePairing(format!(
+                "This Vision Pro's saved pairing is no longer valid — pair again with the code on \
+                 the headset. ({e})"
+            )))
+        }
+    }
+}
+
+/// First-time wireless pairing with a Vision Pro. Connects to its manual-pairing
+/// service; the headset shows a 6-digit code which the user types into iloader (sent
+/// back via the `vision-pair-code` event). On success the reusable RP pairing file is
+/// stored and the device becomes the selected device.
+///
+/// Emits `vision-pair-status`: "connecting" | "awaiting-code" | "verifying" | "paired".
+#[tauri::command]
+pub async fn vision_pair(
+    app: AppHandle,
+    window: Window,
+    device_state: State<'_, DeviceInfoMutex>,
+    cancel_state: State<'_, PairingCancelToken>,
+    device: DeviceInfo,
+) -> Result<(), AppError> {
+    let token = CancellationToken::new();
+    {
+        let mut guard = cancel_state.lock().unwrap();
+        if let Some(old) = guard.replace(token.clone()) {
+            old.cancel();
+        }
+    }
+
+    let result = vision_pair_inner(&app, &window, &device, token.clone()).await;
+
+    {
+        // Single-flight modal flow: clear our cancel token when we're done.
+        let mut guard = cancel_state.lock().unwrap();
+        *guard = None;
+    }
+
+    let (pairing, udid) = result?;
+
+    let mut info = device;
+    info.udid = udid;
+    info.paired = true;
+    {
+        let mut ds = device_state.lock().unwrap();
+        *ds = Some(DeviceInfoWithPairing { info, pairing });
+    }
+    let _ = window.emit("vision-pair-status", "paired");
+    Ok(())
+}
+
+async fn vision_pair_inner(
+    app: &AppHandle,
+    window: &Window,
+    device: &DeviceInfo,
+    cancel: CancellationToken,
+) -> Result<(Vec<u8>, String), AppError> {
+    let _ = window.emit("vision-pair-status", "connecting");
+
+    // Resolve the CURRENT (dynamic) manual-pairing port from the persistent browser,
+    // matching this VP by name. The port is re-announced as the device advertises, so
+    // the warm set tracks it; we wait briefly only if nothing's cached yet.
+    let b = browser();
+    let mut dev = b.get(&device.name);
+    for _ in 0..16 {
+        if dev.is_some() {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(150)).await;
+        dev = b.get(&device.name);
+    }
+    let dev = dev.ok_or_else(|| {
+        AppError::RemotePairing(
+            "Couldn't find the Vision Pro's pairing service over Wi-Fi. Make sure it's on the \
+             same network and Developer Mode is on."
+                .into(),
+        )
+    })?;
+
+    // Only an unpaired VP advertises the manual-pairing service. If it's absent, the VP
+    // is already paired to this Mac — guide the user to make it pairable again.
+    let port = dev.manual_pairing_port.ok_or_else(|| {
+        AppError::RemotePairing(
+            "This Vision Pro is already paired to this Mac. To pair again, open Settings → \
+             General → Remote Devices on the Vision Pro, remove this Mac, then try again."
+                .into(),
+        )
+    })?;
+
+    let stream = tokio::select! {
+        _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
+        res = TcpStream::connect((dev.ip.as_str(), port)) => {
+            res.map_err(|e| ap_err(&format!("connect {}:{}", dev.ip, port), e))?
+        }
+    };
+
+    let mut client = RemotePairingClient::new(RpPairingSocket::new(stream), "iloader");
+    let mut pf = RpPairingFile::generate("iloader");
+
+    // The device shows the code; we prompt the user for it via the frontend. idevice
+    // calls this once, after the code is on the headset.
+    let win = window.clone();
+    let code_cb = move || {
+        let win = win.clone();
+        async move {
+            let (tx, rx) = tokio::sync::oneshot::channel::<String>();
+            let tx = std::sync::Mutex::new(Some(tx));
+            let handler = win.listen("vision-pair-code", move |event| {
+                if let Ok(mut guard) = tx.lock()
+                    && let Some(sender) = guard.take()
+                {
+                    let raw = event.payload();
+                    let code =
+                        serde_json::from_str::<String>(raw).unwrap_or_else(|_| raw.to_string());
+                    let _ = sender.send(code);
+                }
+            });
+            let _ = win.emit("vision-pair-status", "awaiting-code");
+            let code = rx.await.unwrap_or_default();
+            win.unlisten(handler);
+            code.chars().filter(|c| c.is_ascii_digit()).take(6).collect::<String>()
+        }
+    };
+
+    tokio::select! {
+        _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
+        res = client.connect(&mut pf, code_cb) => {
+            res.map_err(|e| AppError::RemotePairing(format!(
+                "Pairing failed: {e:?}\n(If it mentions 'missing server proof', the code was \
+                 mistyped — try pairing again.)"
+            )))?;
+        }
+    }
+
+    let bytes = pf.to_bytes();
+    store_pairing_data(app, &pairing_storage_key(&device.name), &bytes)?;
+
+    // Verify the saved pairing by opening a tunnel, which also gives us the UDID. A
+    // failure here doesn't discard the (successful) pairing — sideload re-reads the
+    // UDID over a fresh tunnel and will surface any real problem then.
+    let _ = window.emit("vision-pair-status", "verifying");
+    let udid = read_udid(&dev.ip, &bytes).await.unwrap_or_default();
+
+    Ok((bytes, udid))
+}

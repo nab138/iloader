@@ -1,3 +1,4 @@
+use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use isideload::util::{
@@ -29,12 +30,24 @@ pub fn keyring_available() -> bool {
     !FORCE_DISABLE_KEYRING.load(Ordering::Relaxed) && check_keyring_available()
 }
 
+/// Probe whether the OS keychain is usable, **once per process**. The probe does a
+/// real `get_password`, which on macOS pops the "iloader wants to use your confidential
+/// information" prompt. This function is called on nearly every storage access
+/// (`create_sideloading_storage`, `with_pairing_storage`, the frontend keyring check),
+/// so without caching the prompt appeared 4+ times per launch (and again mid-install).
+/// Keychain availability doesn't change during a session, so caching the result is
+/// safe and collapses those to a single prompt. (User toggling is handled separately
+/// by `FORCE_DISABLE_KEYRING`, which doesn't touch this probe.)
 fn check_keyring_available() -> bool {
-    let entry = keyring::Entry::new("iloader", "test");
-    if let Ok(entry) = entry {
-        return entry.set_password("test").is_ok() && entry.get_password().is_ok();
-    }
-    false
+    static CACHED: OnceLock<bool> = OnceLock::new();
+    *CACHED.get_or_init(|| {
+        let entry = keyring::Entry::new("iloader", "test");
+        if let Ok(entry) = entry {
+            entry.set_password("test").is_ok() && entry.get_password().is_ok()
+        } else {
+            false
+        }
+    })
 }
 
 pub fn create_sideloading_storage(

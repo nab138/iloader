@@ -24,9 +24,10 @@ use tokio_util::sync::CancellationToken;
 use tracing::{error, info, warn};
 
 use crate::{
-    device::{DeviceInfo, DeviceInfoMutex, get_provider},
+    device::{DeviceInfo, DeviceInfoMutex, DeviceTransport, get_provider},
     error::AppError,
     secure_storage::{create_sideloading_storage, keyring_available},
+    vision,
 };
 
 struct PairingStorageEntry {
@@ -145,9 +146,9 @@ async fn generate_rppairing(
     info!("Starting RPPairing...");
     info!("(You may need to tap Trust on the device)");
     let mut pairing_file = RpPairingFile::generate(hostname);
-    let mut pairing_client = RemotePairingClient::new(remote_xpc, hostname, &mut pairing_file);
+    let mut pairing_client = RemotePairingClient::new(remote_xpc, hostname);
     pairing_client
-        .connect(async |_| "000000".to_string(), ())
+        .connect(&mut pairing_file, async || "000000".to_string())
         .await?;
 
     // use it right away to try and convince the device to commmit it to the keychain
@@ -156,9 +157,9 @@ async fn generate_rppairing(
     let mut remote_xpc = RemoteXpcClient::new(tunnel_service_stream).await?;
     remote_xpc.do_handshake().await?;
     let _ = remote_xpc.recv_root().await;
-    let mut pairing_client = RemotePairingClient::new(remote_xpc, hostname, &mut pairing_file);
+    let mut pairing_client = RemotePairingClient::new(remote_xpc, hostname);
     pairing_client
-        .connect(async |_| "000000".to_string(), ())
+        .connect(&mut pairing_file, async || "000000".to_string())
         .await?;
 
     Ok(pairing_file)
@@ -223,6 +224,17 @@ pub async fn place_pairing_cmd(
         }
     };
 
+    if device.info.transport == DeviceTransport::Vision {
+        let ip = device
+            .info
+            .ip
+            .clone()
+            .ok_or_else(|| AppError::RemotePairing("Vision Pro has no IP address".into()))?;
+        let mut session = vision::VisionSession::connect(&ip, &device.pairing).await?;
+        vision::place_into(&mut session, &bundle_id, &path, &device.pairing).await?;
+        return Ok(());
+    }
+
     let provider = get_provider(&device.info).await?;
 
     place_file(device.pairing, &provider, bundle_id, path).await
@@ -280,6 +292,34 @@ fn build_pairing_storage_entry(app: &AppHandle, keyring_enabled: bool) -> Pairin
     }
 }
 
+/// Store arbitrary keyed bytes in the shared pairing storage (used to cache a Vision
+/// Pro's reusable RP pairing file across launches).
+pub fn store_pairing_data(app: &AppHandle, key: &str, data: &[u8]) -> Result<(), AppError> {
+    with_pairing_storage(app, |storage| {
+        storage
+            .store_data(key, data)
+            .map_err(|e| AppError::Storage("Failed to store pairing data".into(), e.to_string()))
+    })
+}
+
+/// Retrieve keyed bytes previously stored with [`store_pairing_data`].
+pub fn retrieve_pairing_data(app: &AppHandle, key: &str) -> Result<Option<Vec<u8>>, AppError> {
+    with_pairing_storage(app, |storage| {
+        storage
+            .retrieve_data(key)
+            .map_err(|e| AppError::Storage("Failed to retrieve pairing data".into(), e.to_string()))
+    })
+}
+
+/// Delete keyed bytes previously stored with [`store_pairing_data`].
+pub fn delete_pairing_data(app: &AppHandle, key: &str) -> Result<(), AppError> {
+    with_pairing_storage(app, |storage| {
+        storage
+            .delete(key)
+            .map_err(|e| AppError::Storage("Failed to delete pairing data".into(), e.to_string()))
+    })
+}
+
 fn with_pairing_storage<T>(
     app: &AppHandle,
     f: impl FnOnce(&dyn SideloadingStorage) -> Result<T, AppError>,
@@ -318,8 +358,19 @@ pub async fn pairing_file(
         res = generate_lockdown_plist(device, &provider, usbmuxd) => res?
     };
 
-    // rppairing is 17.4+
-    if is_ios_version_below(device.version.as_str(), 17, 4) {
+    // rppairing (RemotePairing) is required on iOS 17.4+. An Apple Vision Pro is
+    // always iOS-17+ era regardless of its ProductVersion, but visionOS version
+    // numbers (1.x, 2.x, 26, 27, …) don't line up with iOS's 17.4 threshold — a
+    // visionOS 1.x/2.x device would report "1.0"/"2.0" and wrongly fall to the
+    // lockdown-only path, which can't reach the install/JIT services behind the
+    // RSD tunnel. So force the RemotePairing path for any RealityDevice.
+    let is_vision = device.device_class.as_deref() == Some("RealityDevice")
+        || device
+            .product_type
+            .as_deref()
+            .is_some_and(|p| p.starts_with("RealityDevice"));
+
+    if !is_vision && is_ios_version_below(device.version.as_str(), 17, 4) {
         let lockdown_dict = lockdown_plist.as_dictionary().cloned().ok_or_else(|| {
             AppError::LockdownPairing(
                 "Lockdown plist was not a dictionary".into(),
@@ -412,7 +463,13 @@ pub async fn delete_stored_rppairing(
         }
     };
 
-    let cache_key = format!("rppairing_file_{}", device.info.udid);
+    // A Vision Pro's reusable RP pairing is keyed by name (its UDID isn't known until
+    // a tunnel is opened); usbmux devices are keyed by UDID.
+    let cache_key = if device.info.transport == DeviceTransport::Vision {
+        vision::pairing_storage_key(&device.info.name)
+    } else {
+        format!("rppairing_file_{}", device.info.udid)
+    };
 
     with_pairing_storage(&app, |storage| {
         storage.delete(&cache_key).map_err(|e| {
@@ -450,23 +507,41 @@ pub async fn installed_pairing_apps(
             None => return Err(AppError::NoDeviceSelected),
         }
     };
-    let provider = get_provider(&device.info).await?;
-    let mut installation_proxy =
-        InstallationProxyClient::connect(&provider)
+
+    // Fetch installed apps over the transport for this device (usbmux vs RP tunnel),
+    // then apply the same PAIRING_APPS filter to both.
+    let installed_apps = if device.info.transport == DeviceTransport::Vision {
+        let ip = device
+            .info
+            .ip
+            .clone()
+            .ok_or_else(|| AppError::RemotePairing("Vision Pro has no IP address".into()))?;
+        let mut session = vision::VisionSession::connect(&ip, &device.pairing).await?;
+        let mut inst = session.service::<InstallationProxyClient>().await?;
+        inst.get_apps(Some("User"), None).await.map_err(|e| {
+            AppError::DeviceComsWithMessage("Failed to get installed apps".into(), e.to_string())
+        })?
+    } else {
+        let provider = get_provider(&device.info).await?;
+        let mut installation_proxy =
+            InstallationProxyClient::connect(&provider)
+                .await
+                .map_err(|e| {
+                    AppError::DeviceComsWithMessage(
+                        "Failed to connect to installation proxy".into(),
+                        e.to_string(),
+                    )
+                })?;
+        installation_proxy
+            .get_apps(Some("User"), None)
             .await
             .map_err(|e| {
                 AppError::DeviceComsWithMessage(
-                    "Failed to connect to installation proxy".into(),
+                    "Failed to get installed apps".into(),
                     e.to_string(),
                 )
-            })?;
-
-    let installed_apps = installation_proxy
-        .get_apps(Some("User"), None)
-        .await
-        .map_err(|e| {
-            AppError::DeviceComsWithMessage("Failed to get installed apps".into(), e.to_string())
-        })?;
+            })?
+    };
 
     let mut installed = HashMap::new();
     for (bundle_id, app) in installed_apps {

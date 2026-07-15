@@ -11,6 +11,7 @@ mod secure_storage;
 mod error;
 mod logging;
 mod operation;
+mod vision;
 
 use crate::{
     account::{
@@ -26,6 +27,7 @@ use crate::{
     },
     secure_storage::{force_disable_keyring, keyring_available},
     sideload::{SideloaderMutex, install_sidestore_operation, sideload_operation},
+    vision::vision_pair,
 };
 use tauri::Manager;
 use tracing_subscriber::{Layer, Registry, fmt, layer::SubscriberExt, util::SubscriberInitExt};
@@ -101,6 +103,11 @@ pub fn run() {
             app.manage(DeviceInfoMutex::new(None));
             app.manage(SideloaderMutex::new(None));
             app.manage(PairingCancelToken::new(None));
+
+            // Start browsing for Vision Pros immediately so the mDNS multicast group is
+            // warm before the first device-list refresh (a cold one-shot browse races
+            // the network round-trip and can miss a device that's actually present).
+            vision::start_discovery();
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -126,6 +133,7 @@ pub fn run() {
             force_disable_keyring,
             cancel_pairing,
             has_stored_rppairing,
+            vision_pair,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

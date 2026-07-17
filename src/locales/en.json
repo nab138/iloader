@@ -49,6 +49,7 @@
   "apple_id": {
     "title": "Apple ID",
     "logged_in_as": "Logged in as",
+    "developer_team": "Developer Team",
     "sign_out": "Sign Out",
     "signing_out": "Signing Out...",
     "sign_out_failed": "Sign out failed",
@@ -79,6 +80,12 @@
     "hide_certificate_list": "Hide certificate list",
     "choose_what_to_revoke": "Choose what to revoke",
     "continue": "Continue",
+    "team_selection_title": "Choose a Developer Team",
+    "team_selection_prompt": "This account belongs to multiple developer teams. Choose the team to use for signing.",
+    "unnamed_team": "Unnamed Team",
+    "team_id": "Team ID",
+    "team_type": "Type",
+    "team_status": "Status",
     "no_keyring_available": "Unable to save credentials on this device."
   },
   "device": {

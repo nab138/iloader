@@ -49,6 +49,7 @@
   "apple_id": {
     "title": "Apple ID",
     "logged_in_as": "已登入為",
+    "developer_team": "開發者團隊",
     "sign_out": "登出",
     "signing_out": "正在登出...",
     "sign_out_failed": "登出失敗",
@@ -78,7 +79,13 @@
     "max_certs_desc": "iloader 將撤銷您現有的憑證並產生一個新的。",
     "hide_certificate_list": "隱藏憑證列表",
     "choose_what_to_revoke": "選擇要撤銷的內容",
-    "continue": "繼續"
+    "continue": "繼續",
+    "team_selection_title": "選擇開發者團隊",
+    "team_selection_prompt": "此帳戶屬於多個開發者團隊。請選擇用於簽署的團隊。",
+    "unnamed_team": "未命名團隊",
+    "team_id": "團隊 ID",
+    "team_type": "類型",
+    "team_status": "狀態"
   },
   "device": {
     "title": "iDevice",

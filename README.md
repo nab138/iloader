@@ -124,6 +124,7 @@ Thank you to everyone who has contributed translations! See the [Translating](#t
 - [MCI49312](https://github.com/MCI49312): Hungarian (hu)
 - [Kynonim](https://github.com/Kynonim): Indonesian (id)
 - [DD00031](https://github.com/DD00031): Dutch (nl)
+- [Toritan123](https://github.com/Toritan123): Improved Japanese (ja)
 
 ## License
 

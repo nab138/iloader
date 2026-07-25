@@ -1,5 +1,5 @@
 {
-  "subtitle": "Sideloading Companion",
+  "subtitle": "サイドロード支援ツール",
   "version": "バージョン",
   "common": {
     "confirm": "確定",
@@ -78,18 +78,22 @@
     "max_certs_desc": "iloaderは既存の証明書を無効化（Revoke）し、新しいものを生成します。",
     "hide_certificate_list": "証明書リストを隠す",
     "choose_what_to_revoke": "無効化するものを選択",
-    "continue": "続行"
+    "continue": "続行",
+    "no_keyring_available": "ログイン情報をこのデバイスに保存できません。"
   },
   "device": {
-    "title": "iDevice",
-    "failed_select_prefix": "デバイスの選択に失敗しました: ",
+    "title": "デバイス",
     "loading_devices": "デバイスを読み込み中...",
     "no_devices_found": "デバイスが見つかりません",
     "found_device": "デバイスが見つかりました。",
     "found_devices": "デバイスが複数見つかりました。",
     "unable_load_devices_prefix": "デバイスを読み込めません: ",
     "no_devices_found_period": "デバイスは検出されませんでした。",
-    "selected": "選択済み"
+    "selected": "選択済み",
+    "pairing_in_progress_header": "{{device}} とペアリング中...",
+    "pairing_in_progress_hint": "デバイスのロックを解除して「信頼」をタップし、パスコードを求められたら入力してください。",
+    "pairing_cancel": "キャンセル",
+    "failed_select": "デバイスの選択に失敗しました"
   },
   "operation": {
     "failed": "操作に失敗しました。",
@@ -163,7 +167,8 @@
     "pairing_file_exported_success": "ペアリングファイルを正常にエクスポートしました！",
     "failed_export_pairing_file": "ペアリングファイルのエクスポートに失敗しました",
     "export_not_recommended": "エクスポート (非推奨)",
-    "refresh_installed_apps": "インストール済みアプリを更新"
+    "refresh_installed_apps": "インストール済みアプリを更新",
+    "place_all": "全てのアプリに配置"
   },
   "settings": {
     "anisette_server": "Anisette サーバー:",
@@ -175,6 +180,7 @@
     "reset_anisette_message": "Anisette の状態をリセットしてもよろしいですか？再度2要素認証コードの入力が必要になります。",
     "resetting_anisette_state": "Anisette の状態をリセット中...",
     "anisette_state_reset_success": "Anisette の状態を正常にリセットしました",
+    "anisette_state_not_found": "リセットする Anisette の状態はありません",
     "failed_reset_anisette_state": "Anisette の状態のリセットに失敗しました",
     "view_logs": "ログを表示",
     "logs": "ログ",
@@ -184,7 +190,14 @@
     "info": "情報",
     "warn": "警告",
     "error": "エラー",
-    "language_hint": "翻訳の協力は<translation>こちら</translation>から行えます。"
+    "language_hint": "翻訳の協力は<translation>こちら</translation>から行えます。",
+    "delete_stored_rppairing": "保存済みのペアリングファイルを削除",
+    "delete_stored_rppairing_message": "このデバイスの保存済みのペアリングファイルを削除してもよろしいですか？削除すると再度ペアリングが必要になります。",
+    "deleting_stored_rppairing": "保存済みのペアリングファイルを削除中...",
+    "stored_rppairing_deleted_success": "保存済みのペアリングファイルが正常に削除されました！",
+    "failed_delete_stored_rppairing": "保存済みのペアリングファイルの削除に失敗しました",
+    "dont_use_keyring": "キーチェーンを使わない",
+    "dont_use_keyring_message": "この設定を有効にするとペアリングファイル、Anisetteの状態、証明書をディスク上に保存するようになるため、iloaderの安全性が低下します。デフォルトのキーチェーン保存が機能せず、リスクを理解している場合にのみ有効にしてください。"
   },
   "dialog": {
     "confirm": "確定",
@@ -193,6 +206,79 @@
   "error": {
     "title": "エラーが発生しました: {{msg}}",
     "unknown": "不明なエラー",
+    "suggestions_heading": "提案",
+    "suggestions": {
+      "underage": [
+        "あなたのApple IDはデベロッパーサービスを使用できない年齢である可能性があります。"
+      ],
+      "account_locked": [
+        "慌てなくて大丈夫です！これは通常ログインが何度も失敗すると発生しますが、完全に無害です。",
+        "((link:https://iforgot.apple.com/)) でアカウントのロックを解除できます。"
+      ],
+      "auth": [
+        "ログイン情報が正しいことを確認し、正しい場合でも再試行してください。",
+        "解決しない場合は、別のApple IDで試してみてください。",
+        "セキュリティキーによる2要素認証はサポートされていません。可能であれば2要素認証がないApple IDを使用するか、信頼済みデバイスによる2要素認証を使用してください。"
+      ],
+      "download": [
+        "((link:https://github.com/SideStore/SideStore/releases)) から手動でSideStoreをダウンロードし、「IPAをインポート」ボタンを使ってインストールしてください。"
+      ],
+      "house_arrest": [
+        "[ios::26.3]house arrest（アプリのファイル領域アクセス）に不具合があるため、デバイスが iOS 26.3 の開発者ベータでないことを確認してください。"
+      ],
+      "pairing": [
+        "デバイスを再接続して、もう一度試してみてください。",
+        "デバイスにパスコードが設定されているか確認してください。",
+        "デバイスがワイヤレスではなくUSBで接続されていることを確認してください。"
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]((link:https://apple.co/ms:iTunes)) がインストールされ、デバイスが検出できることを確認してください。",
+        "[platform::windows]iTunes と Apple Mobile Device Support をアンインストールし、Microsoft Store から「Apple Devices」をインストールしてください。",
+        "[platform::linux]usbmuxd がインストールされ、実行されていることを確認してください。"
+      ],
+      "trust": [
+        "デバイスのロックを解除してホーム画面に移動し、表示される確認画面で「信頼」をタップしてください。"
+      ],
+      "device_coms": [
+        "デバイスがコンピュータに正しく接続されていることを確認してください。",
+        "デバイスを再接続してください。それでも問題が続く場合は、別のUSBポートとケーブルで試してください。"
+      ],
+      "not_logged_in": [
+        "まずあなたのApple IDでサインインしてください。"
+      ],
+      "no_device_selected": [
+        "続ける前にデバイスを選択してください。"
+      ],
+      "anisette": [
+        "コンピュータがインターネットに接続されていることを確認してください。",
+        "別のAnisetteサーバーに変更してみてください。複数のサーバーを試すことをおすすめします。",
+        "ブラウザで ((link:{{anisetteServerUrl}})) にアクセスできることを確認してください。"
+      ],
+      "keyring": [
+        "この問題を回避するには、設定の「キーチェーンを使わない」を有効にしてみてください。ただし安全性は低下します。"
+      ],
+      "misc": [
+        "もう一度試してください。アプリ・コンピュータ・スマートフォンを再起動することをお勧めします。"
+      ],
+      "admin": [
+        "アプリを管理者/root権限で実行してみてください。"
+      ],
+      "filesystem": [
+        "iloaderがシステム上のファイルを読み書きする権限を持っているか確認してください。"
+      ],
+      "not_enough_app_ids": [
+        "このアプリをインストールするのに十分なApp IDがありません。",
+        "App IDが7日後に期限切れになるのを待ってから、もう一度試してください（それより早く削除することはできません）。",
+        "SideStoreでアプリをインストールするとApp IDを節約できる場合があるため、代わりにそちらから試してください。"
+      ],
+      "max_apps": [
+        "無料のApple IDではサイドロードしたアプリを一度に三つまでしかインストールできません。",
+        "他のサイドロードしたアプリを削除してアプリのスペースを一つ開けてください。",
+        "期限切れのアプリもこの制限に含まれます。"
+      ]
+    },
     "support_message": "問題が解決しない場合は、「クリップボードにコピー」を押して、コピーされたエラー内容を <discord>Discord</discord> または <github>GitHubのIssue</github> に送ってサポートを受けてください。"
   },
   "update": {

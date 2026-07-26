@@ -11,7 +11,7 @@ use crate::{
     pairing::{get_sidestore_info, place_file},
     secure_storage::create_sideloading_storage,
 };
-use apple_codesign::{SettingsScope, UnifiedSigner};
+use apple_codesign::{MachFile, SettingsScope, UnifiedSigner};
 use idevice::provider::IdeviceProvider;
 use isideload::{
     dev::{
@@ -23,6 +23,7 @@ use isideload::{
     sideload::{
         application::{Application, SpecialApp},
         builder::MaxCertsBehavior,
+        bundle::Bundle,
         cert_identity::CertificateIdentity,
         sideloader::Sideloader,
         sign::signing_settings,
@@ -251,12 +252,29 @@ async fn install_app_with_extensions(
         .ensure_device_registered(&team, &device_info.name, &device_info.udid, None)
         .await?;
 
+    let app = Application::new(app_path)?;
+    let original_app_groups = collect_original_app_groups(&app);
+    let app_group_mappings = remap_app_groups(&original_app_groups, &team.team_id)?;
+    patch_app_group_references(&app.bundle.bundle_dir, &app_group_mappings)?;
+    let requested_app_groups = app_group_mappings
+        .iter()
+        .map(|(_, replacement)| replacement.clone())
+        .collect::<Vec<_>>();
+
     let (signed_app_path, special_app) = sideloader
-        .sign_app(app_path, Some(team.clone()), false)
+        .sign_app(app.bundle.bundle_dir.clone(), Some(team.clone()), false)
         .await?;
 
     let result: Result<(), AppError> = async {
-        resign_app_extensions(handle, sideloader, &signed_app_path, &team, &special_app).await?;
+        resign_app_extensions(
+            handle,
+            sideloader,
+            &signed_app_path,
+            &team,
+            &special_app,
+            &requested_app_groups,
+        )
+        .await?;
 
         info!("Transferring App...");
         isideload::sideload::install::install_app(device_provider, &signed_app_path, |progress| {
@@ -286,6 +304,7 @@ async fn resign_app_extensions(
     signed_app_path: &Path,
     team: &DeveloperTeam,
     special_app: &Option<SpecialApp>,
+    requested_app_groups: &[String],
 ) -> Result<(), AppError> {
     let app = Application::new(signed_app_path.to_path_buf())?;
     let main_bundle_id = app.main_bundle_id()?;
@@ -321,7 +340,6 @@ async fn resign_app_extensions(
 
     extensions.sort_by_key(|(path, _)| path.components().count());
     extensions.reverse();
-    let requested_app_groups = vec![app_group_for_bundle_id(&main_bundle_id)];
 
     let mut target_bundle_ids = BTreeSet::from([main_bundle_id.clone()]);
     target_bundle_ids.extend(extensions.iter().map(|(_, bundle_id)| bundle_id.clone()));
@@ -340,7 +358,7 @@ async fn resign_app_extensions(
         team,
         &main_app_name,
         &mut app_ids,
-        &requested_app_groups,
+        requested_app_groups,
     )
     .await?;
 
@@ -383,20 +401,7 @@ async fn resign_app_extensions(
             .download_team_provisioning_profile(team, &app_id, None)
             .await?;
 
-        tokio::fs::write(
-            extension_path.join("embedded.mobileprovision"),
-            profile.encoded_profile.as_ref(),
-        )
-        .await
-        .map_err(|error| {
-            AppError::Filesystem(
-                format!(
-                    "Failed to write provisioning profile for app extension {}",
-                    extension_path.display()
-                ),
-                error.to_string(),
-            )
-        })?;
+        write_provisioning_profile(&extension_path, profile.encoded_profile.as_ref()).await?;
 
         sign_bundle(
             &extension_path,
@@ -404,7 +409,7 @@ async fn resign_app_extensions(
             profile.encoded_profile.as_ref(),
             &None,
             team,
-            &requested_app_groups,
+            requested_app_groups,
         )?;
         info!("Signed app extension {}", bundle_id);
     }
@@ -413,16 +418,37 @@ async fn resign_app_extensions(
         .get_dev_session()
         .download_team_provisioning_profile(team, &main_app_id, None)
         .await?;
+    write_provisioning_profile(&main_bundle_path, main_profile.encoded_profile.as_ref()).await?;
     sign_bundle(
         &main_bundle_path,
         &cert_identity,
         main_profile.encoded_profile.as_ref(),
         special_app,
         team,
-        &requested_app_groups,
+        requested_app_groups,
     )?;
 
     Ok(())
+}
+
+async fn write_provisioning_profile(
+    bundle_path: &Path,
+    provisioning_profile: &[u8],
+) -> Result<(), AppError> {
+    tokio::fs::write(
+        bundle_path.join("embedded.mobileprovision"),
+        provisioning_profile,
+    )
+    .await
+    .map_err(|error| {
+        AppError::Filesystem(
+            format!(
+                "Failed to write provisioning profile for {}",
+                bundle_path.display()
+            ),
+            error.to_string(),
+        )
+    })
 }
 
 async fn configure_requested_app_groups(
@@ -496,23 +522,7 @@ fn entitlements_from_profile(
     special_app: &Option<SpecialApp>,
     team: &DeveloperTeam,
 ) -> Result<Dictionary, Report> {
-    let start = data
-        .windows(6)
-        .position(|window| window == b"<plist")
-        .ok_or_report()?;
-    let end = data
-        .windows(8)
-        .rposition(|window| window == b"</plist>")
-        .ok_or_report()?
-        + 8;
-    let plist = plist::Value::from_reader_xml(&data[start..end])?;
-    let mut entitlements = plist
-        .as_dictionary()
-        .ok_or_report()?
-        .get("Entitlements")
-        .and_then(plist::Value::as_dictionary)
-        .ok_or_report()?
-        .clone();
+    let mut entitlements = provisioning_profile_entitlements(data)?;
 
     if matches!(
         special_app,
@@ -539,8 +549,243 @@ fn entitlements_from_profile(
     Ok(entitlements)
 }
 
-fn app_group_for_bundle_id(bundle_id: &str) -> String {
-    format!("group.{bundle_id}")
+fn provisioning_profile_entitlements(data: &[u8]) -> Result<Dictionary, Report> {
+    let start = data
+        .windows(6)
+        .position(|window| window == b"<plist")
+        .ok_or_report()?;
+    let end = data
+        .windows(8)
+        .rposition(|window| window == b"</plist>")
+        .ok_or_report()?
+        + 8;
+    let plist = plist::Value::from_reader_xml(&data[start..end])?;
+    let entitlements = plist
+        .as_dictionary()
+        .ok_or_report()?
+        .get("Entitlements")
+        .and_then(plist::Value::as_dictionary)
+        .ok_or_report()?
+        .clone();
+
+    Ok(entitlements)
+}
+
+fn collect_original_app_groups(app: &Application) -> Vec<String> {
+    let mut app_groups = BTreeSet::new();
+    let mut bundles = app.bundle.collect_nested_bundles();
+    bundles.push(app.bundle.clone());
+
+    for bundle in bundles {
+        let is_app_or_extension = bundle
+            .bundle_dir
+            .extension()
+            .is_some_and(|extension| extension == "app" || extension == "appex");
+        if !is_app_or_extension {
+            continue;
+        }
+
+        match original_entitlements(&bundle) {
+            Ok(Some(entitlements)) => {
+                app_groups.extend(app_groups_from_entitlements(&entitlements));
+            }
+            Ok(None) => {}
+            Err(error) => warn!(
+                "Failed to read original entitlements from {}: {}",
+                bundle.bundle_dir.display(),
+                error
+            ),
+        }
+    }
+
+    let app_groups = app_groups.into_iter().collect::<Vec<_>>();
+    if app_groups.is_empty() {
+        info!("No original app groups found");
+    } else {
+        info!("Found original app groups: {}", app_groups.join(", "));
+    }
+
+    app_groups
+}
+
+fn original_entitlements(bundle: &Bundle) -> Result<Option<Dictionary>, Report> {
+    if let Some(executable_name) = bundle
+        .app_info
+        .get("CFBundleExecutable")
+        .and_then(plist::Value::as_string)
+    {
+        let executable_data = std::fs::read(bundle.bundle_dir.join(executable_name))?;
+        let mach_file = MachFile::parse(&executable_data)?;
+
+        for macho in mach_file.iter_macho() {
+            if let Some(signature) = macho.code_signature()?
+                && let Some(entitlements) = signature.entitlements()?
+            {
+                let plist = plist::Value::from_reader_xml(entitlements.as_str().as_bytes())?;
+                if let Some(entitlements) = plist.into_dictionary() {
+                    return Ok(Some(entitlements));
+                }
+            }
+        }
+    }
+
+    let provisioning_profile_path = bundle.bundle_dir.join("embedded.mobileprovision");
+    if provisioning_profile_path.exists() {
+        let provisioning_profile = std::fs::read(provisioning_profile_path)?;
+        return Ok(Some(provisioning_profile_entitlements(
+            &provisioning_profile,
+        )?));
+    }
+
+    Ok(None)
+}
+
+fn app_groups_from_entitlements(entitlements: &Dictionary) -> Vec<String> {
+    entitlements
+        .get("com.apple.security.application-groups")
+        .and_then(plist::Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(plist::Value::as_string)
+        .map(str::to_string)
+        .collect()
+}
+
+fn remap_app_groups(
+    original_app_groups: &[String],
+    team_id: &str,
+) -> Result<Vec<(String, String)>, Report> {
+    let mut replacements = BTreeSet::new();
+    let mut mappings = Vec::with_capacity(original_app_groups.len());
+
+    for original in original_app_groups {
+        if !original.starts_with("group.") || !original.is_ascii() {
+            bail!("Unsupported app group identifier: {original}");
+        }
+
+        let suffix_length = original.len() - "group.".len();
+        if suffix_length == 0 {
+            bail!("Unsupported empty app group identifier: {original}");
+        }
+
+        let hash = app_group_hash(team_id, original);
+        let hash = format!("{hash:016x}");
+        let replacement_suffix = hash.chars().cycle().take(suffix_length).collect::<String>();
+        let replacement = format!("group.{replacement_suffix}");
+
+        if !replacements.insert(replacement.clone()) {
+            bail!("App group remapping collision for {original}");
+        }
+
+        info!("Remapping app group {} to {}", original, replacement);
+        mappings.push((original.clone(), replacement));
+    }
+
+    mappings.sort_by(|left, right| right.0.len().cmp(&left.0.len()));
+    Ok(mappings)
+}
+
+fn app_group_hash(team_id: &str, app_group: &str) -> u64 {
+    const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+    const FNV_PRIME: u64 = 0x100000001b3;
+
+    team_id
+        .bytes()
+        .chain([0])
+        .chain(app_group.bytes())
+        .fold(FNV_OFFSET_BASIS, |hash, byte| {
+            (hash ^ u64::from(byte)).wrapping_mul(FNV_PRIME)
+        })
+}
+
+fn patch_app_group_references(
+    bundle_path: &Path,
+    mappings: &[(String, String)],
+) -> Result<(), Report> {
+    if mappings.is_empty() {
+        return Ok(());
+    }
+
+    let mut directories = vec![bundle_path.to_path_buf()];
+    let mut patched_files = 0usize;
+    let mut patched_references = 0usize;
+
+    while let Some(directory) = directories.pop() {
+        for entry in std::fs::read_dir(&directory)
+            .context(format!("Failed to read {}", directory.display()))?
+        {
+            let entry = entry?;
+            let path = entry.path();
+            let file_type = entry.file_type()?;
+
+            if file_type.is_dir() {
+                if entry.file_name() != "_CodeSignature" {
+                    directories.push(path);
+                }
+                continue;
+            }
+
+            if !file_type.is_file() || entry.file_name() == "embedded.mobileprovision" {
+                continue;
+            }
+
+            let mut data =
+                std::fs::read(&path).context(format!("Failed to read {}", path.display()))?;
+            let mut references_in_file = 0usize;
+
+            for (original, replacement) in mappings {
+                references_in_file +=
+                    replace_equal_length(&mut data, original.as_bytes(), replacement.as_bytes());
+            }
+
+            if references_in_file == 0 {
+                continue;
+            }
+
+            std::fs::write(&path, data).context(format!("Failed to patch {}", path.display()))?;
+            patched_files += 1;
+            patched_references += references_in_file;
+            info!(
+                "Patched {} app group reference(s) in {}",
+                references_in_file,
+                path.display()
+            );
+        }
+    }
+
+    if patched_references == 0 {
+        bail!(
+            "No embedded references found for original app groups in {}",
+            bundle_path.display()
+        );
+    }
+
+    info!(
+        "Patched {} app group reference(s) across {} file(s)",
+        patched_references, patched_files
+    );
+    Ok(())
+}
+
+fn replace_equal_length(data: &mut [u8], original: &[u8], replacement: &[u8]) -> usize {
+    assert_eq!(original.len(), replacement.len());
+    if original.is_empty() {
+        return 0;
+    }
+
+    let mut replacements = 0usize;
+    let mut offset = 0usize;
+    while offset + original.len() <= data.len() {
+        if data[offset..].starts_with(original) {
+            data[offset..offset + original.len()].copy_from_slice(replacement);
+            replacements += 1;
+            offset += original.len();
+        } else {
+            offset += 1;
+        }
+    }
+
+    replacements
 }
 
 fn validate_requested_app_groups(
@@ -586,24 +831,83 @@ fn validate_requested_app_groups(
 
 #[cfg(test)]
 mod tests {
-    use super::{app_group_for_bundle_id, validate_requested_app_groups};
+    use super::{
+        app_groups_from_entitlements, remap_app_groups, replace_equal_length,
+        validate_requested_app_groups,
+    };
     use plist::{Dictionary, Value};
     use std::path::Path;
 
     #[test]
-    fn derives_app_group_from_bundle_id() {
+    fn preserves_original_app_groups() {
+        let mut entitlements = Dictionary::new();
+        entitlements.insert(
+            "com.apple.security.application-groups".to_string(),
+            Value::Array(vec![
+                Value::String("group.de.marxon.wedee".to_string()),
+                Value::String("group.de.marxon.shared".to_string()),
+            ]),
+        );
+
         assert_eq!(
-            app_group_for_bundle_id("com.example.app.A1B2C3D4E5"),
-            "group.com.example.app.A1B2C3D4E5"
+            app_groups_from_entitlements(&entitlements),
+            vec![
+                "group.de.marxon.wedee".to_string(),
+                "group.de.marxon.shared".to_string()
+            ]
         );
     }
 
     #[test]
-    fn derives_app_group_for_other_namespaces() {
-        assert_eq!(
-            app_group_for_bundle_id("org.example.product.Z9Y8X7W6V5"),
-            "group.org.example.product.Z9Y8X7W6V5"
-        );
+    fn ignores_missing_original_app_groups() {
+        assert!(app_groups_from_entitlements(&Dictionary::new()).is_empty());
+    }
+
+    #[test]
+    fn remaps_app_groups_without_changing_length() {
+        let mappings =
+            remap_app_groups(&["group.de.marxon.wedee".to_string()], "4CP62AN6Z9").unwrap();
+
+        assert_eq!(mappings.len(), 1);
+        assert_eq!(mappings[0].0, "group.de.marxon.wedee");
+        assert_eq!(mappings[0].0.len(), mappings[0].1.len());
+        assert!(mappings[0].1.starts_with("group."));
+        assert_ne!(mappings[0].0, mappings[0].1);
+    }
+
+    #[test]
+    fn app_group_remapping_depends_on_team() {
+        let app_groups = ["group.de.marxon.wedee".to_string()];
+
+        let first = remap_app_groups(&app_groups, "4CP62AN6Z9").unwrap();
+        let second = remap_app_groups(&app_groups, "ABCDEFGHIJ").unwrap();
+
+        assert_ne!(first[0].1, second[0].1);
+    }
+
+    #[test]
+    fn remaps_longer_app_groups_first() {
+        let mappings = remap_app_groups(
+            &[
+                "group.example".to_string(),
+                "group.example.widgets".to_string(),
+            ],
+            "4CP62AN6Z9",
+        )
+        .unwrap();
+
+        assert_eq!(mappings[0].0, "group.example.widgets");
+        assert_eq!(mappings[1].0, "group.example");
+    }
+
+    #[test]
+    fn replaces_all_equal_length_app_group_references() {
+        let mut data = b"group.example bytes group.example".to_vec();
+
+        let replacements = replace_equal_length(&mut data, b"group.example", b"group.1234567");
+
+        assert_eq!(replacements, 2);
+        assert_eq!(data, b"group.1234567 bytes group.1234567");
     }
 
     #[test]

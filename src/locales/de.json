@@ -40,7 +40,7 @@
     "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stable)",
     "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
     "import_ipa": "IPA importieren",
-    "sign_app_extensions": "App-Extension signieren",
+    "sign_app_extensions": "App-Extensions importieren",
     "settings": "Einstellungen",
     "must_be_logged_in": "Du musst angemeldet sein!",
     "must_select_device": "Du musst ein Gerät auswählen!",

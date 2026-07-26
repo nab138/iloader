@@ -291,9 +291,38 @@ button:active:not(:disabled) {
   flex-wrap: wrap;
 }
 
-.action-row.single-row button {
+.action-row.single-row > button {
   flex: 1;
   min-width: 160px;
+}
+
+.import-ipa-control {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.import-ipa-control button {
+  width: 100%;
+}
+
+.sign-app-extensions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.sign-app-extensions input {
+  width: fit-content;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent-secondary);
 }
 
 .workspace-list {

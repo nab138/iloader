@@ -36,6 +36,8 @@ function App() {
   );
   const [loggedInAs, setLoggedInAs] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] = useState<DeviceInfo | null>(null);
+  const [signAppExtensions, setSignAppExtensions] =
+    useState<boolean>(false);
   const [openModal, setOpenModal] = useState<
     null | "certificates" | "appids" | "pairing"
   >(null);
@@ -361,26 +363,37 @@ function App() {
                 >
                   {t("app.livecontainer_sidestore_nightly")}
                 </button>
-                <button
-                  onClick={async () => {
-                    if (!ensuredLoggedIn() || !ensureSelectedDevice()) return;
-                    let path = await openFileDialog({
-                      multiple: false,
-                      filters: [
-                        { name: t("app.ipa_files"), extensions: ["ipa"] },
-                      ],
-                    });
-                    if (!path) return;
-                    startOperation(sideloadOperation, {
-                      appPath: path as string,
-                    }).catch((e) => {
-                      console.log(e.type);
-                      console.error(e.message);
-                    });
-                  }}
-                >
-                  {t("app.import_ipa")}
-                </button>
+                <div className="import-ipa-control">
+                  <button
+                    onClick={async () => {
+                      if (!ensuredLoggedIn() || !ensureSelectedDevice()) return;
+                      let path = await openFileDialog({
+                        multiple: false,
+                        filters: [
+                          { name: t("app.ipa_files"), extensions: ["ipa"] },
+                        ],
+                      });
+                      if (!path) return;
+                      startOperation(sideloadOperation, {
+                        appPath: path as string,
+                        signAppExtensions,
+                      }).catch((e) => {
+                        console.log(e.type);
+                        console.error(e.message);
+                      });
+                    }}
+                  >
+                    {t("app.import_ipa")}
+                  </button>
+                  <label className="sign-app-extensions">
+                    <input
+                      type="checkbox"
+                      checked={signAppExtensions}
+                      onChange={(e) => setSignAppExtensions(e.target.checked)}
+                    />
+                    {t("app.sign_app_extensions")}
+                  </label>
+                </div>
               </div>
             </GlassCard>
           </section>

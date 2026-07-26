@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 export type DropdownOption = {
   value: string;
   label: string;
+  subLabel?: string;
+  detail?: string;
 };
 
 type DropdownProps = {
@@ -41,6 +43,7 @@ export const Dropdown = ({
   const [flipUp, setFlipUp] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const toggleRef = useRef<HTMLButtonElement | null>(null);
+  const frozenOptionsRef = useRef(options);
   const customInputRef = useRef<HTMLInputElement | null>(null);
   const lastCustomValueRef = useRef<string>(
     allowCustom && options.every((option) => option.value !== value)
@@ -52,6 +55,15 @@ export const Dropdown = ({
     if (!allowCustom) return false;
     return options.every((option) => option.value !== value);
   }, [allowCustom, options, value]);
+
+  const openMenu = () => {
+    frozenOptionsRef.current = options;
+    setOpen(true);
+  };
+
+  const closeMenu = () => {
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (!open || !toggleRef.current) return;
@@ -69,20 +81,20 @@ export const Dropdown = ({
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setOpen(false);
+        closeMenu();
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
+        closeMenu();
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
     };
   }, [open]);
@@ -96,7 +108,7 @@ export const Dropdown = ({
   }, [allowCustom, isCustom, value]);
 
   const activateCustom = () => {
-    setOpen(false);
+    closeMenu();
     const nextValue = lastCustomValueRef.current || defaultCustomValue;
     if (nextValue) {
       onChange(nextValue);
@@ -104,7 +116,7 @@ export const Dropdown = ({
   };
 
   const deactivateCustom = () => {
-    setOpen(false);
+    closeMenu();
     if (options.length > 0) {
       onChange(options[0].value);
     }
@@ -122,16 +134,24 @@ export const Dropdown = ({
     lastCustomValueRef.current && lastCustomValueRef.current.length > 0
       ? `${resolvedCustomLabel} (${lastCustomValueRef.current})`
       : resolvedCustomLabel;
+  const menuOptions = open ? frozenOptionsRef.current : options;
   const dropdownOptions = allowCustom
-    ? [...options, { value: customValueKey, label: menuLabel }]
-    : options;
+    ? [...menuOptions, { value: customValueKey, label: menuLabel }]
+    : menuOptions;
   const selectedValue = isCustom ? customValueKey : value;
   const presetLabel =
     options.find((option) => option.value === value)?.label ??
     t("dropdown.select");
+  const presetSubLabel = options.find((option) => option.value === value)
+    ?.subLabel;
   const selectedLabel = isCustom
     ? lastCustomValueRef.current || resolvedCustomLabel
     : presetLabel;
+
+  const selectOption = (optionValue: string) => {
+    closeMenu();
+    onChange(optionValue);
+  };
 
   return (
     <div>
@@ -148,15 +168,20 @@ export const Dropdown = ({
             aria-haspopup="listbox"
             aria-expanded={open}
             aria-labelledby={labelId}
-            onClick={() => setOpen((current) => !current)}
+            onClick={() => (open ? closeMenu() : openMenu())}
             onKeyDown={(event) => {
               if (event.key === "ArrowDown" || event.key === "Enter") {
                 event.preventDefault();
-                setOpen(true);
+                openMenu();
               }
             }}
           >
-            <span>{selectedLabel}</span>
+            <span className="dropdown-selected-text">
+              <span>{selectedLabel}</span>
+              {!isCustom && presetSubLabel ? (
+                <span className="dropdown-sub-label">{presetSubLabel}</span>
+              ) : null}
+            </span>
             <span className="dropdown-caret" aria-hidden="true" />
           </button>
           {open && (
@@ -174,16 +199,32 @@ export const Dropdown = ({
                     role="option"
                     className={`dropdown-option${isSelected ? " selected" : ""}`}
                     aria-selected={isSelected}
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                    }}
                     onClick={() => {
                       if (option.value === customValueKey) {
                         activateCustom();
                       } else {
-                        onChange(option.value);
-                        setOpen(false);
+                        selectOption(option.value);
                       }
                     }}
                   >
-                    <span>{option.label}</span>
+                    <span className="dropdown-option-text">
+                      <span className="dropdown-option-main">
+                        <span>{option.label}</span>
+                        {option.subLabel ? (
+                          <span className="dropdown-sub-label">
+                            {option.subLabel}
+                          </span>
+                        ) : null}
+                      </span>
+                      {option.detail ? (
+                        <span className="dropdown-detail">
+                          {option.detail}
+                        </span>
+                      ) : null}
+                    </span>
                     {isSelected && (
                       <span className="checkmark" aria-hidden="true">
                         ✓

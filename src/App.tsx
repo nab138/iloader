@@ -27,9 +27,35 @@ import logo from "./iloader.svg";
 import { GlassCard } from "./components/GlassCard";
 import { useTranslation } from "react-i18next";
 import { usePlatform } from "./PlatformContext";
+import { useStore } from "./StoreContext";
+import { useDialog } from "./DialogContext";
+import {
+  anisetteServers,
+  AnisetteMeasurement,
+  measureAnisetteServers,
+} from "./anisette";
+
+const anisetteCheckIntervalMs = 30000;
+const fasterServerPromptThresholdMs = 50;
+const initialAnisetteToastId = "initial-anisette-speed-check";
 
 function App() {
   const { t } = useTranslation();
+  const { confirm } = useDialog();
+  const [anisetteServer, setAnisetteServer] = useStore<string>(
+    "anisetteServer",
+    "ani.sidestore.io",
+  );
+  const [anisetteMeasurements, setAnisetteMeasurements] = useState<
+    AnisetteMeasurement[]
+  >([]);
+  const suggestedAnisetteRef = useRef<string | null>(null);
+  const anisetteServerRef = useRef(anisetteServer);
+  const confirmRef = useRef(confirm);
+  const setAnisetteServerRef = useRef(setAnisetteServer);
+  const tRef = useRef(t);
+  const hasCompletedInitialAnisetteCheckRef = useRef(false);
+  const hasPromptedForFasterServerRef = useRef(false);
 
   const [operationState, setOperationState] = useState<OperationState | null>(
     null,
@@ -70,6 +96,115 @@ function App() {
 
   useEffect(() => {
     checkForUpdates();
+  }, []);
+
+  useEffect(() => {
+    anisetteServerRef.current = anisetteServer;
+  }, [anisetteServer]);
+
+  useEffect(() => {
+    confirmRef.current = confirm;
+    setAnisetteServerRef.current = setAnisetteServer;
+    tRef.current = t;
+  }, [confirm, setAnisetteServer, t]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let intervalId: number | undefined;
+
+    const checkAnisetteServers = async () => {
+      if (document.visibilityState !== "visible") return;
+
+      const isInitialCheck = !hasCompletedInitialAnisetteCheckRef.current;
+      const measurementPromise = measureAnisetteServers();
+      if (isInitialCheck) {
+        toast.promise(measurementPromise, {
+          id: initialAnisetteToastId,
+          loading: tRef.current("settings.anisette_finding_fastest"),
+          success: tRef.current("settings.anisette_fastest_found"),
+          error: tRef.current("settings.anisette_speed_check_failed"),
+        });
+      }
+
+      const measurements = await measurementPromise;
+      if (cancelled) return;
+
+      setAnisetteMeasurements(measurements);
+      if (isInitialCheck) {
+        hasCompletedInitialAnisetteCheckRef.current = true;
+      }
+
+      const currentAnisetteServer = anisetteServerRef.current;
+
+      const currentMeasurement = measurements.find(
+        (measurement) => measurement.value === currentAnisetteServer,
+      );
+      const fastestMeasurement = measurements
+        .filter((measurement) => measurement.ttfbMs !== null)
+        .sort((left, right) => left.ttfbMs! - right.ttfbMs!)[0];
+
+      if (
+        !isInitialCheck ||
+        hasPromptedForFasterServerRef.current ||
+        !fastestMeasurement ||
+        fastestMeasurement.value === currentAnisetteServer ||
+        suggestedAnisetteRef.current === fastestMeasurement.value
+      ) {
+        return;
+      }
+
+      const currentTtfbMs = currentMeasurement?.ttfbMs ?? null;
+      const fasterByMs =
+        currentTtfbMs === null
+          ? Number.POSITIVE_INFINITY
+          : currentTtfbMs - fastestMeasurement.ttfbMs!;
+
+      if (fasterByMs < fasterServerPromptThresholdMs) {
+        return;
+      }
+
+      const fastestServer = anisetteServers.find(
+        (server) => server.value === fastestMeasurement.value,
+      );
+      const currentServer =
+        anisetteServers.find(
+          (server) => server.value === currentAnisetteServer,
+        ) ?? {
+          label: currentAnisetteServer,
+          value: currentAnisetteServer,
+        };
+      if (!fastestServer) return;
+
+      suggestedAnisetteRef.current = fastestMeasurement.value;
+      hasPromptedForFasterServerRef.current = true;
+      window.setTimeout(() => {
+        if (cancelled) return;
+        confirmRef.current(
+          tRef.current("settings.anisette_faster_title"),
+          tRef.current("settings.anisette_faster_message", {
+            current: currentServer.label,
+            currentMs:
+              currentTtfbMs === null
+                ? tRef.current("settings.anisette_speed_no_response")
+                : `${currentTtfbMs}ms`,
+            faster: fastestServer.label,
+            fasterMs: `${fastestMeasurement.ttfbMs}ms`,
+          }),
+          () => setAnisetteServerRef.current(fastestMeasurement.value),
+        );
+      }, 350);
+    };
+
+    checkAnisetteServers();
+    intervalId = window.setInterval(
+      checkAnisetteServers,
+      anisetteCheckIntervalMs,
+    );
+
+    return () => {
+      cancelled = true;
+      if (intervalId !== undefined) window.clearInterval(intervalId);
+    };
   }, []);
 
   const shortcutLabel = useCallback(
@@ -393,6 +528,7 @@ function App() {
                 platform={platform}
                 shortcutLabel={shortcutLabel}
                 checkKeyring={checkKeyring}
+                anisetteMeasurements={anisetteMeasurements}
               />
             </GlassCard>
           </section>

@@ -1,6 +1,6 @@
 import "./Settings.css";
 import { useStore } from "../StoreContext";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LogLevel, useLogs } from "../LogContext";
 import { Modal } from "../components/Modal";
 import { Dropdown } from "../components/Dropdown";
@@ -13,6 +13,11 @@ import { Trans, useTranslation } from "react-i18next";
 import i18n, { sortedLanguages } from "../i18next";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { DeviceInfo } from "../Device";
+import {
+  anisetteServers,
+  AnisetteMeasurement,
+  AnisetteSpeedGrade,
+} from "../anisette";
 
 type SettingsProps = {
   ensureSelectedDevice: () => boolean;
@@ -20,24 +25,16 @@ type SettingsProps = {
   platform: string;
   shortcutLabel: (mac: string, windows: string, linux?: string) => string;
   checkKeyring: () => Promise<void>;
+  anisetteMeasurements: AnisetteMeasurement[];
 };
 
-let anisetteServers = [
-  ["ani.sidestore.io", "SideStore (.io)"],
-  ["ani.stikstore.app", "StikStore"],
-  ["ani.sidestore.app", "SideStore (.app)"],
-  ["ani.sidestore.zip", "SideStore (.zip)"],
-  ["ani.846969.xyz", "SideStore (.xyz)"],
-  ["ani.neoarz.xyz", "neoarz"],
-  ["ani.xu30.top", "SteX"],
-  ["anisette.wedotstud.io", "WE. Studio"],
-];
 export const Settings = ({
   ensureSelectedDevice,
   setSelectedDevice,
   platform,
   shortcutLabel,
   checkKeyring,
+  anisetteMeasurements,
 }: SettingsProps) => {
   const { t } = useTranslation();
   const [anisetteServer, setAnisetteServer] = useStore<string>(
@@ -59,10 +56,46 @@ export const Settings = ({
   const { err } = useError();
   const { confirm } = useDialog();
 
-  const anisetteOptions = anisetteServers.map(([value, label]) => ({
-    value,
-    label,
-  }));
+  const anisetteOptions = useMemo(() => {
+    const measurementMap = new Map(
+      anisetteMeasurements.map((measurement) => [
+        measurement.value,
+        measurement,
+      ]),
+    );
+    const labels: Record<AnisetteSpeedGrade, string> = {
+      very_fast: t("settings.anisette_speed_very_fast"),
+      fast: t("settings.anisette_speed_fast"),
+      good: t("settings.anisette_speed_good"),
+      normal: t("settings.anisette_speed_normal"),
+      slow: t("settings.anisette_speed_slow"),
+      very_slow: t("settings.anisette_speed_very_slow"),
+      no_response: t("settings.anisette_speed_no_response"),
+    };
+
+    return [...anisetteServers]
+      .sort((left, right) => {
+        const leftMeasurement = measurementMap.get(left.value);
+        const rightMeasurement = measurementMap.get(right.value);
+        const leftMs = leftMeasurement?.ttfbMs ?? Number.POSITIVE_INFINITY;
+        const rightMs = rightMeasurement?.ttfbMs ?? Number.POSITIVE_INFINITY;
+        return leftMs - rightMs;
+      })
+      .map(({ value, label }) => {
+        const measurement = measurementMap.get(value);
+        const speedLabel = measurement
+          ? measurement.ttfbMs === null
+            ? labels.no_response
+            : `${measurement.ttfbMs}ms, ${labels[measurement.grade]}`
+          : t("settings.anisette_speed_measuring");
+        return {
+          value,
+          label,
+          subLabel: value,
+          detail: speedLabel,
+        };
+      });
+  }, [anisetteMeasurements, t]);
   const logLevelOptions = [
     // { value: String(LogLevel.Trace), label: "Trace" },
     { value: String(LogLevel.Debug), label: t("settings.debug") },

@@ -58,6 +58,11 @@ pub const REMOTE_PAIRING_SERVICE: &str = "_remotepairing._tcp.local.";
 /// session; NOT the (dynamic) manual-pairing port and NOT 65000.
 pub const RSD_PORT: u16 = 49152;
 
+/// How long `vision_pair` waits for a live manual-pairing announcement (polls ×250ms).
+/// Sized for the observed re-announcement cadence (~30-60s between announcements, with
+/// the service absent in between), so a tap that lands in a gap still succeeds.
+const PAIRABLE_WAIT_POLLS: usize = 160;
+
 fn ap_err(context: &str, e: impl std::fmt::Debug) -> AppError {
     AppError::RemotePairing(format!("{context}: {e:?}"))
 }
@@ -379,6 +384,17 @@ fn remove_fullname(
         let still_present = by_fullname.lock().unwrap().values().any(|k| *k == key);
         if !still_present {
             devices.lock().unwrap().remove(&key);
+        } else if fullname.contains("_remotepairing-manual-pairing._tcp") {
+            // The headset withdrew its manual-pairing service but is still visible via
+            // remotepairing, so the device stays — but its pairing port MUST NOT. A
+            // headset re-advertises constantly with a NEW port each time (a field log
+            // showed 64421→64429 within 20 minutes), so a retained port is a port
+            // nothing is listening on: connecting to it fails, often as "no route to
+            // host" when the headset is also dozing. Better to report it as not
+            // currently pairable and wait for the next announcement.
+            if let Some(dev) = devices.lock().unwrap().get_mut(&key) {
+                dev.manual_pairing_port = None;
+            }
         }
     }
 }
@@ -930,29 +946,32 @@ async fn vision_pair_inner(
     // Resolve the CURRENT (dynamic) manual-pairing port from the persistent browser,
     // matching this VP by name. The port is re-announced as the device advertises, so
     // the warm set tracks it; we wait briefly only if nothing's cached yet.
+    // Wait for a CURRENTLY-advertised manual-pairing port, not merely for the device
+    // to be known. The headset withdraws and re-announces this service every ~30-60s
+    // with a fresh port, so it is routinely absent for a few seconds at a time; only
+    // a port from a live announcement is connectable.
     let b = browser();
-    let mut dev = b.get(&device.name);
-    for _ in 0..16 {
-        if dev.is_some() {
-            break;
+    let mut dev = None;
+    let mut seen_without_port = false;
+    for _ in 0..PAIRABLE_WAIT_POLLS {
+        if let Some(d) = b.get(&device.name) {
+            if d.manual_pairing_port.is_some() {
+                dev = Some(d);
+                break;
+            }
+            seen_without_port = true;
         }
-        tokio::time::sleep(Duration::from_millis(150)).await;
-        dev = b.get(&device.name);
+        tokio::select! {
+            _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
+            _ = tokio::time::sleep(Duration::from_millis(250)) => {}
+        }
     }
-    let dev = dev.ok_or_else(|| {
-        AppError::RemotePairing(
-            "Couldn't find the Vision Pro's pairing service over Wi-Fi. Make sure it's on the \
-             same network and Developer Mode is on."
-                .into(),
-        )
-    })?;
 
-    // The headset only advertises the manual-pairing service while it's willing to
-    // accept a new pairing; an existing host pairing (iloader's, Xcode's, another
-    // Mac's) usually suppresses it. Guide the user to make it pairable again — and
-    // point out the Xcode-bridge alternative that needs no new pairing at all.
-    let port = dev.manual_pairing_port.ok_or_else(|| {
-        AppError::RemotePairing(
+    let Some(dev) = dev else {
+        // Distinguish "we can't see it at all" from "we see it but it never offers
+        // pairing" — an existing host pairing (iloader's, Xcode's, another Mac's)
+        // suppresses the manual-pairing service entirely.
+        return Err(AppError::RemotePairing(if seen_without_port {
             "This Vision Pro already holds a host pairing (possibly Xcode's), so it isn't \
              accepting new pairing requests. To pair iloader: on the headset, open Settings → \
              General → Remote Devices, remove the existing entry, then try again. An Xcode \
@@ -960,9 +979,16 @@ async fn vision_pair_inner(
              Xcode's pairings coexist once both are set up. Tip: if this Mac is already \
              paired via Xcode, the headset may also appear in the device list as a \
              \"Network\" device, which you can sideload to directly without pairing iloader."
-                .into(),
-        )
-    })?;
+                .into()
+        } else {
+            "Couldn't find the Vision Pro's pairing service over Wi-Fi. Make sure it's on the \
+             same network, awake (put the headset on), and that Developer Mode is on."
+                .into()
+        }));
+    };
+    let port = dev
+        .manual_pairing_port
+        .expect("loop only exits with a device that has a port");
 
     // Pair, with one silent retry for failures that happen BEFORE the user was asked
     // for a code. If the headset's code screen isn't up when the session starts, the

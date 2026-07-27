@@ -3071,7 +3071,7 @@ dependencies = [
 
 [[package]]
 name = "iloader"
-version = "2.2.10"
+version = "2.2.11"
 dependencies = [
  "async-dnssd",
  "chrono",

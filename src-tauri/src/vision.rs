@@ -2,7 +2,9 @@
 //! usbmux. A Wi-Fi Vision Pro is not carried by usbmuxd, so it can't be reached via
 //! `UsbmuxdProvider` like an iPhone/iPad. Instead we:
 //!
-//!   1. discover it over mDNS (`_remotepairing-manual-pairing._tcp`),
+//!   1. discover it over mDNS (`_remotepairing-manual-pairing._tcp`) — via the
+//!      system Bonjour daemon on macOS (see the `bonjour` module for why), via
+//!      `mdns_sd`'s own multicast sockets elsewhere,
 //!   2. first-time pair with the 6-digit code shown on the headset (`vision_pair`),
 //!   3. reach its install services over an RP tunnel:
 //!        pair-verify on RSD :49152 -> create_tcp_listener -> TLS-PSK CDTunnel
@@ -17,6 +19,7 @@ use std::future::Future;
 use std::hash::{Hash, Hasher};
 use std::path::Path;
 use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 
@@ -31,6 +34,7 @@ use idevice::remote_pairing::{
 use idevice::rsd::RsdHandshake;
 use idevice::tcp::adapter::Adapter;
 use idevice::tcp::handle::AdapterHandle;
+#[cfg(not(target_os = "macos"))]
 use mdns_sd::{ResolvedService, ServiceDaemon, ServiceEvent};
 use tokio::net::TcpStream;
 
@@ -101,6 +105,8 @@ pub fn pairing_storage_key(name: &str) -> String {
 
 /// Friendly instance name from a manual-pairing fullname
 /// ("Austin's Apple Vision Pro._remotepairing-manual-pairing._tcp.local." → the name).
+/// (mdns_sd only — dns_sd browse callbacks already carry the unescaped instance name.)
+#[cfg(not(target_os = "macos"))]
 fn instance_name(fullname: &str) -> String {
     fullname
         .split("._remotepairing")
@@ -140,7 +146,9 @@ fn is_vision_hostname(hostname: &str) -> bool {
 struct VisionBrowser {
     devices: Arc<Mutex<HashMap<String, Discovered>>>,
     // Kept alive for the process lifetime; `None` if mDNS was unavailable, in which
-    // case `devices` simply stays empty (no Vision Pros) rather than erroring.
+    // case `devices` simply stays empty (no Vision Pros) rather than erroring. On
+    // macOS the browse tasks are detached onto the async runtime instead.
+    #[cfg(not(target_os = "macos"))]
     _daemon: Option<ServiceDaemon>,
 }
 
@@ -162,15 +170,88 @@ impl VisionBrowser {
 
 static BROWSER: OnceLock<VisionBrowser> = OnceLock::new();
 
+/// Human-readable reason Vision Pro discovery couldn't start — on macOS a rejected
+/// Bonjour browse (most notably kDNSServiceErr_PolicyDenied when Local Network
+/// permission is off), elsewhere an mDNS stack that failed to bind/join multicast.
+/// `None` while discovery is healthy. Surfaced to the UI's empty-list hint via the
+/// `vision_discovery_error` command. Previously this failure was swallowed
+/// by `ServiceDaemon::new().ok()`, so a blocked mDNS looked identical to "no device".
+static DISCOVERY_ERROR: Mutex<Option<String>> = Mutex::new(None);
+
+fn set_discovery_error(msg: Option<String>) {
+    if let Ok(mut guard) = DISCOVERY_ERROR.lock() {
+        *guard = msg;
+    }
+}
+
+/// The current discovery-startup error, if any. `None` means discovery is running (a
+/// device simply may not be present/reachable yet) — callers must not read `None` as
+/// "a device exists".
+pub fn discovery_error() -> Option<String> {
+    DISCOVERY_ERROR.lock().ok().and_then(|guard| guard.clone())
+}
+
+/// Frontend-facing: the Vision Pro discovery-startup error, if discovery couldn't start
+/// (mDNS blocked / Local Network permission denied). `None` = discovery is running.
+/// The device list's empty state uses this to explain *why* nothing showed up.
+#[tauri::command]
+pub fn vision_discovery_error() -> Option<String> {
+    discovery_error()
+}
+
 fn browser() -> &'static VisionBrowser {
-    BROWSER.get_or_init(|| {
-        let daemon = ServiceDaemon::new().ok();
+    BROWSER.get_or_init(new_browser)
+}
+
+/// macOS: browse through the system Bonjour daemon — see the `bonjour` module for why
+/// raw multicast is a trap here.
+#[cfg(target_os = "macos")]
+fn new_browser() -> VisionBrowser {
+    let devices: Arc<Mutex<HashMap<String, Discovered>>> = Arc::new(Mutex::new(HashMap::new()));
+    let by_fullname: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
+    set_discovery_error(None);
+    bonjour::start(devices.clone(), by_fullname);
+    VisionBrowser { devices }
+}
+
+/// Non-macOS: mdns_sd's own multicast sockets (no local-network gatekeeper there).
+#[cfg(not(target_os = "macos"))]
+fn new_browser() -> VisionBrowser {
+    {
+        let daemon = match ServiceDaemon::new() {
+            Ok(daemon) => {
+                set_discovery_error(None);
+                Some(daemon)
+            }
+            Err(e) => {
+                tracing::error!(
+                    target: "vision",
+                    "Couldn't start network discovery (mDNS): {e}. Vision Pro discovery is \
+                     disabled. On macOS this usually means Local Network permission was denied \
+                     (System Settings ▸ Privacy & Security ▸ Local Network) or a VPN/firewall is \
+                     blocking multicast."
+                );
+                set_discovery_error(Some(format!("Couldn't start network discovery: {e}")));
+                None
+            }
+        };
         let devices: Arc<Mutex<HashMap<String, Discovered>>> = Arc::new(Mutex::new(HashMap::new()));
         let by_fullname: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
 
         if let Some(daemon) = &daemon {
             for service in [MANUAL_PAIRING_SERVICE, REMOTE_PAIRING_SERVICE] {
-                if let Ok(recv) = daemon.browse(service) {
+                let recv = match daemon.browse(service) {
+                    Ok(recv) => recv,
+                    Err(e) => {
+                        tracing::error!(
+                            target: "vision",
+                            "Couldn't browse mDNS service {service}: {e}"
+                        );
+                        set_discovery_error(Some(format!("Couldn't start network discovery: {e}")));
+                        continue;
+                    }
+                };
+                {
                     let is_manual = service == MANUAL_PAIRING_SERVICE;
                     let devices_bg = devices.clone();
                     let by_fullname_bg = by_fullname.clone();
@@ -189,17 +270,7 @@ fn browser() -> &'static VisionBrowser {
                                     }
                                 }
                                 ServiceEvent::ServiceRemoved(_, fullname) => {
-                                    let key = by_fullname_bg.lock().unwrap().remove(&fullname);
-                                    if let Some(key) = key {
-                                        let still_present = by_fullname_bg
-                                            .lock()
-                                            .unwrap()
-                                            .values()
-                                            .any(|k| *k == key);
-                                        if !still_present {
-                                            devices_bg.lock().unwrap().remove(&key);
-                                        }
-                                    }
+                                    remove_fullname(&devices_bg, &by_fullname_bg, &fullname);
                                 }
                                 _ => {}
                             }
@@ -216,11 +287,12 @@ fn browser() -> &'static VisionBrowser {
             devices,
             _daemon: daemon,
         }
-    })
+    }
 }
 
 /// Turn a resolved mDNS record into `(device key, Discovered)`, or `None` if it isn't a
 /// Vision Pro we can use.
+#[cfg(not(target_os = "macos"))]
 fn parse_resolved(info: &ResolvedService, is_manual: bool) -> Option<(String, Discovered)> {
     let addr = info.get_addresses_v4().into_iter().next()?;
     if is_manual {
@@ -262,6 +334,212 @@ fn merge_device(devices: &Arc<Mutex<HashMap<String, Discovered>>>, key: String, 
         dev.manual_pairing_port = existing.manual_pairing_port;
     }
     guard.insert(key, dev);
+}
+
+/// A service instance went away: drop its record, and drop the device itself only if
+/// no other record still references it (a VP is often visible via two services, or
+/// the same service on several interfaces).
+fn remove_fullname(
+    devices: &Arc<Mutex<HashMap<String, Discovered>>>,
+    by_fullname: &Arc<Mutex<HashMap<String, String>>>,
+    fullname: &str,
+) {
+    let key = by_fullname.lock().unwrap().remove(fullname);
+    if let Some(key) = key {
+        let still_present = by_fullname.lock().unwrap().values().any(|k| *k == key);
+        if !still_present {
+            devices.lock().unwrap().remove(&key);
+        }
+    }
+}
+
+/// System-Bonjour (dns_sd → mDNSResponder) discovery backend, macOS only.
+///
+/// On macOS 15+ the Local Network privacy layer decides per-app whether local traffic
+/// is allowed — and for an app doing its own multicast (mdns_sd) the OS frequently
+/// fails to attribute the traffic to the app. When that happens there is no permission
+/// prompt, the app never appears in System Settings ▸ Privacy & Security ▸ Local
+/// Network, and the packets are silently dropped: user logs show mdns_sd joining its
+/// multicast groups cleanly and then receiving nothing, ever. (Dev runs never hit this
+/// because terminal-spawned processes get automatic local-network access — TN3179.)
+///
+/// Browsing through mDNSResponder instead is Apple's designed path: the daemon does
+/// the multicast, the browse is attributed to us, macOS reliably shows the prompt and
+/// lists iloader in the Settings pane, and interface churn / sleep-wake are the
+/// daemon's problem, not ours.
+#[cfg(target_os = "macos")]
+mod bonjour {
+    use super::*;
+    use async_dnssd::{BrowseResult, BrowsedFlags, ScopedSocketAddr};
+    use futures::StreamExt;
+
+    /// Budget for turning one browse announcement into a connectable (host, port,
+    /// IPv4). Generous — a re-announcement retriggers resolution anyway.
+    const RESOLVE_BUDGET: Duration = Duration::from_secs(10);
+
+    pub(super) fn start(
+        devices: Arc<Mutex<HashMap<String, Discovered>>>,
+        by_fullname: Arc<Mutex<HashMap<String, String>>>,
+    ) {
+        for service in [MANUAL_PAIRING_SERVICE, REMOTE_PAIRING_SERVICE] {
+            // dns_sd takes the bare reg type; the ".local." domain is implied.
+            let reg_type = service.strip_suffix(".local.").unwrap_or(service);
+            let is_manual = service == MANUAL_PAIRING_SERVICE;
+            let devices = devices.clone();
+            let by_fullname = by_fullname.clone();
+            tauri::async_runtime::spawn(async move {
+                browse_loop(reg_type, is_manual, devices, by_fullname).await;
+            });
+        }
+    }
+
+    /// Browse one service type forever. The stream only terminates on error (e.g.
+    /// mDNSResponder restarted, or the browse was rejected), so on termination we
+    /// surface the error and retry on a slow cadence — cheap, and it recovers a
+    /// just-granted Local Network permission without relaunching.
+    async fn browse_loop(
+        reg_type: &'static str,
+        is_manual: bool,
+        devices: Arc<Mutex<HashMap<String, Discovered>>>,
+        by_fullname: Arc<Mutex<HashMap<String, String>>>,
+    ) {
+        loop {
+            let mut browse = async_dnssd::browse(reg_type);
+            // A rejected browse (PolicyDenied etc.) errors within moments; one that
+            // survives its first seconds was accepted, so a stale startup error (e.g.
+            // permission was off, user just switched it on) no longer applies —
+            // clear it even before any device announces itself.
+            let mut accepted = false;
+            loop {
+                let event = if accepted {
+                    browse.next().await
+                } else {
+                    tokio::select! {
+                        event = browse.next() => event,
+                        _ = tokio::time::sleep(Duration::from_secs(3)) => {
+                            accepted = true;
+                            set_discovery_error(None);
+                            continue;
+                        }
+                    }
+                };
+                let Some(event) = event else { break };
+                let event = match event {
+                    Ok(event) => event,
+                    Err(e) => {
+                        tracing::error!(
+                            target: "vision",
+                            "Bonjour browse for {reg_type} failed: {e}"
+                        );
+                        set_discovery_error(Some(explain_browse_error(&e)));
+                        break;
+                    }
+                };
+                // Events are flowing, so discovery is demonstrably working.
+                set_discovery_error(None);
+                let fullname =
+                    format!("{}.{}{}", event.service_name, event.reg_type, event.domain);
+                if event.flags.contains(BrowsedFlags::ADD) {
+                    let devices = devices.clone();
+                    let by_fullname = by_fullname.clone();
+                    // Resolve in its own task so a slow SRV/address lookup doesn't
+                    // stall the browse stream (and other devices' events).
+                    tauri::async_runtime::spawn(async move {
+                        if let Some((key, dev)) = resolve_discovered(&event, is_manual).await {
+                            tracing::info!(
+                                target: "vision",
+                                "Bonjour: {} at {} (manual pairing port: {:?})",
+                                dev.name,
+                                dev.ip,
+                                dev.manual_pairing_port
+                            );
+                            by_fullname.lock().unwrap().insert(fullname, key.clone());
+                            merge_device(&devices, key, dev);
+                        }
+                    });
+                } else {
+                    tracing::debug!(target: "vision", "Bonjour: {fullname} went away");
+                    remove_fullname(&devices, &by_fullname, &fullname);
+                }
+            }
+            tokio::time::sleep(Duration::from_secs(15)).await;
+        }
+    }
+
+    /// Resolve one browse Add into `(device key, Discovered)` — the dns_sd analogue
+    /// of `parse_resolved`. `None` for non-VP hosts, no IPv4, or a blown budget.
+    async fn resolve_discovered(
+        event: &BrowseResult,
+        is_manual: bool,
+    ) -> Option<(String, Discovered)> {
+        let Ok(Some(Ok(resolved))) =
+            tokio::time::timeout(RESOLVE_BUDGET, event.resolve().next()).await
+        else {
+            tracing::debug!(
+                target: "vision",
+                "Bonjour: couldn't resolve {} (device gone or asleep?)",
+                event.service_name
+            );
+            return None;
+        };
+        // remotepairing is advertised by iPhones too (they're handled over usbmux);
+        // only the hostname says which kind of device this is.
+        if !is_manual && !is_vision_hostname(&resolved.host_target) {
+            tracing::debug!(
+                target: "vision",
+                "Bonjour: {} is {} — not a Vision Pro, ignoring",
+                event.service_name,
+                resolved.host_target
+            );
+            return None;
+        }
+        let name = if is_manual {
+            event.service_name.replace('\u{a0}', " ")
+        } else {
+            hostname_label(&resolved.host_target)
+        };
+
+        // First IPv4 (parity with the mdns_sd path, which listed v4 addresses).
+        let mut addrs = resolved.resolve_socket_address();
+        let ip = tokio::time::timeout(RESOLVE_BUDGET, async {
+            while let Some(addr) = addrs.next().await {
+                if let Ok(addr) = addr
+                    && let ScopedSocketAddr::V4 { address, .. } = addr.address
+                {
+                    return Some(address.to_string());
+                }
+            }
+            None
+        })
+        .await
+        .ok()
+        .flatten()?;
+
+        Some((
+            canonical(&name),
+            Discovered {
+                name,
+                ip,
+                manual_pairing_port: is_manual.then_some(resolved.port),
+            },
+        ))
+    }
+
+    /// A denied Local Network permission surfaces as dns_sd error -65570
+    /// (kDNSServiceErr_PolicyDenied; async-dnssd's older tables call it
+    /// "ConnectionPending"). Translate that to something a user can act on.
+    fn explain_browse_error(e: &std::io::Error) -> String {
+        let raw = e.to_string();
+        let lower = raw.to_lowercase();
+        if raw.contains("65570") || lower.contains("policy") || lower.contains("connection pending")
+        {
+            "Local Network permission is off for iloader — enable it in System Settings ▸ \
+             Privacy & Security ▸ Local Network, then try again."
+                .to_string()
+        } else {
+            format!("Couldn't start network discovery: {raw}")
+        }
+    }
 }
 
 /// Start the persistent Vision Pro browser at app launch so the multicast group is
@@ -649,50 +927,85 @@ async fn vision_pair_inner(
         )
     })?;
 
-    let stream = tokio::select! {
-        _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
-        res = TcpStream::connect((dev.ip.as_str(), port)) => {
-            res.map_err(|e| ap_err(&format!("connect {}:{}", dev.ip, port), e))?
-        }
-    };
+    // Pair, with one silent retry for failures that happen BEFORE the user was asked
+    // for a code. If the headset's code screen isn't up when the session starts, the
+    // first session can be a dud (and was guaranteed to be, before the vendored
+    // idevice fix for `awaitingUserConsent`); the user can't have mistyped anything
+    // yet, so retrying transparently beats surfacing an error.
+    let mut attempt = 0;
+    let pf = loop {
+        // Re-resolve address/port from the live browser each attempt — the
+        // manual-pairing port is dynamic and can rotate when the session cycles.
+        let (ip, port) = match b.get(&device.name) {
+            Some(d) if d.manual_pairing_port.is_some() => {
+                (d.ip.clone(), d.manual_pairing_port.unwrap())
+            }
+            _ => (dev.ip.clone(), port),
+        };
 
-    let mut client = RemotePairingClient::new(RpPairingSocket::new(stream), "iloader");
-    let mut pf = RpPairingFile::generate("iloader");
+        let code_requested = Arc::new(AtomicBool::new(false));
 
-    // The device shows the code; we prompt the user for it via the frontend. idevice
-    // calls this once, after the code is on the headset.
-    let win = window.clone();
-    let code_cb = move || {
-        let win = win.clone();
-        async move {
-            let (tx, rx) = tokio::sync::oneshot::channel::<String>();
-            let tx = std::sync::Mutex::new(Some(tx));
-            let handler = win.listen("vision-pair-code", move |event| {
-                if let Ok(mut guard) = tx.lock()
-                    && let Some(sender) = guard.take()
-                {
-                    let raw = event.payload();
-                    let code =
-                        serde_json::from_str::<String>(raw).unwrap_or_else(|_| raw.to_string());
-                    let _ = sender.send(code);
+        let stream = tokio::select! {
+            _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
+            res = TcpStream::connect((ip.as_str(), port)) => {
+                res.map_err(|e| ap_err(&format!("connect {ip}:{port}"), e))?
+            }
+        };
+
+        let mut client = RemotePairingClient::new(RpPairingSocket::new(stream), "iloader");
+        let mut pf = RpPairingFile::generate("iloader");
+
+        // The device shows the code; we prompt the user for it via the frontend.
+        // idevice calls this once, after the code is on the headset.
+        let win = window.clone();
+        let requested = code_requested.clone();
+        let code_cb = move || {
+            let win = win.clone();
+            requested.store(true, Ordering::SeqCst);
+            async move {
+                let (tx, rx) = tokio::sync::oneshot::channel::<String>();
+                let tx = std::sync::Mutex::new(Some(tx));
+                let handler = win.listen("vision-pair-code", move |event| {
+                    if let Ok(mut guard) = tx.lock()
+                        && let Some(sender) = guard.take()
+                    {
+                        let raw = event.payload();
+                        let code =
+                            serde_json::from_str::<String>(raw).unwrap_or_else(|_| raw.to_string());
+                        let _ = sender.send(code);
+                    }
+                });
+                let _ = win.emit("vision-pair-status", "awaiting-code");
+                let code = rx.await.unwrap_or_default();
+                win.unlisten(handler);
+                code.chars().filter(|c| c.is_ascii_digit()).take(6).collect::<String>()
+            }
+        };
+
+        let result = tokio::select! {
+            _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
+            res = client.connect(&mut pf, code_cb) => res,
+        };
+
+        match result {
+            Ok(()) => break pf,
+            Err(e) => {
+                if attempt == 0 && !code_requested.load(Ordering::SeqCst) {
+                    tracing::warn!(
+                        target: "vision",
+                        "first pairing attempt failed before any code prompt ({e:?}); retrying"
+                    );
+                    attempt += 1;
+                    tokio::time::sleep(Duration::from_millis(750)).await;
+                    continue;
                 }
-            });
-            let _ = win.emit("vision-pair-status", "awaiting-code");
-            let code = rx.await.unwrap_or_default();
-            win.unlisten(handler);
-            code.chars().filter(|c| c.is_ascii_digit()).take(6).collect::<String>()
+                return Err(AppError::RemotePairing(format!(
+                    "Pairing failed: {e:?}\n(If it mentions 'missing server proof', the code was \
+                     mistyped — try pairing again.)"
+                )));
+            }
         }
     };
-
-    tokio::select! {
-        _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
-        res = client.connect(&mut pf, code_cb) => {
-            res.map_err(|e| AppError::RemotePairing(format!(
-                "Pairing failed: {e:?}\n(If it mentions 'missing server proof', the code was \
-                 mistyped — try pairing again.)"
-            )))?;
-        }
-    }
 
     let bytes = pf.to_bytes();
     store_pairing_data(app, &pairing_storage_key(&device.name), &bytes)?;

@@ -90,6 +90,8 @@
     "found_devices": "Found devices",
     "unable_load_devices_prefix": "Unable to load devices",
     "no_devices_found_period": "No devices found.",
+    "no_devices_hint_mac": "No Vision Pro? Make sure iloader has Local Network permission (System Settings > Privacy & Security > Local Network), that iloader is in your Applications folder, and that your Mac and Vision Pro are on the same Wi-Fi network.",
+    "discovery_error_hint": "{{error}}. On macOS, open System Settings > Privacy & Security > Local Network and enable iloader, keep iloader in your Applications folder, and turn off any VPN or firewall that could block local networking.",
     "selected": "Selected",
     "pairing_in_progress_header": "Pairing with {{device}}...",
     "pairing_in_progress_hint": "Please unlock your device and click \"Trust,\" then enter your passcode if prompted.",

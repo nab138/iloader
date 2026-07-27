@@ -51,3 +51,20 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
   font-size: 0.9rem;
 }
+
+.no-devices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.no-devices-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  max-width: 46ch;
+}
+
+.no-devices-hint--error {
+  color: var(--accent-warning, #e0a100);
+}

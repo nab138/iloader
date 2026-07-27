@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Modal } from "./components/Modal";
 import { useError } from "./ErrorContext";
 import { AppError } from "./errors";
+import { usePlatform } from "./PlatformContext";
 
 export type DeviceInfo = {
   name: string;
@@ -59,7 +60,13 @@ export const Device = ({
   registerRefresh?: (fn?: () => void) => void;
 }) => {
   const { t } = useTranslation();
+  const { platform } = usePlatform();
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
+  // Why the last refresh found nothing, when mDNS itself couldn't start (e.g. macOS
+  // Local Network permission denied / a firewall ate multicast). `null` = discovery
+  // is running fine, so the empty state falls back to the generic "check permission"
+  // hint rather than a specific error.
+  const [discoveryError, setDiscoveryError] = useState<string | null>(null);
   const [waitingToPair, setWaitingToPair] = useState<DeviceInfo | null>(null);
   const [showPairingModal, setShowPairingModal] = useState(false);
 
@@ -208,6 +215,11 @@ export const Device = ({
         }
 
         setDevices(devices);
+        // Surface a mDNS-startup failure so an empty list isn't mistaken for "no
+        // device present" (the common macOS Local Network permission trap).
+        invoke<string | null>("vision_discovery_error")
+          .then((msg) => setDiscoveryError(msg ?? null))
+          .catch(() => setDiscoveryError(null));
         if (selectedDevice) {
           const stillAvailable = devices.find(
             (d) => d.id === selectedDevice.id,
@@ -367,7 +379,18 @@ export const Device = ({
       <h2 style={{ marginTop: 0 }}>{t("device.title")}</h2>
       <div className="credentials-container">
         {devices.length === 0 && (
-          <div>{t("device.no_devices_found_period")}</div>
+          <div className="no-devices">
+            <div>{t("device.no_devices_found_period")}</div>
+            {discoveryError ? (
+              <div className="no-devices-hint no-devices-hint--error">
+                {t("device.discovery_error_hint", { error: discoveryError })}
+              </div>
+            ) : platform === "mac" ? (
+              <div className="no-devices-hint">
+                {t("device.no_devices_hint_mac")}
+              </div>
+            ) : null}
+          </div>
         )}
         {devices.map((device) => {
           const isActive = selectedDevice?.id === device.id;

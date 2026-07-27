@@ -27,7 +27,7 @@ use crate::{
     },
     secure_storage::{force_disable_keyring, keyring_available},
     sideload::{SideloaderMutex, install_sidestore_operation, sideload_operation},
-    vision::vision_pair,
+    vision::{vision_discovery_error, vision_pair},
 };
 use tauri::Manager;
 use tracing_subscriber::{Layer, Registry, fmt, layer::SubscriberExt, util::SubscriberInitExt};
@@ -134,6 +134,7 @@ pub fn run() {
             cancel_pairing,
             has_stored_rppairing,
             vision_pair,
+            vision_discovery_error,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

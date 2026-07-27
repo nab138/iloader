@@ -1,7 +1,7 @@
 {
   "name": "iloader",
   "private": true,
-  "version": "2.2.6",
+  "version": "2.2.9",
   "type": "module",
   "scripts": {
     "dev": "vite",

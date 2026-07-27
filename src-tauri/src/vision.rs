@@ -62,6 +62,29 @@ fn ap_err(context: &str, e: impl std::fmt::Debug) -> AppError {
     AppError::RemotePairing(format!("{context}: {e:?}"))
 }
 
+/// A TCP connect to the (already discovered) headset failed — explain the common
+/// causes instead of dumping a bare OS error. `HostUnreachable`/`TimedOut` against a
+/// LAN peer usually isn't routing: the headset is asleep (ARP goes unanswered), or
+/// the Wi-Fi router keeps wireless clients from talking to each other (guest network
+/// / AP or client isolation), or a VPN/firewall intercepts local traffic.
+fn connect_err(what: &str, ip: &str, port: u16, e: std::io::Error) -> AppError {
+    use std::io::ErrorKind;
+    let hint = match e.kind() {
+        ErrorKind::HostUnreachable | ErrorKind::NetworkUnreachable | ErrorKind::TimedOut => {
+            "\nThe Vision Pro was found, but the Mac can't reach it directly. Usually this \
+             means the headset is asleep (put it on and keep it awake), the Wi-Fi router \
+             blocks devices from talking to each other (guest network or AP/client \
+             isolation — try your main network), or a VPN/firewall is in the way."
+        }
+        ErrorKind::ConnectionRefused => {
+            "\nThe Vision Pro refused the connection — its pairing service may have just \
+             restarted with a new port. Try again in a few seconds."
+        }
+        _ => "",
+    };
+    AppError::RemotePairing(format!("{what} ({ip}:{port}): {e}{hint}"))
+}
+
 /// A Vision Pro discovered over mDNS.
 #[derive(Clone, Debug)]
 pub struct Discovered {
@@ -87,8 +110,8 @@ impl Discovered {
 
 /// Canonical device identity: lowercase, alphanumerics only. This makes the two mDNS
 /// views of the same Vision Pro agree — the manual-pairing service reports the friendly
-/// name ("Austin's Apple Vision Pro") while the remotepairing service reports the
-/// hostname ("Austins-AppleVisionPro"); both canonicalize to "austinsapplevisionpro".
+/// name ("Sam's Apple Vision Pro") while the remotepairing service reports the
+/// hostname ("Sams-AppleVisionPro"); both canonicalize to "samsapplevisionpro".
 fn canonical(name: &str) -> String {
     name.chars()
         .filter(|c| c.is_ascii_alphanumeric())
@@ -104,7 +127,7 @@ pub fn pairing_storage_key(name: &str) -> String {
 }
 
 /// Friendly instance name from a manual-pairing fullname
-/// ("Austin's Apple Vision Pro._remotepairing-manual-pairing._tcp.local." → the name).
+/// ("Sam's Apple Vision Pro._remotepairing-manual-pairing._tcp.local." → the name).
 /// (mdns_sd only — dns_sd browse callbacks already carry the unescaped instance name.)
 #[cfg(not(target_os = "macos"))]
 fn instance_name(fullname: &str) -> String {
@@ -116,8 +139,8 @@ fn instance_name(fullname: &str) -> String {
         .to_string()
 }
 
-/// The device label from an mDNS hostname ("Austins-AppleVisionPro.local." →
-/// "Austins AppleVisionPro"). Used for the remotepairing view, which carries only a
+/// The device label from an mDNS hostname ("Sams-AppleVisionPro.local." →
+/// "Sams AppleVisionPro"). Used for the remotepairing view, which carries only a
 /// UUID instance name, not the friendly name.
 fn hostname_label(hostname: &str) -> String {
     hostname
@@ -128,9 +151,12 @@ fn hostname_label(hostname: &str) -> String {
 }
 
 /// True if a hostname looks like a Vision Pro (so we don't list iPhones, which also
-/// advertise `_remotepairing._tcp` and are handled over usbmux).
+/// advertise `_remotepairing._tcp` and are handled over usbmux). Hostname shape
+/// depends on the device name — a default-named headset is "Apple-Vision-Pro.local.",
+/// a custom-named one e.g. "Sams-AppleVisionPro.local." — so compare on
+/// alphanumerics only, or the hyphenated default slips through the filter.
 fn is_vision_hostname(hostname: &str) -> bool {
-    let h = hostname.to_lowercase();
+    let h = canonical(hostname);
     h.contains("visionpro") || h.contains("realitydevice")
 }
 
@@ -578,7 +604,7 @@ impl VisionSession {
         // 1. pair-verify on the RSD to derive the tunnel key.
         let s1 = TcpStream::connect((ip, RSD_PORT))
             .await
-            .map_err(|e| ap_err(&format!("connect {ip}:{RSD_PORT} (RSD)"), e))?;
+            .map_err(|e| connect_err("Couldn't reach the Vision Pro (RSD)", ip, RSD_PORT, e))?;
         let mut client = RemotePairingClient::new(RpPairingSocket::new(s1), "iloader");
         client
             .connect(&mut pf, || async { "000000".to_string() })
@@ -597,7 +623,7 @@ impl VisionSession {
             .map_err(|e| ap_err("create tunnel listener", e))?;
         let s2 = TcpStream::connect((ip, tport))
             .await
-            .map_err(|e| ap_err(&format!("connect tunnel {ip}:{tport}"), e))?;
+            .map_err(|e| connect_err("Couldn't open the tunnel to the Vision Pro", ip, tport, e))?;
         let tunnel = connect_tls_psk_tunnel_native(s2, &key)
             .await
             .map_err(|e| ap_err("TLS-PSK tunnel", e))?;
@@ -948,7 +974,7 @@ async fn vision_pair_inner(
         let stream = tokio::select! {
             _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
             res = TcpStream::connect((ip.as_str(), port)) => {
-                res.map_err(|e| ap_err(&format!("connect {ip}:{port}"), e))?
+                res.map_err(|e| connect_err("Couldn't reach the Vision Pro to pair", &ip, port, e))?
             }
         };
 
@@ -1017,4 +1043,31 @@ async fn vision_pair_inner(
     let udid = read_udid(&dev.ip, &bytes).await.unwrap_or_default();
 
     Ok((bytes, udid))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn vision_hostname_filter_accepts_all_headset_name_shapes() {
+        // Default device name hyphenates: this exact shape was field-reported as
+        // wrongly filtered out ("not a Vision Pro, ignoring").
+        assert!(is_vision_hostname("Apple-Vision-Pro.local."));
+        assert!(is_vision_hostname("Apple-Vision-Pro-2.local."));
+        // Custom-named headsets concatenate.
+        assert!(is_vision_hostname("Sams-AppleVisionPro.local."));
+        assert!(is_vision_hostname("RealityDevice.local."));
+        // iPhones/AppleTVs advertise _remotepairing._tcp too and must stay hidden.
+        assert!(!is_vision_hostname("Sams-iPhone.local."));
+        assert!(!is_vision_hostname("Living-Room-Apple-TV.local."));
+    }
+
+    #[test]
+    fn canonical_unifies_friendly_name_and_hostname() {
+        assert_eq!(
+            canonical("Sam’s Apple Vision Pro"),
+            canonical("Sams-AppleVisionPro")
+        );
+    }
 }

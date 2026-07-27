@@ -350,14 +350,18 @@ fn parse_resolved(info: &ResolvedService, is_manual: bool) -> Option<(String, Di
     }
 }
 
-/// Insert/refresh a device, preserving a manual-pairing port if a concurrent
-/// remotepairing record (which has none) would otherwise clobber it.
+/// Insert/refresh a device. The remotepairing view (no manual port) must not clobber
+/// what the manual-pairing view knows better: the pairable port, and the real
+/// friendly name — the remotepairing record only carries a hostname-derived label
+/// ("Sams AppleVisionPro" for a headset named "Sam's Apple Vision Pro"), so without
+/// this the displayed name flip-flops with whichever record resolved last.
 fn merge_device(devices: &Arc<Mutex<HashMap<String, Discovered>>>, key: String, mut dev: Discovered) {
     let mut guard = devices.lock().unwrap();
     if dev.manual_pairing_port.is_none()
         && let Some(existing) = guard.get(&key)
     {
         dev.manual_pairing_port = existing.manual_pairing_port;
+        dev.name = existing.name.clone();
     }
     guard.insert(key, dev);
 }
@@ -943,12 +947,19 @@ async fn vision_pair_inner(
         )
     })?;
 
-    // Only an unpaired VP advertises the manual-pairing service. If it's absent, the VP
-    // is already paired to this Mac — guide the user to make it pairable again.
+    // The headset only advertises the manual-pairing service while it's willing to
+    // accept a new pairing; an existing host pairing (iloader's, Xcode's, another
+    // Mac's) usually suppresses it. Guide the user to make it pairable again — and
+    // point out the Xcode-bridge alternative that needs no new pairing at all.
     let port = dev.manual_pairing_port.ok_or_else(|| {
         AppError::RemotePairing(
-            "This Vision Pro is already paired to this Mac. To pair again, open Settings → \
-             General → Remote Devices on the Vision Pro, remove this Mac, then try again."
+            "This Vision Pro already holds a host pairing (possibly Xcode's), so it isn't \
+             accepting new pairing requests. To pair iloader: on the headset, open Settings → \
+             General → Remote Devices, remove the existing entry, then try again. An Xcode \
+             pairing removed this way can simply be re-paired afterwards — iloader's and \
+             Xcode's pairings coexist once both are set up. Tip: if this Mac is already \
+             paired via Xcode, the headset may also appear in the device list as a \
+             \"Network\" device, which you can sideload to directly without pairing iloader."
                 .into(),
         )
     })?;

@@ -43,6 +43,15 @@ tokio-util = "0.7.18"
 rootcause = "0.12.1"
 thiserror = "2.0.18"
 strum = {version = "0.28.0", features = ["derive"] }
+
+# Vision Pro discovery. On macOS we go through the system Bonjour daemon
+# (dns_sd / mDNSResponder) — raw-multicast mDNS is silently dropped by macOS 15+
+# Local Network privacy when the OS fails to attribute it (no prompt, no Settings
+# entry). Elsewhere there is no such gatekeeper and mdns-sd works fine.
+[target.'cfg(target_os = "macos")'.dependencies]
+async-dnssd = "0.5.1"
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
 mdns-sd = "0.19"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
@@ -55,3 +64,9 @@ tauri-plugin-updater = "2"
 # same one-function change. Replace with the upstream release once published.
 [patch.crates-io]
 isideload = { path = "vendor/isideload" }
+# Vision Pro first-time pairing: published idevice hardcodes PIN "000000" when the
+# device answers `awaitingUserConsent` (a Trust-dialog assumption). A Vision Pro
+# answers that whenever its code screen isn't up yet, so every first pairing attempt
+# failed with "missing server proof in SRP response". The vendored copy waits for the
+# pairing data and asks the callback for the real on-screen code instead.
+idevice = { path = "vendor/idevice" }

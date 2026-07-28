@@ -65,18 +65,45 @@ fn ap_err(context: &str, e: impl std::fmt::Debug) -> AppError {
     AppError::RemotePairing(format!("{context}: {e:?}"))
 }
 
+/// How fast an `EHOSTUNREACH` must arrive to count as the kernel REFUSING to send
+/// rather than trying and giving up. A genuinely unreachable LAN peer fails only
+/// after several ARP probes (seconds); an instant "No route to host" on a
+/// directly-attached subnet is a policy verdict — on macOS 15+, the per-app Local
+/// Network privacy filter, whose state is known to get stuck out of sync with the
+/// Settings switch (notably after app or macOS updates). Field-confirmed: a user's
+/// Mac where ping/nc from Terminal reached the headset fine (terminal processes are
+/// exempt, TN3179) while iloader's connects failed instantly.
+const INSTANT_UNREACHABLE: Duration = Duration::from_millis(300);
+
 /// A TCP connect to the (already discovered) headset failed — explain the common
 /// causes instead of dumping a bare OS error. `HostUnreachable`/`TimedOut` against a
 /// LAN peer usually isn't routing: the headset is asleep (ARP goes unanswered), or
 /// the Wi-Fi router keeps wireless clients from talking to each other (guest network
-/// / AP or client isolation), or a VPN/firewall intercepts local traffic.
+/// / AP or client isolation), or a VPN/firewall intercepts local traffic. When the
+/// failure was INSTANT, it's macOS itself refusing — see [`INSTANT_UNREACHABLE`].
 fn connect_err(what: &str, ip: &str, port: u16, e: std::io::Error) -> AppError {
-    AppError::VisionUnreachable(connect_err_message(what, ip, port, e))
+    AppError::VisionUnreachable(connect_err_message(what, ip, port, e, None))
 }
 
-fn connect_err_message(what: &str, ip: &str, port: u16, e: std::io::Error) -> String {
+fn connect_err_message(
+    what: &str,
+    ip: &str,
+    port: u16,
+    e: std::io::Error,
+    elapsed: Option<Duration>,
+) -> String {
     use std::io::ErrorKind;
     let hint = match e.kind() {
+        ErrorKind::HostUnreachable | ErrorKind::NetworkUnreachable
+            if elapsed.is_some_and(|d| d < INSTANT_UNREACHABLE) =>
+        {
+            "\nmacOS refused this connection instantly instead of trying and timing out. \
+             If the headset is awake and on this network, that usually means macOS's \
+             Local Network permission for iloader is stuck — even with the switch ON. \
+             In System Settings ▸ Privacy & Security ▸ Local Network, switch iloader \
+             OFF and back ON, then quit and reopen iloader. If it still fails, restart \
+             the Mac — this is a known macOS quirk after app or system updates."
+        }
         ErrorKind::HostUnreachable | ErrorKind::NetworkUnreachable | ErrorKind::TimedOut => {
             "\nThe Vision Pro was found, but the Mac can't reach it directly. Usually this \
              means the headset is asleep (put it on and keep it awake), the Wi-Fi router \
@@ -99,11 +126,29 @@ fn connect_err_message(what: &str, ip: &str, port: u16, e: std::io::Error) -> St
 async fn connect_any(ips: &[String], port: u16, what: &str) -> Result<(TcpStream, String), AppError> {
     let mut last = None;
     for ip in ips {
+        let started = std::time::Instant::now();
         match TcpStream::connect((ip.as_str(), port)).await {
-            Ok(s) => return Ok((s, ip.clone())),
+            Ok(s) => {
+                // Logged BEFORE any protocol byte is exchanged, so a later failure
+                // can never masquerade as a connect failure in a user log — and the
+                // local address shows which interface the kernel routed us out of.
+                tracing::info!(
+                    target: "vision",
+                    "{what}: TCP connected to {ip}:{port} in {:?} (local {})",
+                    started.elapsed(),
+                    s.local_addr().map_or_else(|_| "?".into(), |a| a.to_string())
+                );
+                return Ok((s, ip.clone()));
+            }
             Err(e) => {
-                tracing::debug!(target: "vision", "{what}: {ip}:{port} unreachable ({e})");
-                last = Some(connect_err_message(what, ip, port, e));
+                let elapsed = started.elapsed();
+                // The timing is diagnostic gold in user logs: instant = macOS policy,
+                // seconds = nobody answered ARP (asleep / isolated network).
+                tracing::debug!(
+                    target: "vision",
+                    "{what}: {ip}:{port} unreachable after {elapsed:?} ({e})"
+                );
+                last = Some(connect_err_message(what, ip, port, e, Some(elapsed)));
             }
         }
     }
@@ -794,9 +839,21 @@ impl VisionSession {
             .create_tcp_listener()
             .await
             .map_err(|e| ap_err("create tunnel listener", e))?;
-        let s2 = TcpStream::connect((ip, tport))
-            .await
-            .map_err(|e| connect_err("Couldn't open the tunnel to the Vision Pro", ip, tport, e))?;
+        let started = std::time::Instant::now();
+        let s2 = TcpStream::connect((ip, tport)).await.map_err(|e| {
+            AppError::VisionUnreachable(connect_err_message(
+                "Couldn't open the tunnel to the Vision Pro",
+                ip,
+                tport,
+                e,
+                Some(started.elapsed()),
+            ))
+        })?;
+        tracing::info!(
+            target: "vision",
+            "tunnel: TCP connected to {ip}:{tport} in {:?}",
+            started.elapsed()
+        );
         let tunnel = connect_tls_psk_tunnel_native(s2, &key)
             .await
             .map_err(|e| ap_err("TLS-PSK tunnel", e))?;
@@ -1347,6 +1404,23 @@ mod tests {
         assert_eq!(d.ips, vec!["192.168.1.5".to_string(), "169.254.7.9".to_string()]);
         assert_eq!(d.manual_pairing_port, Some(1234));
         assert_eq!(d.name, "Sam’s Apple Vision Pro");
+    }
+
+    /// An instant EHOSTUNREACH is macOS's Local Network filter refusing to send (the
+    /// stuck-permission quirk); a slow one is an unanswered ARP (asleep headset). The
+    /// two need opposite advice.
+    #[test]
+    fn unreachable_hint_depends_on_how_fast_it_failed() {
+        let instant = std::io::Error::from_raw_os_error(65); // EHOSTUNREACH
+        let m = connect_err_message("x", "192.168.50.93", 53231, instant, Some(Duration::from_millis(5)));
+        assert!(m.contains("Local Network permission"), "{m}");
+        let slow = std::io::Error::from_raw_os_error(65);
+        let m = connect_err_message("x", "192.168.50.93", 53231, slow, Some(Duration::from_secs(4)));
+        assert!(m.contains("asleep"), "{m}");
+        // No timing info (e.g. mid-exchange socket drop): don't guess at policy.
+        let unknown = std::io::Error::from_raw_os_error(65);
+        let m = connect_err_message("x", "192.168.50.93", 53231, unknown, None);
+        assert!(m.contains("asleep"), "{m}");
     }
 
     /// After a DHCP move the fresh routable address must be tried before the

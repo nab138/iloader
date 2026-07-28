@@ -73,6 +73,10 @@ fn ap_err(context: &str, e: impl std::fmt::Debug) -> AppError {
 /// the Wi-Fi router keeps wireless clients from talking to each other (guest network
 /// / AP or client isolation), or a VPN/firewall intercepts local traffic.
 fn connect_err(what: &str, ip: &str, port: u16, e: std::io::Error) -> AppError {
+    AppError::VisionUnreachable(connect_err_message(what, ip, port, e))
+}
+
+fn connect_err_message(what: &str, ip: &str, port: u16, e: std::io::Error) -> String {
     use std::io::ErrorKind;
     let hint = match e.kind() {
         ErrorKind::HostUnreachable | ErrorKind::NetworkUnreachable | ErrorKind::TimedOut => {
@@ -87,14 +91,39 @@ fn connect_err(what: &str, ip: &str, port: u16, e: std::io::Error) -> AppError {
         }
         _ => "",
     };
-    AppError::RemotePairing(format!("{what} ({ip}:{port}): {e}{hint}"))
+    format!("{what} ({ip}:{port}): {e}{hint}")
+}
+
+/// TCP-connect to the first address that answers.
+///
+/// A headset advertises several addresses and only some are routable from this Mac,
+/// so trying just one turns a perfectly reachable device into "No route to host".
+async fn connect_any(ips: &[String], port: u16, what: &str) -> Result<(TcpStream, String), AppError> {
+    let mut last = None;
+    for ip in ips {
+        match TcpStream::connect((ip.as_str(), port)).await {
+            Ok(s) => return Ok((s, ip.clone())),
+            Err(e) => {
+                tracing::debug!(target: "vision", "{what}: {ip}:{port} unreachable ({e})");
+                last = Some(connect_err_message(what, ip, port, e));
+            }
+        }
+    }
+    Err(AppError::VisionUnreachable(last.unwrap_or_else(|| {
+        format!("{what}: the Vision Pro advertised no usable address")
+    })))
 }
 
 /// A Vision Pro discovered over mDNS.
 #[derive(Clone, Debug)]
 pub struct Discovered {
     pub name: String,
+    /// Preferred address (first entry of `ips`).
     pub ip: String,
+    /// Every advertised IPv4, routable ones first. A headset often advertises more
+    /// than one and only some are reachable from this Mac, so connections walk this
+    /// list rather than trusting a single address.
+    pub ips: Vec<String>,
     /// The manual-pairing port, present only when the manual-pairing service is being
     /// advertised (i.e. the device is not yet paired to us and CAN be paired now). A
     /// paired VP has `None` here — it's reached via the stored pairing over the RSD.
@@ -334,6 +363,7 @@ fn parse_resolved(info: &ResolvedService, is_manual: bool) -> Option<(String, Di
             Discovered {
                 name,
                 ip: addr.to_string(),
+                ips: vec![addr.to_string()],
                 manual_pairing_port: Some(info.get_port()),
             },
         ))
@@ -349,6 +379,7 @@ fn parse_resolved(info: &ResolvedService, is_manual: bool) -> Option<(String, Di
             Discovered {
                 name,
                 ip: addr.to_string(),
+                ips: vec![addr.to_string()],
                 manual_pairing_port: None,
             },
         ))
@@ -546,26 +577,43 @@ mod bonjour {
         };
 
         // First IPv4 (parity with the mdns_sd path, which listed v4 addresses).
+        // Collect EVERY advertised IPv4, not just the first. A headset commonly
+        // advertises several — e.g. its Wi-Fi address plus a 169.254.x link-local from
+        // another link — and the first one out of the resolver is often not the one
+        // this Mac can route to, which surfaces to the user as "No route to host".
         let mut addrs = resolved.resolve_socket_address();
-        let ip = tokio::time::timeout(RESOLVE_BUDGET, async {
+        let mut ips: Vec<String> = tokio::time::timeout(RESOLVE_BUDGET, async {
+            let mut found: Vec<String> = Vec::new();
             while let Some(addr) = addrs.next().await {
                 if let Ok(addr) = addr
                     && let ScopedSocketAddr::V4 { address, .. } = addr.address
                 {
-                    return Some(address.to_string());
+                    let s = address.to_string();
+                    if !found.contains(&s) {
+                        found.push(s);
+                    }
+                    // One routable address is enough to proceed promptly; keep
+                    // collecting only while everything so far is link-local.
+                    if found.iter().any(|i| !i.starts_with("169.254.")) && found.len() > 1 {
+                        break;
+                    }
                 }
             }
-            None
+            found
         })
         .await
-        .ok()
-        .flatten()?;
+        .unwrap_or_default();
+
+        // Try routable addresses before link-local ones.
+        ips.sort_by_key(|i| i.starts_with("169.254."));
+        let ip = ips.first()?.clone();
 
         Some((
             canonical(&name),
             Discovered {
                 name,
                 ip,
+                ips,
                 manual_pairing_port: is_manual.then_some(resolved.port),
             },
         ))
@@ -618,13 +666,17 @@ pub struct VisionSession {
 impl VisionSession {
     /// Establish the tunnel to `ip` using the RP pairing file bytes.
     pub async fn connect(ip: &str, pairing: &[u8]) -> Result<Self, AppError> {
+        Self::connect_any(std::slice::from_ref(&ip.to_string()), pairing).await
+    }
+
+    /// Like [`connect`], but tries every address the headset advertises.
+    pub async fn connect_any(ips: &[String], pairing: &[u8]) -> Result<Self, AppError> {
         let mut pf = RpPairingFile::from_bytes(pairing)
             .map_err(|e| AppError::RemotePairing(format!("Invalid pairing file: {e:?}")))?;
 
         // 1. pair-verify on the RSD to derive the tunnel key.
-        let s1 = TcpStream::connect((ip, RSD_PORT))
-            .await
-            .map_err(|e| connect_err("Couldn't reach the Vision Pro (RSD)", ip, RSD_PORT, e))?;
+        let (s1, ip) = connect_any(ips, RSD_PORT, "Couldn't reach the Vision Pro (RSD)").await?;
+        let ip = ip.as_str();
         let mut client = RemotePairingClient::new(RpPairingSocket::new(s1), "iloader");
         client
             .connect(&mut pf, || async { "000000".to_string() })
@@ -699,6 +751,11 @@ impl VisionSession {
 /// before the network-bound signing that follows.
 pub async fn read_udid(ip: &str, pairing: &[u8]) -> Result<String, AppError> {
     VisionSession::connect(ip, pairing).await?.udid()
+}
+
+/// [`read_udid`] across every advertised address.
+pub async fn read_udid_any(ips: &[String], pairing: &[u8]) -> Result<String, AppError> {
+    VisionSession::connect_any(ips, pairing).await?.udid()
 }
 
 /// Upload a signed `.app` bundle to PublicStaging over AFC, then install it via
@@ -877,11 +934,24 @@ pub async fn select_vision_device(
             "This Vision Pro isn't paired yet — enter the code shown on the headset to pair.".into(),
         )
     })?;
-    // Verify the stored pairing. If pair-verify fails the pairing has gone stale (e.g.
-    // the host was removed from the VP's Remote Devices), so drop it — the frontend
-    // then treats the device as unpaired and re-prompts for the headset code.
-    match read_udid(&ip, &pairing).await {
+    // Prefer the freshly-advertised addresses over whatever the frontend passed —
+    // a headset's address changes with DHCP, and the list may hold several.
+    let ips = browser()
+        .get(&device.name)
+        .map(|d| d.ips.clone())
+        .filter(|v| !v.is_empty())
+        .unwrap_or_else(|| vec![ip]);
+
+    // Verify the stored pairing by opening a tunnel.
+    match read_udid_any(&ips, &pairing).await {
         Ok(udid) => Ok((pairing, udid)),
+        // Couldn't reach the headset at all. The pairing tells us nothing about that,
+        // so KEEP it: discarding a good pairing here used to force users into a
+        // needless re-pair (which then fails too, if the headset is simply asleep).
+        Err(e @ AppError::VisionUnreachable(_)) => Err(e),
+        // Reached it, but pair-verify failed — the pairing really is stale (e.g. this
+        // Mac was removed from the headset's Remote Devices). Drop it so the frontend
+        // re-prompts for the code.
         Err(e) => {
             let _ = delete_pairing_data(app, &key);
             Err(AppError::RemotePairing(format!(
@@ -999,20 +1069,19 @@ async fn vision_pair_inner(
     let pf = loop {
         // Re-resolve address/port from the live browser each attempt — the
         // manual-pairing port is dynamic and can rotate when the session cycles.
-        let (ip, port) = match b.get(&device.name) {
+        let (ips, port) = match b.get(&device.name) {
             Some(d) if d.manual_pairing_port.is_some() => {
-                (d.ip.clone(), d.manual_pairing_port.unwrap())
+                (d.ips.clone(), d.manual_pairing_port.unwrap())
             }
-            _ => (dev.ip.clone(), port),
+            _ => (dev.ips.clone(), port),
         };
 
         let code_requested = Arc::new(AtomicBool::new(false));
 
-        let stream = tokio::select! {
+        // Walk every advertised address — only some are routable from this Mac.
+        let (stream, _reached_ip) = tokio::select! {
             _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
-            res = TcpStream::connect((ip.as_str(), port)) => {
-                res.map_err(|e| connect_err("Couldn't reach the Vision Pro to pair", &ip, port, e))?
-            }
+            res = connect_any(&ips, port, "Couldn't reach the Vision Pro to pair") => res?,
         };
 
         let mut client = RemotePairingClient::new(RpPairingSocket::new(stream), "iloader");
@@ -1077,7 +1146,7 @@ async fn vision_pair_inner(
     // failure here doesn't discard the (successful) pairing — sideload re-reads the
     // UDID over a fresh tunnel and will surface any real problem then.
     let _ = window.emit("vision-pair-status", "verifying");
-    let udid = read_udid(&dev.ip, &bytes).await.unwrap_or_default();
+    let udid = read_udid_any(&dev.ips, &bytes).await.unwrap_or_default();
 
     Ok((bytes, udid))
 }

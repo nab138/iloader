@@ -65,6 +65,51 @@ fn ap_err(context: &str, e: impl std::fmt::Debug) -> AppError {
     AppError::RemotePairing(format!("{context}: {e:?}"))
 }
 
+/// Whether this running copy of iloader is ad-hoc signed (or unsigned) — the state a
+/// from-source build lands in when `APPLE_SIGNING_IDENTITY` isn't set. macOS 15+
+/// cannot reliably attribute Local Network permission to such an app: often no
+/// prompt, no entry in the privacy pane, and unicast connects refused instantly with
+/// EHOSTUNREACH even while discovery (done by mDNSResponder) works. Worse, the broken
+/// permission entry is keyed by BUNDLE ID, so an ad-hoc build can poison
+/// `me.nabdev.iloader` for a properly signed copy installed later. Field-confirmed:
+/// a user's self-built copy paired the moment it was signed with a (free) Apple
+/// Development identity under a fresh bundle id.
+#[cfg(target_os = "macos")]
+fn is_adhoc_build() -> bool {
+    static ADHOC: OnceLock<bool> = OnceLock::new();
+    *ADHOC.get_or_init(|| {
+        // Only meaningful for a real .app bundle; `cargo run`/`tauri dev` binaries
+        // live outside one and are exempt from attribution anyway (TN3179).
+        let Some(bundle) = std::env::current_exe().ok().and_then(|exe| {
+            exe.ancestors()
+                .find(|p| p.extension().is_some_and(|e| e == "app"))
+                .map(Path::to_path_buf)
+        }) else {
+            return false;
+        };
+        let Ok(out) = std::process::Command::new("codesign")
+            .args(["-dv", "--verbose=2"])
+            .arg(&bundle)
+            .output()
+        else {
+            return false;
+        };
+        // codesign reports on stderr.
+        let info = String::from_utf8_lossy(&out.stderr);
+        let adhoc = info.contains("Signature=adhoc")
+            || info.contains("code object is not signed at all");
+        if adhoc {
+            tracing::warn!(
+                target: "vision",
+                "this iloader build is ad-hoc signed — macOS may silently refuse its \
+                 local-network traffic (no permission prompt, missing from the Local \
+                 Network pane, instant EHOSTUNREACH on connects)"
+            );
+        }
+        adhoc
+    })
+}
+
 /// How fast an `EHOSTUNREACH` must arrive to count as the kernel REFUSING to send
 /// rather than trying and giving up. A genuinely unreachable LAN peer fails only
 /// after several ARP probes (seconds); an instant "No route to host" on a
@@ -119,7 +164,23 @@ fn connect_err_message(
         }
         _ => "",
     };
-    format!("{what} ({ip}:{port}): {e}{hint}")
+    #[cfg(target_os = "macos")]
+    let adhoc_hint = if matches!(
+        e.kind(),
+        ErrorKind::HostUnreachable | ErrorKind::NetworkUnreachable
+    ) && elapsed.is_some_and(|d| d < INSTANT_UNREACHABLE)
+        && is_adhoc_build()
+    {
+        "\nIMPORTANT: this copy of iloader is ad-hoc signed (built from source without a \
+         signing identity), and macOS blocks such apps' local-network traffic exactly \
+         like this. Sign the app with any Apple Development certificate (a free Apple \
+         account works), or use the official DMG from the releases page."
+    } else {
+        ""
+    };
+    #[cfg(not(target_os = "macos"))]
+    let adhoc_hint = "";
+    format!("{what} ({ip}:{port}): {e}{hint}{adhoc_hint}")
 }
 
 /// TCP-connect to the first address that answers.
@@ -774,6 +835,11 @@ mod bonjour {
 /// Start the persistent Vision Pro browser at app launch so the multicast group is
 /// warm well before the first device-list refresh. Idempotent.
 pub fn start_discovery() {
+    // Logs a warning once if this build is ad-hoc signed (a from-source build that
+    // macOS will refuse local-network access) so the condition is visible in every
+    // log, not just after a failed connect.
+    #[cfg(target_os = "macos")]
+    let _ = is_adhoc_build();
     let _ = browser();
 }
 

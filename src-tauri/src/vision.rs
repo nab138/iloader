@@ -454,6 +454,16 @@ mod bonjour {
     /// IPv4). Generous — a re-announcement retriggers resolution anyway.
     const RESOLVE_BUDGET: Duration = Duration::from_secs(10);
 
+    /// Once a routable address is in hand, how long to keep waiting for siblings.
+    /// The address stream never ends on its own, so without a cutoff a headset
+    /// advertising a single address would stall until the full budget expired.
+    const ADDR_COLLECT_GRACE: Duration = Duration::from_millis(400);
+
+    /// How long to keep waiting when everything so far is link-local (169.254.x).
+    /// Those are usually unreachable from the Mac's Wi-Fi, and the resolver often
+    /// reports them first, so it's worth waiting a bit longer for a routable one.
+    const ADDR_LINK_LOCAL_WAIT: Duration = Duration::from_millis(2500);
+
     pub(super) fn start(
         devices: Arc<Mutex<HashMap<String, Discovered>>>,
         by_fullname: Arc<Mutex<HashMap<String, String>>>,
@@ -576,33 +586,49 @@ mod bonjour {
             hostname_label(&resolved.host_target)
         };
 
-        // First IPv4 (parity with the mdns_sd path, which listed v4 addresses).
         // Collect EVERY advertised IPv4, not just the first. A headset commonly
         // advertises several — e.g. its Wi-Fi address plus a 169.254.x link-local from
         // another link — and the first one out of the resolver is often not the one
         // this Mac can route to, which surfaces to the user as "No route to host".
+        //
+        // The address stream stays open indefinitely (it reports future changes too),
+        // so this must never be wrapped in a single timeout around the whole loop:
+        // doing that threw away every address collected so far when the budget
+        // expired, which silently dropped any headset advertising just one address.
+        // Instead, keep results in `ips` and stop at whichever deadline comes first.
         let mut addrs = resolved.resolve_socket_address();
-        let mut ips: Vec<String> = tokio::time::timeout(RESOLVE_BUDGET, async {
-            let mut found: Vec<String> = Vec::new();
-            while let Some(addr) = addrs.next().await {
-                if let Ok(addr) = addr
-                    && let ScopedSocketAddr::V4 { address, .. } = addr.address
-                {
-                    let s = address.to_string();
-                    if !found.contains(&s) {
-                        found.push(s);
-                    }
-                    // One routable address is enough to proceed promptly; keep
-                    // collecting only while everything so far is link-local.
-                    if found.iter().any(|i| !i.starts_with("169.254.")) && found.len() > 1 {
-                        break;
+        let mut ips: Vec<String> = Vec::new();
+        let hard_deadline = tokio::time::Instant::now() + RESOLVE_BUDGET;
+        // Stop a while after the first address arrives — briefly once something
+        // routable is in hand, longer while everything so far is link-local.
+        let mut stop_at: Option<tokio::time::Instant> = None;
+        loop {
+            let now = tokio::time::Instant::now();
+            let until = stop_at.map_or(hard_deadline, |s| s.min(hard_deadline));
+            if now >= until {
+                break;
+            }
+            match tokio::time::timeout(until - now, addrs.next()).await {
+                Ok(Some(Ok(addr))) => {
+                    if let ScopedSocketAddr::V4 { address, .. } = addr.address {
+                        let s = address.to_string();
+                        if !ips.contains(&s) {
+                            ips.push(s);
+                        }
+                        let have_routable = ips.iter().any(|i| !i.starts_with("169.254."));
+                        let wait = if have_routable {
+                            ADDR_COLLECT_GRACE
+                        } else {
+                            ADDR_LINK_LOCAL_WAIT
+                        };
+                        stop_at = Some(tokio::time::Instant::now() + wait);
                     }
                 }
+                Ok(Some(Err(_))) => continue,
+                // Stream ended, or a deadline passed — either way, use what we have.
+                Ok(None) | Err(_) => break,
             }
-            found
-        })
-        .await
-        .unwrap_or_default();
+        }
 
         // Try routable addresses before link-local ones.
         ips.sort_by_key(|i| i.starts_with("169.254."));

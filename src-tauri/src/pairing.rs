@@ -230,7 +230,8 @@ pub async fn place_pairing_cmd(
             .ip
             .clone()
             .ok_or_else(|| AppError::RemotePairing("Vision Pro has no IP address".into()))?;
-        let mut session = vision::VisionSession::connect(&ip, &device.pairing).await?;
+        let ips = vision::live_ips(&device.info.name, &ip);
+        let mut session = vision::VisionSession::connect_any(&ips, &device.pairing).await?;
         vision::place_into(&mut session, &bundle_id, &path, &device.pairing).await?;
         return Ok(());
     }
@@ -516,7 +517,8 @@ pub async fn installed_pairing_apps(
             .ip
             .clone()
             .ok_or_else(|| AppError::RemotePairing("Vision Pro has no IP address".into()))?;
-        let mut session = vision::VisionSession::connect(&ip, &device.pairing).await?;
+        let ips = vision::live_ips(&device.info.name, &ip);
+        let mut session = vision::VisionSession::connect_any(&ips, &device.pairing).await?;
         let mut inst = session.service::<InstallationProxyClient>().await?;
         inst.get_apps(Some("User"), None).await.map_err(|e| {
             AppError::DeviceComsWithMessage("Failed to get installed apps".into(), e.to_string())

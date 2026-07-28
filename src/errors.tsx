@@ -12,6 +12,10 @@ export const errorSuggestionKeys = {
     "error.suggestions.device_coms",
   ],
   remote_pairing: ["error.suggestions.trust", "error.suggestions.pairing"],
+  vision_pairing_rejected: [
+    "error.suggestions.trust",
+    "error.suggestions.pairing",
+  ],
   lockdown_pairing: ["error.suggestions.trust", "error.suggestions.pairing"],
   canceled: [],
   operation_update: [],

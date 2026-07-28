@@ -113,11 +113,12 @@ async fn sideload_vision(
         .ip
         .clone()
         .ok_or_else(|| AppError::RemotePairing("Vision Pro has no IP address".into()))?;
+    let ips = vision::live_ips(&device.info.name, &ip);
 
     // The UDID is needed to register the device with the developer account. Prefer the
     // one captured at selection; otherwise read it over a short-lived tunnel now.
     let udid = if device.info.udid.is_empty() {
-        vision::read_udid(&ip, &device.pairing).await?
+        vision::read_udid_any(&ips, &device.pairing).await?
     } else {
         device.info.udid.clone()
     };
@@ -136,8 +137,11 @@ async fn sideload_vision(
         .await?;
 
     // Fresh tunnel for the install itself (signing above is network-bound and could
-    // otherwise idle out an earlier tunnel).
-    let mut session = vision::VisionSession::connect(&ip, &device.pairing).await?;
+    // otherwise idle out an earlier tunnel). Re-read the live addresses too — signing
+    // can take minutes, plenty of time for the headset's address to move.
+    let mut session =
+        vision::VisionSession::connect_any(&vision::live_ips(&device.info.name, &ip), &device.pairing)
+            .await?;
     vision::install_app(&mut session, &signed_path, |pct| {
         tracing::info!("Installing to Vision Pro: {pct}%");
     })
@@ -254,8 +258,11 @@ pub async fn install_sidestore_operation(
                 );
             }
         };
-        let mut session =
-            op.fail_if_err("pairing", vision::VisionSession::connect(&ip, &device.pairing).await)?;
+        let ips = vision::live_ips(&device.info.name, &ip);
+        let mut session = op.fail_if_err(
+            "pairing",
+            vision::VisionSession::connect_any(&ips, &device.pairing).await,
+        )?;
         // LiveContainer runs SideStore as a guest, so its pairing lives under
         // SideStore/Documents/ inside the LiveContainer container; a plain SideStore
         // install reads rp_pairing_file.plist straight from its own Documents.

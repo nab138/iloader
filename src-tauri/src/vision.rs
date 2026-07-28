@@ -15,10 +15,8 @@
 //! real Vision Pro. The iOS/iPad path in `device.rs` is unchanged.
 
 use std::collections::HashMap;
-use std::future::Future;
 use std::hash::{Hash, Hasher};
-use std::path::Path;
-use std::pin::Pin;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
@@ -391,13 +389,30 @@ fn parse_resolved(info: &ResolvedService, is_manual: bool) -> Option<(String, Di
 /// friendly name — the remotepairing record only carries a hostname-derived label
 /// ("Sams AppleVisionPro" for a headset named "Sam's Apple Vision Pro"), so without
 /// this the displayed name flip-flops with whichever record resolved last.
+///
+/// Addresses are UNIONED, not replaced: each view (and each re-announcement) resolves
+/// a partial, point-in-time set, and whichever resolves last would otherwise wipe out
+/// the other's — including the one routable address, when a later resolve caught only
+/// the 169.254.x link-local. Fresh addresses are kept ahead of remembered ones within
+/// the routable/link-local sort, so after a DHCP move the new address is tried first
+/// and stale ones drift to the tail (and off the end of the cap).
 fn merge_device(devices: &Arc<Mutex<HashMap<String, Discovered>>>, key: String, mut dev: Discovered) {
     let mut guard = devices.lock().unwrap();
-    if dev.manual_pairing_port.is_none()
-        && let Some(existing) = guard.get(&key)
-    {
-        dev.manual_pairing_port = existing.manual_pairing_port;
-        dev.name = existing.name.clone();
+    if let Some(existing) = guard.get(&key) {
+        if dev.manual_pairing_port.is_none() {
+            dev.manual_pairing_port = existing.manual_pairing_port;
+            dev.name = existing.name.clone();
+        }
+        for ip in &existing.ips {
+            if !dev.ips.contains(ip) {
+                dev.ips.push(ip.clone());
+            }
+        }
+        dev.ips.sort_by_key(|i| i.starts_with("169.254."));
+        dev.ips.truncate(8);
+        if let Some(first) = dev.ips.first() {
+            dev.ip = first.clone();
+        }
     }
     guard.insert(key, dev);
 }
@@ -532,17 +547,7 @@ mod bonjour {
                     // Resolve in its own task so a slow SRV/address lookup doesn't
                     // stall the browse stream (and other devices' events).
                     tauri::async_runtime::spawn(async move {
-                        if let Some((key, dev)) = resolve_discovered(&event, is_manual).await {
-                            tracing::info!(
-                                target: "vision",
-                                "Bonjour: {} at {} (manual pairing port: {:?})",
-                                dev.name,
-                                dev.ip,
-                                dev.manual_pairing_port
-                            );
-                            by_fullname.lock().unwrap().insert(fullname, key.clone());
-                            merge_device(&devices, key, dev);
-                        }
+                        resolve_and_track(&event, is_manual, fullname, devices, by_fullname).await;
                     });
                 } else {
                     tracing::debug!(target: "vision", "Bonjour: {fullname} went away");
@@ -553,12 +558,31 @@ mod bonjour {
         }
     }
 
-    /// Resolve one browse Add into `(device key, Discovered)` — the dns_sd analogue
-    /// of `parse_resolved`. `None` for non-VP hosts, no IPv4, or a blown budget.
-    async fn resolve_discovered(
+    /// Resolve one browse Add and keep the device's address list current — the dns_sd
+    /// analogue of `parse_resolved`, plus late-address tracking.
+    ///
+    /// Collect EVERY advertised IPv4, not just the first. A headset commonly
+    /// advertises several — e.g. its Wi-Fi address plus a 169.254.x link-local from
+    /// another link — and the first one out of the resolver is often not the one
+    /// this Mac can route to, which surfaces to the user as "No route to host".
+    ///
+    /// The address stream stays open indefinitely (it reports future changes too),
+    /// so this must never be wrapped in a single timeout around the whole loop:
+    /// doing that threw away every address collected so far when the budget
+    /// expired, which silently dropped any headset advertising just one address.
+    ///
+    /// The device is published once the list has briefly settled, but the stream is
+    /// then drained for the REST of the budget, folding late arrivals into the map:
+    /// the resolver has been seen reporting only the link-local within any reasonable
+    /// settle window, and a device stuck on 169.254.x until the next re-announcement
+    /// (30-60s away) is exactly the "No route to host" failure again.
+    async fn resolve_and_track(
         event: &BrowseResult,
         is_manual: bool,
-    ) -> Option<(String, Discovered)> {
+        fullname: String,
+        devices: Arc<Mutex<HashMap<String, Discovered>>>,
+        by_fullname: Arc<Mutex<HashMap<String, String>>>,
+    ) {
         let Ok(Some(Ok(resolved))) =
             tokio::time::timeout(RESOLVE_BUDGET, event.resolve().next()).await
         else {
@@ -567,7 +591,7 @@ mod bonjour {
                 "Bonjour: couldn't resolve {} (device gone or asleep?)",
                 event.service_name
             );
-            return None;
+            return;
         };
         // remotepairing is advertised by iPhones too (they're handled over usbmux);
         // only the hostname says which kind of device this is.
@@ -578,71 +602,108 @@ mod bonjour {
                 event.service_name,
                 resolved.host_target
             );
-            return None;
+            return;
         }
         let name = if is_manual {
             event.service_name.replace('\u{a0}', " ")
         } else {
             hostname_label(&resolved.host_target)
         };
+        let key = canonical(&name);
+        let port = resolved.port;
 
-        // Collect EVERY advertised IPv4, not just the first. A headset commonly
-        // advertises several — e.g. its Wi-Fi address plus a 169.254.x link-local from
-        // another link — and the first one out of the resolver is often not the one
-        // this Mac can route to, which surfaces to the user as "No route to host".
-        //
-        // The address stream stays open indefinitely (it reports future changes too),
-        // so this must never be wrapped in a single timeout around the whole loop:
-        // doing that threw away every address collected so far when the budget
-        // expired, which silently dropped any headset advertising just one address.
-        // Instead, keep results in `ips` and stop at whichever deadline comes first.
+        let publish = |ips: &[String], first_publish: bool| {
+            let mut ips = ips.to_vec();
+            // Try routable addresses before link-local ones.
+            ips.sort_by_key(|i| i.starts_with("169.254."));
+            let Some(ip) = ips.first().cloned() else { return };
+            if first_publish {
+                tracing::info!(
+                    target: "vision",
+                    "Bonjour: {} at {} (manual pairing port: {:?})",
+                    name,
+                    ip,
+                    is_manual.then_some(port)
+                );
+            }
+            by_fullname
+                .lock()
+                .unwrap()
+                .insert(fullname.clone(), key.clone());
+            merge_device(
+                &devices,
+                key.clone(),
+                Discovered {
+                    name: name.clone(),
+                    ip,
+                    ips,
+                    manual_pairing_port: is_manual.then_some(port),
+                },
+            );
+        };
+
         let mut addrs = resolved.resolve_socket_address();
         let mut ips: Vec<String> = Vec::new();
+        let mut published = false;
         let hard_deadline = tokio::time::Instant::now() + RESOLVE_BUDGET;
-        // Stop a while after the first address arrives — briefly once something
-        // routable is in hand, longer while everything so far is link-local.
-        let mut stop_at: Option<tokio::time::Instant> = None;
+        // First publish waits for the list to settle briefly once something routable
+        // is in hand, longer while everything so far is link-local.
+        let mut publish_at: Option<tokio::time::Instant> = None;
         loop {
             let now = tokio::time::Instant::now();
-            let until = stop_at.map_or(hard_deadline, |s| s.min(hard_deadline));
-            if now >= until {
+            if now >= hard_deadline {
                 break;
             }
+            if !published && publish_at.is_some_and(|p| now >= p) {
+                publish(&ips, true);
+                published = true;
+            }
+            let until = if published {
+                hard_deadline
+            } else {
+                publish_at.map_or(hard_deadline, |p| p.min(hard_deadline))
+            };
             match tokio::time::timeout(until - now, addrs.next()).await {
                 Ok(Some(Ok(addr))) => {
                     if let ScopedSocketAddr::V4 { address, .. } = addr.address {
                         let s = address.to_string();
-                        if !ips.contains(&s) {
-                            ips.push(s);
+                        if ips.contains(&s) {
+                            continue;
                         }
-                        let have_routable = ips.iter().any(|i| !i.starts_with("169.254."));
-                        let wait = if have_routable {
-                            ADDR_COLLECT_GRACE
+                        ips.push(s.clone());
+                        if published {
+                            // A Remove may have raced us; folding an address in then
+                            // would resurrect the withdrawn record — and its dead
+                            // manual-pairing port. Only update while it's still live.
+                            if by_fullname.lock().unwrap().contains_key(&fullname) {
+                                tracing::info!(
+                                    target: "vision",
+                                    "Bonjour: {name} gained address {s}"
+                                );
+                                publish(&ips, false);
+                            }
                         } else {
-                            ADDR_LINK_LOCAL_WAIT
-                        };
-                        stop_at = Some(tokio::time::Instant::now() + wait);
+                            let have_routable = ips.iter().any(|i| !i.starts_with("169.254."));
+                            let wait = if have_routable {
+                                ADDR_COLLECT_GRACE
+                            } else {
+                                ADDR_LINK_LOCAL_WAIT
+                            };
+                            publish_at = Some(tokio::time::Instant::now() + wait);
+                        }
                     }
                 }
                 Ok(Some(Err(_))) => continue,
-                // Stream ended, or a deadline passed — either way, use what we have.
-                Ok(None) | Err(_) => break,
+                // Stream ended: use what we have.
+                Ok(None) => break,
+                // A deadline passed; the loop top decides whether it was the publish
+                // point or the end of the budget.
+                Err(_) => continue,
             }
         }
-
-        // Try routable addresses before link-local ones.
-        ips.sort_by_key(|i| i.starts_with("169.254."));
-        let ip = ips.first()?.clone();
-
-        Some((
-            canonical(&name),
-            Discovered {
-                name,
-                ip,
-                ips,
-                manual_pairing_port: is_manual.then_some(resolved.port),
-            },
-        ))
+        if !published {
+            publish(&ips, true);
+        }
     }
 
     /// A denied Local Network permission surfaces as dns_sd error -65570
@@ -683,6 +744,19 @@ async fn snapshot_soon() -> Vec<Discovered> {
     snap
 }
 
+/// The addresses to dial for the named headset: everything discovery currently knows
+/// (routable first), with `fallback_ip` — whatever the caller captured earlier —
+/// appended as a last resort. Connect-time callers must use this rather than a cached
+/// single address: a headset advertises several addresses and only some are routable,
+/// its address moves with DHCP, and the cached one is often the 169.254.x link-local.
+pub fn live_ips(name: &str, fallback_ip: &str) -> Vec<String> {
+    let mut ips = browser().get(name).map(|d| d.ips).unwrap_or_default();
+    if !ips.iter().any(|i| i == fallback_ip) {
+        ips.push(fallback_ip.to_string());
+    }
+    ips
+}
+
 /// A live tunnel to a paired Vision Pro, over which RSD services can be opened.
 pub struct VisionSession {
     pub adapter: AdapterHandle,
@@ -690,12 +764,8 @@ pub struct VisionSession {
 }
 
 impl VisionSession {
-    /// Establish the tunnel to `ip` using the RP pairing file bytes.
-    pub async fn connect(ip: &str, pairing: &[u8]) -> Result<Self, AppError> {
-        Self::connect_any(std::slice::from_ref(&ip.to_string()), pairing).await
-    }
-
-    /// Like [`connect`], but tries every address the headset advertises.
+    /// Establish the tunnel using the RP pairing file bytes, trying every address the
+    /// headset advertises.
     pub async fn connect_any(ips: &[String], pairing: &[u8]) -> Result<Self, AppError> {
         let mut pf = RpPairingFile::from_bytes(pairing)
             .map_err(|e| AppError::RemotePairing(format!("Invalid pairing file: {e:?}")))?;
@@ -707,10 +777,15 @@ impl VisionSession {
         client
             .connect(&mut pf, || async { "000000".to_string() })
             .await
-            .map_err(|e| {
-                AppError::RemotePairing(format!(
+            .map_err(|e| match e {
+                // The socket died mid-exchange — a dozing headset, not a verdict on
+                // the pairing.
+                idevice::IdeviceError::Socket(io) => {
+                    connect_err("Lost the Vision Pro during pair-verify", ip, RSD_PORT, io)
+                }
+                e => AppError::VisionPairingRejected(format!(
                     "pair-verify failed (is the Vision Pro still paired?): {e:?}"
-                ))
+                )),
             })?;
         let key = client.encryption_key().to_vec();
 
@@ -775,11 +850,6 @@ impl VisionSession {
 /// Open a short-lived tunnel just to read the device UDID (needed to register the VP
 /// with the developer account before signing). Kept separate so it can be dropped
 /// before the network-bound signing that follows.
-pub async fn read_udid(ip: &str, pairing: &[u8]) -> Result<String, AppError> {
-    VisionSession::connect(ip, pairing).await?.udid()
-}
-
-/// [`read_udid`] across every advertised address.
 pub async fn read_udid_any(ips: &[String], pairing: &[u8]) -> Result<String, AppError> {
     VisionSession::connect_any(ips, pairing).await?.udid()
 }
@@ -791,8 +861,6 @@ pub async fn install_app(
     app_path: &Path,
     progress: impl Fn(u64),
 ) -> Result<(), AppError> {
-    let mut afc = session.service::<AfcClient>().await?;
-
     let name = app_path
         .file_name()
         .ok_or_else(|| AppError::RemotePairing("app path has no final component".into()))?
@@ -800,7 +868,44 @@ pub async fn install_app(
         .to_string();
     let dir = format!("PublicStaging/{name}");
 
-    afc_upload_dir(&mut afc, app_path, &dir).await?;
+    // Walk the bundle up front so the upload is a flat list — a mid-bundle AFC
+    // failure can then retry a single file on a fresh AFC connection without
+    // re-walking (or re-uploading) anything already transferred.
+    let mut dirs = Vec::new();
+    let mut files = Vec::new();
+    collect_upload_entries(app_path, &dir, &mut dirs, &mut files)?;
+
+    let mut afc = session.service::<AfcClient>().await?;
+    for d in &dirs {
+        afc.mk_dir(d)
+            .await
+            .map_err(|e| ap_err(&format!("AFC mkdir {d}"), e))?;
+    }
+
+    // Multi-MB uploads over the userspace TCP tunnel occasionally drop the AFC
+    // stream mid-file (field report: `AFC write …: Socket(NotConnected)` installing a
+    // large app). The tunnel itself usually survives its streams, so retry the file
+    // on a freshly opened AFC connection before giving up; if the tunnel really died,
+    // reopening the service fails and that error is surfaced instead.
+    for (local, remote) in &files {
+        let mut attempts = 0;
+        loop {
+            match afc_upload_file(&mut afc, local, remote).await {
+                Ok(()) => break,
+                Err(e) if attempts < 2 => {
+                    attempts += 1;
+                    tracing::warn!(
+                        target: "vision",
+                        "AFC upload of {remote} failed ({e}); reconnecting AFC and retrying \
+                         ({attempts}/2)"
+                    );
+                    tokio::time::sleep(Duration::from_millis(750)).await;
+                    afc = session.service::<AfcClient>().await?;
+                }
+                Err(e) => return Err(e),
+            }
+        }
+    }
 
     let mut inst = session.service::<InstallationProxyClient>().await?;
 
@@ -821,44 +926,54 @@ pub async fn install_app(
     Ok(())
 }
 
-fn afc_upload_dir<'a>(
-    afc: &'a mut AfcClient,
-    path: &'a Path,
-    afc_path: &'a str,
-) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'a>> {
-    Box::pin(async move {
-        afc.mk_dir(afc_path)
-            .await
-            .map_err(|e| ap_err(&format!("AFC mkdir {afc_path}"), e))?;
-        for entry in std::fs::read_dir(path)
-            .map_err(|e| AppError::Filesystem(format!("read_dir {path:?}"), e.to_string()))?
-        {
-            let entry =
-                entry.map_err(|e| AppError::Filesystem("read dir entry".into(), e.to_string()))?;
-            let p = entry.path();
-            let child_name = p
-                .file_name()
-                .ok_or_else(|| AppError::Filesystem("dir entry has no name".into(), String::new()))?
-                .to_string_lossy()
-                .to_string();
-            let child_afc = format!("{afc_path}/{child_name}");
-            if p.is_dir() {
-                afc_upload_dir(afc, &p, &child_afc).await?;
-            } else {
-                let mut fh = afc
-                    .open(child_afc.clone(), AfcFopenMode::WrOnly)
-                    .await
-                    .map_err(|e| ap_err(&format!("AFC open {child_afc}"), e))?;
-                let bytes = std::fs::read(&p)
-                    .map_err(|e| AppError::Filesystem(format!("read {p:?}"), e.to_string()))?;
-                fh.write_entire(&bytes)
-                    .await
-                    .map_err(|e| ap_err(&format!("AFC write {child_afc}"), e))?;
-                fh.close().await.map_err(|e| ap_err("AFC close", e))?;
-            }
+/// Walk `path` recursively, listing every directory (parents before children, so they
+/// can be mk_dir'd in order) and every file with its destination AFC path.
+fn collect_upload_entries(
+    path: &Path,
+    afc_path: &str,
+    dirs: &mut Vec<String>,
+    files: &mut Vec<(PathBuf, String)>,
+) -> Result<(), AppError> {
+    dirs.push(afc_path.to_string());
+    for entry in std::fs::read_dir(path)
+        .map_err(|e| AppError::Filesystem(format!("read_dir {path:?}"), e.to_string()))?
+    {
+        let entry =
+            entry.map_err(|e| AppError::Filesystem("read dir entry".into(), e.to_string()))?;
+        let p = entry.path();
+        let child_name = p
+            .file_name()
+            .ok_or_else(|| AppError::Filesystem("dir entry has no name".into(), String::new()))?
+            .to_string_lossy()
+            .to_string();
+        let child_afc = format!("{afc_path}/{child_name}");
+        if p.is_dir() {
+            collect_upload_entries(&p, &child_afc, dirs, files)?;
+        } else {
+            files.push((p, child_afc));
         }
-        Ok(())
-    })
+    }
+    Ok(())
+}
+
+/// Upload one file to `afc_path`. WrOnly truncates, so a retry after a partial write
+/// starts the file over cleanly.
+async fn afc_upload_file(
+    afc: &mut AfcClient,
+    path: &Path,
+    afc_path: &str,
+) -> Result<(), AppError> {
+    let bytes = std::fs::read(path)
+        .map_err(|e| AppError::Filesystem(format!("read {path:?}"), e.to_string()))?;
+    let mut fh = afc
+        .open(afc_path.to_string(), AfcFopenMode::WrOnly)
+        .await
+        .map_err(|e| ap_err(&format!("AFC open {afc_path}"), e))?;
+    fh.write_entire(&bytes)
+        .await
+        .map_err(|e| ap_err(&format!("AFC write {afc_path}"), e))?;
+    fh.close().await.map_err(|e| ap_err("AFC close", e))?;
+    Ok(())
 }
 
 /// Find an installed app whose bundle id contains `needle` (case-insensitive).
@@ -962,29 +1077,27 @@ pub async fn select_vision_device(
     })?;
     // Prefer the freshly-advertised addresses over whatever the frontend passed —
     // a headset's address changes with DHCP, and the list may hold several.
-    let ips = browser()
-        .get(&device.name)
-        .map(|d| d.ips.clone())
-        .filter(|v| !v.is_empty())
-        .unwrap_or_else(|| vec![ip]);
+    let ips = live_ips(&device.name, &ip);
 
     // Verify the stored pairing by opening a tunnel.
     match read_udid_any(&ips, &pairing).await {
         Ok(udid) => Ok((pairing, udid)),
-        // Couldn't reach the headset at all. The pairing tells us nothing about that,
-        // so KEEP it: discarding a good pairing here used to force users into a
-        // needless re-pair (which then fails too, if the headset is simply asleep).
-        Err(e @ AppError::VisionUnreachable(_)) => Err(e),
-        // Reached it, but pair-verify failed — the pairing really is stale (e.g. this
-        // Mac was removed from the headset's Remote Devices). Drop it so the frontend
-        // re-prompts for the code.
-        Err(e) => {
+        // The headset answered and explicitly rejected the stored pairing during
+        // pair-verify (e.g. this Mac was removed from its Remote Devices) — the one
+        // case that proves the pairing is stale. Drop it so the frontend re-prompts
+        // for the code.
+        Err(AppError::VisionPairingRejected(e)) => {
             let _ = delete_pairing_data(app, &key);
             Err(AppError::RemotePairing(format!(
                 "This Vision Pro's saved pairing is no longer valid — pair again with the code on \
                  the headset. ({e})"
             )))
         }
+        // Anything else — unreachable, a tunnel-setup hiccup, an RSD failure — says
+        // nothing about the pairing's validity. KEEP it: discarding a good pairing
+        // here used to force users into a needless re-pair (which then fails too, if
+        // the headset is simply asleep).
+        Err(e) => Err(e),
     }
 }
 
@@ -1201,5 +1314,62 @@ mod tests {
             canonical("Sam’s Apple Vision Pro"),
             canonical("Sams-AppleVisionPro")
         );
+    }
+
+    fn disc(name: &str, ips: &[&str], port: Option<u16>) -> Discovered {
+        Discovered {
+            name: name.into(),
+            ip: ips.first().unwrap().to_string(),
+            ips: ips.iter().map(|s| s.to_string()).collect(),
+            manual_pairing_port: port,
+        }
+    }
+
+    /// The two service views resolve independently and each sees a partial address
+    /// set; a later resolve carrying only the link-local must not wipe out the
+    /// routable address the other view found.
+    #[test]
+    fn merge_unions_addresses_across_views() {
+        let devices = Arc::new(Mutex::new(HashMap::new()));
+        merge_device(
+            &devices,
+            "k".into(),
+            disc("Sam’s Apple Vision Pro", &["192.168.1.5"], Some(1234)),
+        );
+        // remotepairing view resolves later, catching only the link-local.
+        merge_device(
+            &devices,
+            "k".into(),
+            disc("Sams AppleVisionPro", &["169.254.7.9"], None),
+        );
+        let d = devices.lock().unwrap().get("k").cloned().unwrap();
+        assert_eq!(d.ip, "192.168.1.5");
+        assert_eq!(d.ips, vec!["192.168.1.5".to_string(), "169.254.7.9".to_string()]);
+        assert_eq!(d.manual_pairing_port, Some(1234));
+        assert_eq!(d.name, "Sam’s Apple Vision Pro");
+    }
+
+    /// After a DHCP move the fresh routable address must be tried before the
+    /// remembered (stale) one.
+    #[test]
+    fn merge_prefers_fresh_routable_over_remembered() {
+        let devices = Arc::new(Mutex::new(HashMap::new()));
+        merge_device(&devices, "k".into(), disc("VP", &["192.168.1.5"], Some(1)));
+        merge_device(
+            &devices,
+            "k".into(),
+            disc("VP", &["192.168.1.42", "169.254.7.9"], Some(2)),
+        );
+        let d = devices.lock().unwrap().get("k").cloned().unwrap();
+        assert_eq!(
+            d.ips,
+            vec![
+                "192.168.1.42".to_string(),
+                "192.168.1.5".to_string(),
+                "169.254.7.9".to_string()
+            ]
+        );
+        assert_eq!(d.ip, "192.168.1.42");
+        assert_eq!(d.manual_pairing_port, Some(2));
     }
 }

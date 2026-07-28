@@ -27,6 +27,12 @@ pub enum AppError {
     HouseArrest(String, String),
     #[error("{0}")]
     RemotePairing(String),
+    /// The Vision Pro couldn't be reached over the network at all (no TCP connection
+    /// established). Kept distinct from `RemotePairing` so that a dozing headset or a
+    /// stale address is never mistaken for a pairing gone bad — a stored pairing must
+    /// survive this.
+    #[error("{0}")]
+    VisionUnreachable(String),
     #[error("{0}: {1}")]
     LockdownPairing(String, String),
     #[error("{0} canceled")]

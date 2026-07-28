@@ -12,6 +12,12 @@ export const errorSuggestionKeys = {
     "error.suggestions.device_coms",
   ],
   remote_pairing: ["error.suggestions.trust", "error.suggestions.pairing"],
+  // The vision_* messages carry their own detailed hints from the backend, so no
+  // generic suggestions — but the keys MUST exist: getErrorSuggestions indexes this
+  // map, and an unmapped variant used to crash the error modal's render, unmounting
+  // the whole app into a black window (shipped in 2.2.13 with vision_unreachable —
+  // every "couldn't reach the headset" error black-screened instead of explaining).
+  vision_unreachable: [],
   vision_pairing_rejected: [
     "error.suggestions.trust",
     "error.suggestions.pairing",
@@ -124,10 +130,11 @@ export const getErrorSuggestions = (
   platform: "mac" | "windows" | "linux",
   anisetteServer: string,
 ): string[] => {
+  // The backend can grow error variants ahead of this map; an unknown one must
+  // degrade to "no suggestions", never crash the error modal.
+  const keys = errorSuggestionKeys[type] ?? [];
   return dedupeSuggestions(
-    errorSuggestionKeys[type].flatMap((key) =>
-      getSuggestionBlock(t, key, platform, anisetteServer),
-    ),
+    keys.flatMap((key) => getSuggestionBlock(t, key, platform, anisetteServer)),
   );
 };
 

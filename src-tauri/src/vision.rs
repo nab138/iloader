@@ -97,12 +97,15 @@ fn connect_err_message(
         ErrorKind::HostUnreachable | ErrorKind::NetworkUnreachable
             if elapsed.is_some_and(|d| d < INSTANT_UNREACHABLE) =>
         {
-            "\nmacOS refused this connection instantly instead of trying and timing out. \
-             If the headset is awake and on this network, that usually means macOS's \
-             Local Network permission for iloader is stuck — even with the switch ON. \
-             In System Settings ▸ Privacy & Security ▸ Local Network, switch iloader \
-             OFF and back ON, then quit and reopen iloader. If it still fails, restart \
-             the Mac — this is a known macOS quirk after app or system updates."
+            "\nmacOS refused this connection instantly instead of trying and timing out — \
+             its Local Network privacy filter is blocking iloader, even if the switch \
+             looks ON. In System Settings ▸ Privacy & Security ▸ Local Network, switch \
+             iloader OFF and back ON, then quit and reopen iloader. If iloader isn't \
+             listed there at all, macOS's Local Network database is broken on this Mac: \
+             restart the Mac first; if it's still missing after that, delete \
+             /Library/Preferences/com.apple.networkextension.plist (admin password \
+             needed) and restart — macOS rebuilds it and every app asks for permission \
+             again. Known macOS quirk after app or system updates."
         }
         ErrorKind::HostUnreachable | ErrorKind::NetworkUnreachable | ErrorKind::TimedOut => {
             "\nThe Vision Pro was found, but the Mac can't reach it directly. Usually this \
@@ -1216,16 +1219,36 @@ async fn vision_pair_inner(
     // to be known. The headset withdraws and re-announces this service every ~30-60s
     // with a fresh port, so it is routinely absent for a few seconds at a time; only
     // a port from a live announcement is connectable.
+    // Timestamped so user logs pin down when the user actually clicked — without
+    // this, dead time between discovery and the first connect is unattributable
+    // (a field log's "29 missing seconds" turned out to be time-to-click).
+    tracing::info!(target: "vision", "pairing requested for {}", device.name);
+    let wait_started = std::time::Instant::now();
     let b = browser();
     let mut dev = None;
     let mut seen_without_port = false;
-    for _ in 0..PAIRABLE_WAIT_POLLS {
+    for poll in 0..PAIRABLE_WAIT_POLLS {
         if let Some(d) = b.get(&device.name) {
             if d.manual_pairing_port.is_some() {
+                if poll > 0 {
+                    tracing::info!(
+                        target: "vision",
+                        "live manual-pairing announcement (port {:?}) arrived after {:?}",
+                        d.manual_pairing_port,
+                        wait_started.elapsed()
+                    );
+                }
                 dev = Some(d);
                 break;
             }
             seen_without_port = true;
+        }
+        if poll == 0 {
+            tracing::info!(
+                target: "vision",
+                "no live manual-pairing announcement yet; waiting (the headset re-announces \
+                 every ~30-60s)"
+            );
         }
         tokio::select! {
             _ = cancel.cancelled() => return Err(AppError::Canceled("Wireless pairing".into())),
@@ -1271,6 +1294,11 @@ async fn vision_pair_inner(
             }
             _ => (dev.ips.clone(), port),
         };
+        tracing::info!(
+            target: "vision",
+            "pairing attempt {}: dialing {ips:?} port {port}",
+            attempt + 1
+        );
 
         let code_requested = Arc::new(AtomicBool::new(false));
 
@@ -1413,7 +1441,7 @@ mod tests {
     fn unreachable_hint_depends_on_how_fast_it_failed() {
         let instant = std::io::Error::from_raw_os_error(65); // EHOSTUNREACH
         let m = connect_err_message("x", "192.168.50.93", 53231, instant, Some(Duration::from_millis(5)));
-        assert!(m.contains("Local Network permission"), "{m}");
+        assert!(m.contains("Local Network privacy filter"), "{m}");
         let slow = std::io::Error::from_raw_os_error(65);
         let m = connect_err_message("x", "192.168.50.93", 53231, slow, Some(Duration::from_secs(4)));
         assert!(m.contains("asleep"), "{m}");

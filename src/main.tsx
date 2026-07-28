@@ -8,20 +8,23 @@ import { ErrorProvider } from "./ErrorContext";
 import { DialogProvider } from "./DialogContext";
 import "./i18next";
 import { PlatformProvider } from "./PlatformContext";
+import { CrashBoundary } from "./CrashBoundary";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <PlatformProvider>
-      <StoreProvider>
-        <ErrorProvider>
-          <DialogProvider>
-            <LogProvider>
-              <App />
-            </LogProvider>
-          </DialogProvider>
-        </ErrorProvider>
-      </StoreProvider>
-    </PlatformProvider>
+    <CrashBoundary>
+      <PlatformProvider>
+        <StoreProvider>
+          <ErrorProvider>
+            <DialogProvider>
+              <LogProvider>
+                <App />
+              </LogProvider>
+            </DialogProvider>
+          </ErrorProvider>
+        </StoreProvider>
+      </PlatformProvider>
+    </CrashBoundary>
     <Toaster richColors expand />
   </React.StrictMode>,
 );

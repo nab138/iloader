@@ -110,6 +110,33 @@ fn is_adhoc_build() -> bool {
     })
 }
 
+/// Send one well-formed mDNS PTR query for our pairing service from THIS process's
+/// own socket, returning the refusal error if macOS blocked it (`None` = send OK).
+///
+/// Two purposes. App-originated local traffic is what makes macOS register the app
+/// under Settings ▸ Privacy & Security ▸ Local Network (and show the prompt) —
+/// browsing through mDNSResponder does not create that entry on machines where
+/// registration is broken, which is why affected users report iloader missing from
+/// the pane entirely. And the sendto verdict is an instant, definitive health check
+/// of the filter state: two field cases showed iloader's own connects refused in
+/// ~300µs while daemon traffic (discovery, usbmuxd-network) sailed through.
+#[cfg(target_os = "macos")]
+fn local_network_probe() -> Option<String> {
+    use std::net::UdpSocket;
+    // Minimal DNS query: header (id 0, flags 0, 1 question), QNAME
+    // _remotepairing._tcp.local., QTYPE PTR, QCLASS IN.
+    let mut q: Vec<u8> = vec![0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0];
+    for label in ["_remotepairing", "_tcp", "local"] {
+        q.push(label.len() as u8);
+        q.extend_from_slice(label.as_bytes());
+    }
+    q.extend_from_slice(&[0, 0, 12, 0, 1]);
+    match UdpSocket::bind(("0.0.0.0", 0)).and_then(|s| s.send_to(&q, ("224.0.0.251", 5353))) {
+        Ok(_) => None,
+        Err(e) => Some(e.to_string()),
+    }
+}
+
 /// How fast an `EHOSTUNREACH` must arrive to count as the kernel REFUSING to send
 /// rather than trying and giving up. A genuinely unreachable LAN peer fails only
 /// after several ARP probes (seconds); an instant "No route to host" on a
@@ -164,6 +191,23 @@ fn connect_err_message(
         }
         _ => "",
     };
+    // On an instant refusal, probe RIGHT NOW (not a cached startup verdict — the
+    // user may have just toggled the permission) so the message can state whether
+    // macOS is provably blocking this app's traffic in general.
+    #[cfg(target_os = "macos")]
+    let probe_hint = if matches!(
+        e.kind(),
+        ErrorKind::HostUnreachable | ErrorKind::NetworkUnreachable
+    ) && elapsed.is_some_and(|d| d < INSTANT_UNREACHABLE)
+        && local_network_probe().is_some()
+    {
+        "\n(Confirmed: a network probe just now was refused the same way — macOS is \
+         blocking iloader itself; the headset and your Wi-Fi are fine.)"
+    } else {
+        ""
+    };
+    #[cfg(not(target_os = "macos"))]
+    let probe_hint = "";
     #[cfg(target_os = "macos")]
     let adhoc_hint = if matches!(
         e.kind(),
@@ -180,7 +224,7 @@ fn connect_err_message(
     };
     #[cfg(not(target_os = "macos"))]
     let adhoc_hint = "";
-    format!("{what} ({ip}:{port}): {e}{hint}{adhoc_hint}")
+    format!("{what} ({ip}:{port}): {e}{hint}{probe_hint}{adhoc_hint}")
 }
 
 /// TCP-connect to the first address that answers.
@@ -840,6 +884,20 @@ pub fn start_discovery() {
     // log, not just after a failed connect.
     #[cfg(target_os = "macos")]
     let _ = is_adhoc_build();
+    // App-originated local traffic registers iloader in the Local Network pane and
+    // triggers the permission prompt (daemon-mediated browsing doesn't, on machines
+    // where registration is broken) — and the verdict makes the filter state visible
+    // in every log from launch.
+    #[cfg(target_os = "macos")]
+    match local_network_probe() {
+        None => tracing::info!(target: "vision", "local-network probe: send OK"),
+        Some(e) => tracing::warn!(
+            target: "vision",
+            "local-network probe: REFUSED ({e}) — macOS's Local Network filter is \
+             blocking iloader's own traffic (discovery may still work; it runs via \
+             the system's mDNSResponder)"
+        ),
+    }
     let _ = browser();
 }
 

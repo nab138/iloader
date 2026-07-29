@@ -95,6 +95,10 @@
     "failed": "操作失败。",
     "completed": "操作完成",
     "please_wait": "请稍候...",
+    "preparing": "准备中...",
+    "cancel": "撤销",
+    "cancel_confirm": "确定要撤销当前操作吗？",
+    "current_step": "当前步骤：{{current}}",
     "copy_error_clipboard": "复制错误到剪贴板"
   },
   "operations": {
@@ -111,7 +115,12 @@
     "install_livecontainer_step_install": "签名并安装 LiveContainer+SideStore",
     "install_livecontainer_step_pairing": "放置配对文件",
     "sideload_title": "正在安装应用",
-    "sideload_step_install": "签名并安装应用"
+    "sideload_step_prepare": "准备安装环境",
+    "sideload_step_cert": "申请证书",
+    "sideload_step_profile": "申请描述文件",
+    "sideload_step_sign": "签名文件",
+    "sideload_step_transfer": "传输数据",
+    "sideload_step_install": "安装应用"
   },
   "certificates": {
     "manage": "管理证书",

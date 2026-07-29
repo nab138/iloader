@@ -99,6 +99,10 @@
     "failed": "Operation failed.",
     "completed": "Operation completed",
     "please_wait": "Please wait...",
+    "preparing": "Preparing...",
+    "cancel": "Cancel",
+    "cancel_confirm": "Are you sure you want to cancel this operation?",
+    "current_step": "Current step: {{current}}",
     "copy_error_clipboard": "Copy error to clipboard"
   },
   "operations": {
@@ -115,7 +119,10 @@
     "install_livecontainer_step_install": "Sign & Install LiveContainer+SideStore",
     "install_livecontainer_step_pairing": "Place Pairing File",
     "sideload_title": "Installing App",
-    "sideload_step_install": "Sign & Install App"
+    "sideload_step_prepare": "Preparing install environment",
+    "sideload_step_sign": "Signing files",
+    "sideload_step_transfer": "Transferring data",
+    "sideload_step_install": "Installing app"
   },
   "certificates": {
     "manage": "Manage Certificates",

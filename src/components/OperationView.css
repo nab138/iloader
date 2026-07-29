@@ -3,8 +3,9 @@
   flex-direction: column;
   gap: 1.25em;
   overflow-y: hidden;
-  overflow-x: auto;
+  overflow-x: hidden;
   width: 100%;
+  min-width: 0;
 }
 
 .operation-header h2 {
@@ -28,6 +29,8 @@
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
+  width: 100%;
+  min-width: min(650px, 92vw);
 }
 
 .operation-step-icon {
@@ -58,6 +61,7 @@
   text-align: left;
   overflow-x: auto;
   flex-grow: 1;
+  min-width: 0;
 }
 
 .operation-step-internal p {
@@ -112,11 +116,64 @@
 
 .operation-header {
   margin-bottom: 1em;
+  position: relative;
+}
+
+.operation-cancel {
+  position: absolute;
+  top: 6px;
+  right: 0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  line-height: 1.1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .operation-header p {
   margin: 0;
   color: var(--text-muted);
+}
+
+.operation-progress {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.operation-progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.operation-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #71a5ff 0%, #7dcfff 100%);
+  transition: width 0.35s ease;
+}
+
+.operation-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.88rem;
+}
+
+.operation-progress-percent {
+  font-weight: 600;
+  color: #c7e0ff;
+}
+
+.operation-progress-step {
+  color: var(--text-muted);
+  text-align: right;
 }
 
 .operation-success-message {
@@ -132,6 +189,10 @@
 
 .operation-suggestions {
   padding: 0rem 0 1rem 0;
+}
+
+.operation-dismiss {
+  margin-top: 0.85rem;
 }
 
 .operation-suggestions ul {

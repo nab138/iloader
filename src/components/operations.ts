@@ -17,6 +17,8 @@ export type OperationState = {
   current: Operation;
   completed: string[];
   started: string[];
+  progress: Record<string, number>;
+  transferBytes: Record<string, { uploaded: number; total: number }>;
   failed: {
     stepId: string;
     extraDetails: AppError;
@@ -34,7 +36,18 @@ type OperationFailedUpdate = {
   extraDetails: AppError;
 };
 
-export type OperationUpdate = OperationInfoUpdate | OperationFailedUpdate;
+type OperationProgressUpdate = {
+  updateType: "progress";
+  stepId: string;
+  progress: number;
+  uploadedBytes?: number;
+  totalBytes?: number;
+};
+
+export type OperationUpdate =
+  | OperationInfoUpdate
+  | OperationFailedUpdate
+  | OperationProgressUpdate;
 
 export const installSideStoreOperation: Operation = {
   id: "install_sidestore",
@@ -78,10 +91,18 @@ export const installLiveContainerOperation: Operation = {
   ],
 };
 
-export const sideloadOperation = {
+export const sideloadOperation: Operation = {
   id: "sideload",
   titleKey: "operations.sideload_title",
   steps: [
+    {
+      id: "sign",
+      titleKey: "operations.sideload_step_sign",
+    },
+    {
+      id: "transfer",
+      titleKey: "operations.sideload_step_transfer",
+    },
     {
       id: "install",
       titleKey: "operations.sideload_step_install",

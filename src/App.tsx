@@ -28,7 +28,11 @@ import { GlassCard } from "./components/GlassCard";
 import { useTranslation } from "react-i18next";
 import { usePlatform } from "./PlatformContext";
 import { useStore } from "./StoreContext";
-import { AnisetteMeasurement, measureAnisetteServers } from "./anisette";
+import {
+  anisetteServers,
+  AnisetteMeasurement,
+  measureAnisetteServers,
+} from "./anisette";
 
 const anisetteCheckIntervalMs = 30000;
 
@@ -107,6 +111,16 @@ function App() {
       setAnisetteMeasurements(measurements);
 
       const currentAnisetteServer = anisetteServerRef.current;
+
+      // User is on a custom (non-preset) server: never auto-pick for them.
+      const isCustomServer = !anisetteServers.some(
+        (server) => server.value === currentAnisetteServer,
+      );
+      if (isCustomServer) {
+        isInitialCheck = false;
+        return;
+      }
+
       const currentMeasurement = measurements.find(
         (measurement) => measurement.value === currentAnisetteServer,
       );

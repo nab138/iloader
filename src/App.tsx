@@ -96,6 +96,7 @@ function App() {
   useEffect(() => {
     let cancelled = false;
     let intervalId: number | undefined;
+    let isInitialCheck = true;
 
     const checkAnisetteServers = async () => {
       if (document.visibilityState !== "visible") return;
@@ -110,9 +111,10 @@ function App() {
         (measurement) => measurement.value === currentAnisetteServer,
       );
 
-      // Only auto-switch when the current server stopped responding;
-      // a merely-faster server is not reason enough to switch silently.
-      if (currentMeasurement?.ttfbMs !== null) return;
+      // First run: silently pick the fastest server outright.
+      // After that, only switch when the current server stops responding.
+      if (!isInitialCheck && currentMeasurement?.ttfbMs !== null) return;
+      isInitialCheck = false;
 
       const fastestMeasurement = measurements
         .filter((measurement) => measurement.ttfbMs !== null)

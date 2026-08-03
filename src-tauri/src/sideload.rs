@@ -11,7 +11,10 @@ use crate::{
     pairing::{get_sidestore_info, place_file},
     secure_storage::create_sideloading_storage,
 };
-use apple_codesign::{MachFile, SettingsScope, UnifiedSigner};
+use apple_codesign::{
+    BundleSigningContext, CodeResourcesBuilder, CodeResourcesRule, MachFile, SettingsScope,
+    SignedMachOInfo, UnifiedSigner,
+};
 use idevice::provider::IdeviceProvider;
 use isideload::{
     dev::{
@@ -33,6 +36,7 @@ use isideload::{
 use plist::Dictionary;
 use plist_macro::plist_to_xml_string;
 use rootcause::{Report, option_ext::OptionExt, prelude::*};
+use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Manager, State, Window};
 use tracing::{info, warn};
 
@@ -257,14 +261,17 @@ async fn install_app_with_extensions(
     let app_group_mappings = remap_app_groups(&original_app_groups, &team.team_id)?;
     patch_app_group_references(&app.bundle.bundle_dir, &app_group_mappings)?;
     let alt_app_groups = collect_alt_app_groups(&app.bundle.bundle_dir)?;
-    let requested_app_groups = app_group_mappings
-        .iter()
-        .map(|(_, replacement)| replacement.clone())
-        .collect::<Vec<_>>();
 
     let (signed_app_path, special_app) = sideloader
         .sign_app(app.bundle.bundle_dir.clone(), Some(team.clone()), false)
         .await?;
+    let signed_main_bundle_id = Application::new(signed_app_path.clone())?.main_bundle_id()?;
+    let requested_app_groups = required_app_groups(
+        &app_group_mappings,
+        &signed_main_bundle_id,
+        &special_app,
+        &team.team_id,
+    );
 
     let result: Result<(), AppError> = async {
         restore_alt_app_groups(&signed_app_path, &alt_app_groups)?;
@@ -342,6 +349,10 @@ async fn resign_app_extensions(
 
     extensions.sort_by_key(|(path, _)| path.components().count());
     extensions.reverse();
+    let extension_bundle_paths = extensions
+        .iter()
+        .map(|(path, _)| path.clone())
+        .collect::<Vec<_>>();
 
     let mut target_bundle_ids = BTreeSet::from([main_bundle_id.clone()]);
     target_bundle_ids.extend(extensions.iter().map(|(_, bundle_id)| bundle_id.clone()));
@@ -407,6 +418,8 @@ async fn resign_app_extensions(
 
         sign_bundle(
             &extension_path,
+            &bundle_id,
+            &[],
             &cert_identity,
             profile.encoded_profile.as_ref(),
             &None,
@@ -423,6 +436,8 @@ async fn resign_app_extensions(
     write_provisioning_profile(&main_bundle_path, main_profile.encoded_profile.as_ref()).await?;
     sign_bundle(
         &main_bundle_path,
+        &main_bundle_id,
+        &extension_bundle_paths,
         &cert_identity,
         main_profile.encoded_profile.as_ref(),
         special_app,
@@ -451,6 +466,165 @@ async fn write_provisioning_profile(
             error.to_string(),
         )
     })
+}
+
+fn validate_nested_app_extension_seals(
+    main_bundle_path: &Path,
+    extension_bundle_paths: &[PathBuf],
+) -> Result<(), Report> {
+    if extension_bundle_paths.is_empty() {
+        return Ok(());
+    }
+
+    let code_resources_path = main_bundle_path
+        .join("_CodeSignature")
+        .join("CodeResources");
+    let code_resources_data = std::fs::read(&code_resources_path).context(format!(
+        "Failed to read nested code seals from {}",
+        code_resources_path.display()
+    ))?;
+    let code_resources =
+        plist::Value::from_reader_xml(code_resources_data.as_slice()).context(format!(
+            "Failed to parse nested code seals from {}",
+            code_resources_path.display()
+        ))?;
+    let files2 = code_resources
+        .as_dictionary()
+        .and_then(|dictionary| dictionary.get("files2"))
+        .and_then(plist::Value::as_dictionary)
+        .ok_or_report()
+        .context(format!(
+            "Main app signature {} has no files2 code seals",
+            code_resources_path.display()
+        ))?;
+
+    for extension_path in extension_bundle_paths {
+        let relative_path = extension_path
+            .strip_prefix(main_bundle_path)
+            .context(format!(
+                "Failed to resolve app extension {} relative to {}",
+                extension_path.display(),
+                main_bundle_path.display()
+            ))?
+            .to_string_lossy()
+            .replace('\\', "/");
+        let actual_code_seal = nested_code_seal(files2, &relative_path)
+            .ok_or_report()
+            .context(format!(
+                "Main app signature is missing the nested code seal for {}",
+                relative_path
+            ))?;
+        let extension_bundle = Bundle::new(extension_path.clone())?;
+        let executable_name = extension_bundle
+            .app_info
+            .get("CFBundleExecutable")
+            .and_then(plist::Value::as_string)
+            .ok_or_report()
+            .context(format!(
+                "App extension {} has no executable",
+                extension_path.display()
+            ))?;
+        let executable_path = extension_path.join(executable_name);
+        let executable_data = std::fs::read(&executable_path).context(format!(
+            "Failed to read signed app extension executable {}",
+            executable_path.display()
+        ))?;
+        let signed_info = SignedMachOInfo::parse_data(&executable_data)?;
+        let expected_code_seal = Sha256::digest(&signed_info.code_directory_blob);
+        if actual_code_seal != &expected_code_seal[..20] {
+            bail!(
+                "Main app signature has an invalid nested code seal for {}",
+                relative_path
+            );
+        }
+
+        info!("Verified nested app extension code seal: {}", relative_path);
+    }
+
+    Ok(())
+}
+
+fn nested_code_seal<'a>(files2: &'a Dictionary, relative_path: &str) -> Option<&'a [u8]> {
+    files2
+        .get(relative_path)
+        .and_then(plist::Value::as_dictionary)
+        .and_then(|seal| seal.get("cdhash"))
+        .and_then(plist::Value::as_data)
+}
+
+fn apply_nested_app_extension_seals(
+    main_bundle_path: &Path,
+    extension_bundle_paths: &[PathBuf],
+    cert_identity: &CertificateIdentity,
+    entitlements: &Dictionary,
+) -> Result<(), Report> {
+    let main_bundle = Bundle::new(main_bundle_path.to_path_buf())?;
+    let executable_name = main_bundle
+        .app_info
+        .get("CFBundleExecutable")
+        .and_then(plist::Value::as_string)
+        .ok_or_report()
+        .context(format!(
+            "Main app bundle {} has no executable",
+            main_bundle_path.display()
+        ))?;
+
+    let mut resources = CodeResourcesBuilder::default_no_resources_rules()?;
+    resources.add_rule2(
+        CodeResourcesRule::new("^(PlugIns|Plug-ins)/")?
+            .nested()
+            .weight(10),
+    );
+    resources.add_exclusion_rule(CodeResourcesRule::new("^_CodeSignature/")?.exclude());
+    resources.add_exclusion_rule(CodeResourcesRule::new("^CodeResources$")?.exclude());
+    resources.add_exclusion_rule(CodeResourcesRule::new("^_MASReceipt$")?.exclude());
+    resources.add_exclusion_rule(
+        CodeResourcesRule::new(format!("^{}$", regex::escape(executable_name)))?.exclude(),
+    );
+
+    let mut settings = signing_settings(cert_identity)?;
+    settings
+        .set_entitlements_xml(SettingsScope::Main, plist_to_xml_string(entitlements))
+        .context("Failed to set main app entitlements XML")?;
+    {
+        let mut context = BundleSigningContext {
+            settings: &settings,
+            dest_dir: main_bundle_path.to_path_buf(),
+            previously_installed_paths: BTreeSet::new(),
+            installed_paths: BTreeSet::new(),
+        };
+        resources
+            .walk_and_seal_directory(main_bundle_path, main_bundle_path, &mut context)
+            .context(format!(
+                "Failed to seal nested app extensions in {}",
+                main_bundle_path.display()
+            ))?;
+    }
+
+    let mut resources_data = Vec::new();
+    resources
+        .write_code_resources(&mut resources_data)
+        .context("Failed to encode main app CodeResources")?;
+    let code_resources_path = main_bundle_path
+        .join("_CodeSignature")
+        .join("CodeResources");
+    std::fs::write(&code_resources_path, &resources_data).context(format!(
+        "Failed to write nested code seals to {}",
+        code_resources_path.display()
+    ))?;
+
+    settings.set_code_resources_data(SettingsScope::Main, resources_data);
+    UnifiedSigner::new(settings)
+        .sign_path_in_place(main_bundle_path.join(executable_name))
+        .context(format!(
+            "Failed to sign main executable with {} nested app extension seal(s)",
+            extension_bundle_paths.len()
+        ))?;
+    info!(
+        "Applied {} nested app extension code seal(s)",
+        extension_bundle_paths.len()
+    );
+    Ok(())
 }
 
 async fn configure_requested_app_groups(
@@ -499,6 +673,8 @@ async fn configure_requested_app_groups(
 
 fn sign_bundle(
     bundle_path: &Path,
+    expected_bundle_id: &str,
+    nested_extension_paths: &[PathBuf],
     cert_identity: &CertificateIdentity,
     provisioning_profile: &[u8],
     special_app: &Option<SpecialApp>,
@@ -507,6 +683,7 @@ fn sign_bundle(
 ) -> Result<(), Report> {
     let mut settings = signing_settings(cert_identity)?;
     let entitlements = entitlements_from_profile(provisioning_profile, special_app, team)?;
+    validate_profile_identity(&entitlements, expected_bundle_id, team, bundle_path)?;
     validate_requested_app_groups(&entitlements, requested_app_groups, bundle_path)?;
     settings
         .set_entitlements_xml(SettingsScope::Main, plist_to_xml_string(&entitlements))
@@ -515,6 +692,18 @@ fn sign_bundle(
     UnifiedSigner::new(settings)
         .sign_path_in_place(bundle_path)
         .context(format!("Failed to sign bundle: {}", bundle_path.display()))?;
+
+    if !nested_extension_paths.is_empty() {
+        apply_nested_app_extension_seals(
+            bundle_path,
+            nested_extension_paths,
+            cert_identity,
+            &entitlements,
+        )?;
+        validate_nested_app_extension_seals(bundle_path, nested_extension_paths)?;
+    }
+
+    validate_signed_bundle(bundle_path, expected_bundle_id, team, requested_app_groups)?;
 
     Ok(())
 }
@@ -657,7 +846,7 @@ fn collect_original_app_groups(app: &Application) -> Vec<String> {
     app_groups
 }
 
-fn original_entitlements(bundle: &Bundle) -> Result<Option<Dictionary>, Report> {
+fn code_signature_entitlements(bundle: &Bundle) -> Result<Option<Dictionary>, Report> {
     if let Some(executable_name) = bundle
         .app_info
         .get("CFBundleExecutable")
@@ -676,6 +865,14 @@ fn original_entitlements(bundle: &Bundle) -> Result<Option<Dictionary>, Report> 
                 }
             }
         }
+    }
+
+    Ok(None)
+}
+
+fn original_entitlements(bundle: &Bundle) -> Result<Option<Dictionary>, Report> {
+    if let Some(entitlements) = code_signature_entitlements(bundle)? {
+        return Ok(Some(entitlements));
     }
 
     let provisioning_profile_path = bundle.bundle_dir.join("embedded.mobileprovision");
@@ -698,6 +895,25 @@ fn app_groups_from_entitlements(entitlements: &Dictionary) -> Vec<String> {
         .filter_map(plist::Value::as_string)
         .map(str::to_string)
         .collect()
+}
+
+fn required_app_groups(
+    app_group_mappings: &[(String, String)],
+    signed_main_bundle_id: &str,
+    special_app: &Option<SpecialApp>,
+    team_id: &str,
+) -> Vec<String> {
+    let mut app_groups = app_group_mappings
+        .iter()
+        .map(|(_, replacement)| replacement.clone())
+        .collect::<BTreeSet<_>>();
+    let default_app_group = if matches!(special_app, Some(SpecialApp::SideStoreLc)) {
+        format!("group.com.SideStore.SideStore.{team_id}")
+    } else {
+        format!("group.{signed_main_bundle_id}")
+    };
+    app_groups.insert(default_app_group);
+    app_groups.into_iter().collect()
 }
 
 fn remap_app_groups(
@@ -878,12 +1094,93 @@ fn validate_requested_app_groups(
     Ok(())
 }
 
+fn validate_profile_identity(
+    entitlements: &Dictionary,
+    expected_bundle_id: &str,
+    team: &DeveloperTeam,
+    bundle_path: &Path,
+) -> Result<(), Report> {
+    let application_identifier = entitlements
+        .get("application-identifier")
+        .and_then(plist::Value::as_string)
+        .ok_or_report()
+        .context(format!(
+            "Provisioning profile for {} has no application identifier",
+            bundle_path.display()
+        ))?;
+    let expected_suffix = format!(".{expected_bundle_id}");
+    if !application_identifier.ends_with(&expected_suffix) {
+        bail!(
+            "Provisioning profile for {} belongs to {}, expected {}",
+            bundle_path.display(),
+            application_identifier,
+            expected_bundle_id
+        );
+    }
+
+    let profile_team_id = entitlements
+        .get("com.apple.developer.team-identifier")
+        .and_then(plist::Value::as_string)
+        .ok_or_report()
+        .context(format!(
+            "Provisioning profile for {} has no team identifier",
+            bundle_path.display()
+        ))?;
+    if profile_team_id != team.team_id {
+        bail!(
+            "Provisioning profile for {} belongs to team {}, expected {}",
+            bundle_path.display(),
+            profile_team_id,
+            team.team_id
+        );
+    }
+
+    Ok(())
+}
+
+fn validate_signed_bundle(
+    bundle_path: &Path,
+    expected_bundle_id: &str,
+    team: &DeveloperTeam,
+    requested_app_groups: &[String],
+) -> Result<(), Report> {
+    let bundle = Bundle::new(bundle_path.to_path_buf())?;
+    let actual_bundle_id = bundle.bundle_identifier().ok_or_report().context(format!(
+        "Signed bundle {} has no bundle identifier",
+        bundle_path.display()
+    ))?;
+    if actual_bundle_id != expected_bundle_id {
+        bail!(
+            "Signed bundle {} has bundle identifier {}, expected {}",
+            bundle_path.display(),
+            actual_bundle_id,
+            expected_bundle_id
+        );
+    }
+
+    let entitlements = code_signature_entitlements(&bundle)?
+        .ok_or_report()
+        .context(format!(
+            "Signed bundle {} has no signed entitlements",
+            bundle_path.display()
+        ))?;
+    validate_profile_identity(&entitlements, expected_bundle_id, team, bundle_path)?;
+    validate_requested_app_groups(&entitlements, requested_app_groups, bundle_path)?;
+    info!(
+        "Verified signed bundle {} with shared app groups: {}",
+        expected_bundle_id,
+        requested_app_groups.join(", ")
+    );
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        app_groups_from_entitlements, remap_app_groups, replace_equal_length,
-        validate_requested_app_groups,
+        app_groups_from_entitlements, nested_code_seal, remap_app_groups, replace_equal_length,
+        required_app_groups, validate_requested_app_groups,
     };
+    use isideload::sideload::application::SpecialApp;
     use plist::{Dictionary, Value};
     use std::path::Path;
 
@@ -990,6 +1287,81 @@ mod tests {
             error
                 .to_string()
                 .contains("group.com.example.app.A1B2C3D4E5")
+        );
+    }
+
+    #[test]
+    fn requires_default_app_group_for_unsigned_app() {
+        let groups = required_app_groups(&[], "de.marxon.wedee.4CP62AN6Z9", &None, "4CP62AN6Z9");
+
+        assert_eq!(groups, vec!["group.de.marxon.wedee.4CP62AN6Z9".to_string()]);
+    }
+
+    #[test]
+    fn requires_remapped_and_default_app_groups() {
+        let groups = required_app_groups(
+            &[(
+                "group.de.marxon.wedee".to_string(),
+                "group.0123456789abcdef".to_string(),
+            )],
+            "de.marxon.wedee.4CP62AN6Z9",
+            &None,
+            "4CP62AN6Z9",
+        );
+
+        assert_eq!(
+            groups,
+            vec![
+                "group.0123456789abcdef".to_string(),
+                "group.de.marxon.wedee.4CP62AN6Z9".to_string(),
+            ]
+        );
+    }
+
+    #[test]
+    fn preserves_sidestore_live_container_app_group() {
+        let groups = required_app_groups(
+            &[],
+            "com.SideStore.SideStore.4CP62AN6Z9",
+            &Some(SpecialApp::SideStoreLc),
+            "4CP62AN6Z9",
+        );
+
+        assert_eq!(
+            groups,
+            vec!["group.com.SideStore.SideStore.4CP62AN6Z9".to_string()]
+        );
+    }
+
+    #[test]
+    fn accepts_nested_app_extension_code_seal() {
+        let mut seal = Dictionary::new();
+        seal.insert("cdhash".to_string(), Value::Data(vec![1, 2, 3]));
+        let mut files2 = Dictionary::new();
+        files2.insert(
+            "PlugIns/WedeeWidgets.appex".to_string(),
+            Value::Dictionary(seal),
+        );
+
+        assert_eq!(
+            nested_code_seal(&files2, "PlugIns/WedeeWidgets.appex"),
+            Some([1, 2, 3].as_slice())
+        );
+    }
+
+    #[test]
+    fn rejects_regular_file_hash_for_app_extension() {
+        let mut seal = Dictionary::new();
+        seal.insert("hash2".to_string(), Value::Data(vec![1, 2, 3]));
+        let mut files2 = Dictionary::new();
+        files2.insert(
+            "PlugIns/WedeeWidgets.appex/WedeeWidgets".to_string(),
+            Value::Dictionary(seal),
+        );
+
+        assert_eq!(
+            nested_code_seal(&files2, "PlugIns/WedeeWidgets.appex"),
+            None
         );
     }
 }

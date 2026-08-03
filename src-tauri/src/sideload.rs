@@ -1,5 +1,5 @@
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeMap, BTreeSet},
     path::{Path, PathBuf},
     sync::Mutex,
 };
@@ -256,6 +256,7 @@ async fn install_app_with_extensions(
     let original_app_groups = collect_original_app_groups(&app);
     let app_group_mappings = remap_app_groups(&original_app_groups, &team.team_id)?;
     patch_app_group_references(&app.bundle.bundle_dir, &app_group_mappings)?;
+    let alt_app_groups = collect_alt_app_groups(&app.bundle.bundle_dir)?;
     let requested_app_groups = app_group_mappings
         .iter()
         .map(|(_, replacement)| replacement.clone())
@@ -266,6 +267,7 @@ async fn install_app_with_extensions(
         .await?;
 
     let result: Result<(), AppError> = async {
+        restore_alt_app_groups(&signed_app_path, &alt_app_groups)?;
         resign_app_extensions(
             handle,
             sideloader,
@@ -569,6 +571,53 @@ fn provisioning_profile_entitlements(data: &[u8]) -> Result<Dictionary, Report> 
         .clone();
 
     Ok(entitlements)
+}
+
+fn collect_alt_app_groups(bundle_path: &Path) -> Result<BTreeMap<PathBuf, plist::Value>, Report> {
+    let app = Application::new(bundle_path.to_path_buf())?;
+    let mut bundles = app.bundle.collect_nested_bundles();
+    bundles.push(app.bundle);
+
+    let mut alt_app_groups = BTreeMap::new();
+    for bundle in bundles {
+        let Some(value) = bundle.app_info.get("ALTAppGroups") else {
+            continue;
+        };
+        let relative_path = bundle
+            .bundle_dir
+            .strip_prefix(bundle_path)
+            .context(format!(
+                "Failed to resolve bundle path {} relative to {}",
+                bundle.bundle_dir.display(),
+                bundle_path.display()
+            ))?
+            .to_path_buf();
+        alt_app_groups.insert(relative_path, value.clone());
+    }
+
+    Ok(alt_app_groups)
+}
+
+fn restore_alt_app_groups(
+    bundle_path: &Path,
+    alt_app_groups: &BTreeMap<PathBuf, plist::Value>,
+) -> Result<(), Report> {
+    for (relative_path, value) in alt_app_groups {
+        let info_path = bundle_path.join(relative_path).join("Info.plist");
+        let data =
+            std::fs::read(&info_path).context(format!("Failed to read {}", info_path.display()))?;
+        let mut info: Dictionary =
+            plist::from_bytes(&data).context(format!("Failed to parse {}", info_path.display()))?;
+        info.insert("ALTAppGroups".to_string(), value.clone());
+        plist::to_file_binary(&info_path, &info)
+            .context(format!("Failed to write {}", info_path.display()))?;
+        info!(
+            "Restored ALTAppGroups for {}",
+            bundle_path.join(relative_path).display()
+        );
+    }
+
+    Ok(())
 }
 
 fn collect_original_app_groups(app: &Application) -> Vec<String> {

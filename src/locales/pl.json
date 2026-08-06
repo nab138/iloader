@@ -83,7 +83,6 @@
   },
   "device": {
     "title": "iDevice",
-    "failed_select_prefix": "Nie udało się wybrać urządzenia: ",
     "loading_devices": "Ładowanie urządzeń...",
     "no_devices_found": "Nie znaleziono urządzeń",
     "found_device": "Znaleziono urządzenie",
@@ -92,7 +91,7 @@
     "no_devices_found_period": "Nie znaleziono urządzeń.",
     "selected": "Wybrane",
     "pairing_in_progress_header": "Parowanie z {{device}}...",
-    "pairing_in_progress_hint": "Odblokuj urządzenie i kliknij „Zaufaj”, a następnie wprowadź kod, jeśli pojawi się monit.",
+    "pairing_in_progress_hint": "Odblokuj urządzenie i kliknij \"Zaufaj\", a następnie wprowadź kod, jeśli pojawi się monit.",
     "pairing_cancel": "Anuluj",
     "failed_select": "Nie udało się wybrać urządzenia"
   },
@@ -109,11 +108,11 @@
     "install_sidestore_step_download": "Pobieranie SideStore",
     "install_sidestore_step_install": "Podpisywanie i instalowanie SideStore",
     "install_sidestore_step_pairing": "Umieszczanie pliku parowania",
-    "install_livecontainer_title": "Instalowanie LiveContainer+SideStore",
-    "install_livecontainer_success_title": "LiveContainer+SideStore zainstalowany!",
+    "install_livecontainer_title": "Instalowanie LiveContainer + SideStore",
+    "install_livecontainer_success_title": "LiveContainer + SideStore zainstalowany!",
     "install_livecontainer_success_message": "Aby dokończyć instalację, otwórz LiveContainer, wybierz ustawienia i kliknij \"Importuj certyfikat z SideStore\". Następnie wybierz aplikacje, kliknij ikonę SideStore i odśwież LiveContainer.",
-    "install_livecontainer_step_download": "Pobieranie LiveContainer+SideStore",
-    "install_livecontainer_step_install": "Podpisywanie i instalowanie LiveContainer+SideStore",
+    "install_livecontainer_step_download": "Pobieranie LiveContainer + SideStore",
+    "install_livecontainer_step_install": "Podpisywanie i instalowanie LiveContainer + SideStore",
     "install_livecontainer_step_pairing": "Umieszczanie pliku parowania",
     "sideload_title": "Instalowanie aplikacji",
     "sideload_step_install": "Podpisywanie i instalowanie aplikacji"
@@ -198,7 +197,7 @@
     "stored_rppairing_deleted_success": "Zapisane parowanie zostało pomyślnie usunięte!",
     "failed_delete_stored_rppairing": "Nie udało się usunąć zapisanego parowania",
     "dont_use_keyring": "Nie używaj keyringu",
-    "dont_use_keyring_message": "To zmniejsza bezpieczeństwo iloadera, ponieważ pliki parowania, stan anisette i certyfikaty będą zapisywane na dysku. Włącz to tylko wtedy, gdy domyślne przechowywanie w keyringu nie działa i rozumiesz ryzyko."
+    "dont_use_keyring_message": "To zmniejsza bezpieczeństwo iloadera, ponieważ pliki parowania, stan Anisette i certyfikaty będą zapisywane na dysku. Włącz to tylko wtedy, gdy domyślne przechowywanie w keyringu nie działa i rozumiesz ryzyko."
   },
   "dialog": {
     "confirm": "Potwierdź",
@@ -207,7 +206,6 @@
   "error": {
     "title": "Wystąpił błąd: {{msg}}",
     "unknown": "Nieznany",
-    "support_message": "Jeśli problem będzie się powtarzać, naciśnij \"Skopiuj do schowka\" i wyślij skopiowany błąd na <discord>Discord</discord> lub jako <github>zgłoszenie GitHub</github>, aby uzyskać pomoc.",
     "suggestions_heading": "Sugestie",
     "suggestions": {
       "underage": [
@@ -223,7 +221,7 @@
         "2FA z kluczem bezpieczeństwa nie jest obsługiwane. Jeśli to możliwe, użyj Apple ID bez 2FA lub z 2FA opartym o zaufane urządzenie."
       ],
       "download": [
-        "Pobierz SideStore ręcznie z ((link:https://github.com/SideStore/SideStore/releases)) i użyj przycisku „Importuj IPA”, aby go zainstalować."
+        "Pobierz SideStore ręcznie z ((link:https://github.com/SideStore/SideStore/releases)) i użyj przycisku \"Importuj IPA\", aby go zainstalować."
       ],
       "house_arrest": [
         "[ios::26.3]Upewnij się, że urządzenie nie działa na deweloperskiej becie iOS 26.3, ponieważ zawiera błąd związany z house arrest"
@@ -237,7 +235,7 @@
       "operation_update": [],
       "usbmuxd": [
         "[platform::windows]Upewnij się, że masz zainstalowany ((link:https://apple.co/ms:iTunes)) i sprawdź, czy wykrywa urządzenie.",
-        "[platform::windows]Odinstaluj iTunes i Apple Mobile Device Support, a następnie zainstaluj „Apple Devices” ze sklepu Microsoft Store.",
+        "[platform::windows]Odinstaluj iTunes i Apple Mobile Device Support, a następnie zainstaluj \"Apple Devices\" ze sklepu Microsoft Store.",
         "[platform::linux]Upewnij się, że usbmuxd jest zainstalowany i uruchomiony."
       ],
       "trust": [
@@ -247,19 +245,15 @@
         "Upewnij się, że urządzenie jest poprawnie podłączone do komputera.",
         "Odłącz i podłącz urządzenie ponownie. Jeśli problem nadal występuje, spróbuj innego portu USB i kabla."
       ],
-      "not_logged_in": [
-        "Najpierw zaloguj się do swojego Apple ID."
-      ],
-      "no_device_selected": [
-        "Wybierz urządzenie przed kontynuowaniem."
-      ],
+      "not_logged_in": ["Najpierw zaloguj się do swojego Apple ID."],
+      "no_device_selected": ["Wybierz urządzenie przed kontynuowaniem."],
       "anisette": [
         "Upewnij się, że komputer jest połączony z internetem.",
-        "Zmień serwer anisette. Spróbuj kilku różnych serwerów.",
+        "Zmień serwer Anisette. Spróbuj kilku różnych serwerów.",
         "Upewnij się, że możesz otworzyć ((link:{{anisetteServerUrl}})) w przeglądarce."
       ],
       "keyring": [
-        "Spróbuj włączyć w ustawieniach opcję „Nie używaj keyringu”, aby obejść ten problem. Pamiętaj, że jest to mniej bezpieczne."
+        "Spróbuj włączyć w ustawieniach opcję \"Nie używaj keyringu\", aby obejść ten problem. Pamiętaj, że jest to mniej bezpieczne."
       ],
       "misc": [
         "Spróbuj ponownie. Pomóc może też ponowne uruchomienie aplikacji, komputera i/lub telefonu."
@@ -280,7 +274,8 @@
         "Usuń inne sideloadowane aplikacje, aby zwolnić miejsce dla tej.",
         "Wygasłe aplikacje nadal wliczają się do limitu 3 aplikacji."
       ]
-    }
+    },
+    "support_message": "Jeśli problem będzie się powtarzać, naciśnij \"Skopiuj do schowka\" i wyślij skopiowany błąd na <discord>Discord</discord> lub jako <github>zgłoszenie GitHub</github>, aby uzyskać pomoc."
   },
   "update": {
     "new_version_available": "Dostępna jest nowa wersja: {{version}}. Czy chcesz zaktualizować?",

@@ -37,6 +37,14 @@ const LIVECONTAINER_VP_URL: &str =
 /// `SideStore/Documents/ALTPairingFile.mobiledevicepairing` iOS path.
 const LIVECONTAINER_VISION_PAIRING_PATH: &str = "SideStore/Documents/rp_pairing_file.plist";
 
+/// LiveContainer2 — the auto-return relay sibling. On visionOS nothing inside a dying
+/// app's own process tree survives it, so after a guest app runs or quits, this second
+/// LiveContainer install is what reopens LiveContainer automatically. Installed
+/// alongside LiveContainer on the Vision Pro; LiveContainer degrades gracefully
+/// (manual reopen) if this install fails, so its failure never fails the operation.
+const LIVECONTAINER2_VP_URL: &str =
+    "https://github.com/rebelancap/LiveContainer/releases/download/visionos/LiveContainer2-visionOS.ipa";
+
 pub type SideloaderMutex = Mutex<Option<Sideloader>>;
 
 pub struct SideloaderGuard<'a> {
@@ -228,6 +236,23 @@ pub async fn install_sidestore_operation(
         .map_err(|e| AppError::Filesystem("Failed to get temp dir".into(), e.to_string()))?
         .join(filename);
     op.fail_if_err("download", download(url, &dest).await)?;
+    // The Vision LiveContainer install brings its auto-return relay sibling along.
+    let lc2_dest = if is_vision && live_container {
+        let dest2 = handle
+            .path()
+            .temp_dir()
+            .map_err(|e| AppError::Filesystem("Failed to get temp dir".into(), e.to_string()))?
+            .join("LiveContainer2-visionOS.ipa");
+        match download(LIVECONTAINER2_VP_URL, &dest2).await {
+            Ok(()) => Some(dest2),
+            Err(e) => {
+                tracing::warn!("LiveContainer2 download failed (auto-return will need a manual reopen): {e:?}");
+                None
+            }
+        }
+    } else {
+        None
+    };
     op.move_on("download", "install")?;
     let device = {
         let device_guard = device_state.lock().unwrap();
@@ -239,12 +264,25 @@ pub async fn install_sidestore_operation(
     op.fail_if_err(
         "install",
         sideload(
-            device_state,
-            sideloader_state,
+            device_state.clone(),
+            sideloader_state.clone(),
             dest.to_string_lossy().to_string(),
         )
         .await,
     )?;
+    if let Some(dest2) = lc2_dest {
+        // Best-effort: LiveContainer works without its relay (auto-return just
+        // becomes a manual reopen), so LC2 failing must not fail the install.
+        if let Err(e) = sideload(
+            device_state.clone(),
+            sideloader_state.clone(),
+            dest2.to_string_lossy().to_string(),
+        )
+        .await
+        {
+            tracing::warn!("LiveContainer2 install failed (auto-return will need a manual reopen): {e:?}");
+        }
+    }
     op.move_on("install", "pairing")?;
     if device.info.transport == DeviceTransport::Vision {
         // Place the RP pairing file into SideStore over the tunnel so it can reach the

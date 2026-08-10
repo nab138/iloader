@@ -79,7 +79,13 @@
               bunNix = importBunLock { inherit pkgs src; };
             };
             cargoRoot = "src-tauri";
-            cargoLock.lockFile = src + "/${final.cargoRoot}/Cargo.lock";
+            cargoLock = {
+              lockFile = src + "/${final.cargoRoot}/Cargo.lock";
+              outputHashes = {
+                "apple-codesign-0.1.0" = "sha256-1ajD3aHa6mUuMYVH8jluIh49J0vKTp4vrfX4T2i3oTg=";
+                "isideload-0.3.17" = "sha256-oGE+dY68Gv1rmTSHCycakkSCMvUN9YjZHB1gJSikuho=";
+              };
+            };
             buildAndTestSubdir = final.cargoRoot;
 
             dontUseBunBuild = true;

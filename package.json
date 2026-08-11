@@ -1,11 +1,12 @@
 {
   "name": "iloader",
   "private": true,
-  "version": "2.2.7",
+  "version": "2.2.9",
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
+    "bun tauri build": "bun tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc --no-bundle --config src-tauri/ci.conf.json",
+    "dev": "vite",
     "preview": "vite preview",
     "tauri": "tauri",
     "bump-patch": "bunx tauri-version --no-git --no-lock patch",

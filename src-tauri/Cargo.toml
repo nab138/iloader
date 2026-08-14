@@ -24,12 +24,16 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 idevice = { version = "0.1.57", features = ["usbmuxd", "house_arrest", "afc", "core_device_proxy", "remote_pairing", "tcp", "tunnel_tcp_stack", "xpc", "rsd", "pair"] }
 isideload = { version = "0.3.17", features = ["fs-storage"], git = "https://github.com/nab138/isideload", package = "isideload", branch = "apple-codesign-quick" }
+apple-codesign = { package = "isideload-apple-codesign", version = "0.29.4" }
 keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "linux-native-sync-persistent"] }
 tauri-plugin-store = "2"
 futures = "0.3.31"
 once_cell = "1.21.3"
 tauri-plugin-dialog = "2"
 reqwest = "0.13.2"
+regex = "1.11"
+rsa = "0.9.10"
+sha2 = "0.10"
 tokio = "1.49.0"
 tauri-plugin-process = "2"
 chrono = "0.4"
@@ -43,6 +47,8 @@ tokio-util = "0.7.18"
 rootcause = "0.12.1"
 thiserror = "2.0.18"
 strum = {version = "0.28.0", features = ["derive"] }
+x509-cert = "0.2.5"
+x509-certificate = { package = "isideload-x509-certificate", version = "0.26.1" }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"

@@ -8,6 +8,27 @@ import React, {
 } from "react";
 import { load, Store } from "@tauri-apps/plugin-store";
 
+const defaultAnisetteServer = "ani.sidestore.io";
+
+const isLocalAnisetteServer = (server: unknown): boolean => {
+  if (typeof server !== "string") return false;
+
+  const authorityParts = server
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .split("/")[0]
+    .split("@");
+  const authority = authorityParts[authorityParts.length - 1]?.toLowerCase();
+  const host = authority?.split(":")[0];
+
+  return (
+    host === "localhost" ||
+    host === "0.0.0.0" ||
+    authority?.startsWith("[::1]") === true ||
+    host?.startsWith("127.") === true
+  );
+};
+
 export const StoreContext = createContext<{
   storeValues: { [key: string]: any };
   setStoreValue: (key: string, value: any) => void;
@@ -36,6 +57,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
       const values: { [key: string]: any } = {};
       for (const key of keys) {
         values[key] = await storeInstance.get(key);
+      }
+
+      if (isLocalAnisetteServer(values.anisetteServer)) {
+        values.anisetteServer = defaultAnisetteServer;
+        await storeInstance.set("anisetteServer", defaultAnisetteServer);
+        await storeInstance.save();
       }
       setStoreValues(values);
       setStoreInitialized(true);

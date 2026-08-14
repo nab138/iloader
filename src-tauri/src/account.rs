@@ -16,7 +16,7 @@ use serde_json::Value;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Listener, State, Window};
 use tauri_plugin_store::StoreExt;
-use tracing::debug;
+use tracing::{debug, warn};
 
 use crate::{
     error::AppError,
@@ -188,6 +188,12 @@ async fn login(
         }
     };
 
+    let anisette_server = if is_local_anisette_server(&anisette_server) {
+        warn!("Ignored local Anisette server setting and restored the default server");
+        "ani.sidestore.io".to_string()
+    } else {
+        anisette_server
+    };
     let anisette_url = if !anisette_server.starts_with("http") {
         format!("https://{}", anisette_server)
     } else {
@@ -251,6 +257,27 @@ async fn login(
     debug!("Built sideloader");
 
     Ok(sideloader)
+}
+
+fn is_local_anisette_server(server: &str) -> bool {
+    let authority = server
+        .trim()
+        .strip_prefix("https://")
+        .or_else(|| server.trim().strip_prefix("http://"))
+        .unwrap_or(server.trim())
+        .split('/')
+        .next()
+        .unwrap_or_default()
+        .rsplit('@')
+        .next()
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    let host = authority.split(':').next().unwrap_or_default();
+
+    host == "localhost"
+        || host == "0.0.0.0"
+        || host.starts_with("127.")
+        || authority.starts_with("[::1]")
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

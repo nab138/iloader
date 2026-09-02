@@ -155,6 +155,38 @@ pub fn reset_anisette_state() -> Result<bool, AppError> {
     }
 }
 
+fn parse_two_factor_response(
+    payload: &str,
+) -> Result<TwoFactorCallbackResponse, serde_json::Error> {
+    serde_json::from_str(payload)
+}
+
+async fn request_two_factor_response(
+    window: &Window,
+    params: TwoFactorCallbackParams,
+) -> Result<TwoFactorCallbackResponse, Report> {
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    let handler_id = window.listen("2fa-response", move |event| {
+        let response =
+            parse_two_factor_response(event.payload()).map_err(|error| error.to_string());
+        let _ = tx.send(response);
+    });
+
+    if let Err(error) = window.emit("2fa-required", params) {
+        window.unlisten(handler_id);
+        return Err(report!("Failed to emit 2fa-required event: {error}"));
+    }
+
+    let response = tokio::time::timeout(Duration::from_secs(300), rx.recv()).await;
+    window.unlisten(handler_id);
+
+    match response {
+        Ok(Some(Ok(response))) => Ok(response),
+        Ok(Some(Err(error))) => Err(report!("Invalid 2FA response: {error}")),
+        Ok(None) | Err(_) => Ok(TwoFactorCallbackResponse::Abort),
+    }
+}
+
 async fn login(
     app: &AppHandle,
     window: &Window,
@@ -167,24 +199,7 @@ async fn login(
         move |params: TwoFactorCallbackParams| {
             let window_clone = window_clone.clone();
 
-            async move {
-                window_clone
-                    .emit("2fa-required", params)
-                    .context("Failed to emit 2fa-required event")?;
-
-                let (tx, rx) = std::sync::mpsc::channel::<String>();
-                let handler_id = window_clone.listen("2fa-recieved", move |event| {
-                    let code = event.payload();
-                    let _ = tx.send(code.to_string());
-                });
-
-                let result = rx.recv_timeout(Duration::from_secs(120))?;
-                window_clone.unlisten(handler_id);
-
-                let code = result.trim_matches('"').to_string();
-                Ok(TwoFactorCallbackResponse::SubmitCode(code))
-            }
-            .boxed()
+            async move { request_two_factor_response(&window_clone, params).await }.boxed()
         }
     };
 
@@ -251,6 +266,42 @@ async fn login(
     debug!("Built sideloader");
 
     Ok(sideloader)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{TwoFactorCallbackResponse, parse_two_factor_response};
+
+    #[test]
+    fn parses_all_two_factor_response_variants() {
+        let cases = [
+            r#""Abort""#,
+            r#""ResendCode""#,
+            r#""SendToDevices""#,
+            r#"{"SubmitCode":"123456"}"#,
+            r#"{"SendSms":2}"#,
+        ];
+
+        for payload in cases {
+            assert!(
+                parse_two_factor_response(payload).is_ok(),
+                "failed to parse {payload}"
+            );
+        }
+    }
+
+    #[test]
+    fn preserves_two_factor_response_payloads() {
+        match parse_two_factor_response(r#"{"SubmitCode":"123456"}"#).unwrap() {
+            TwoFactorCallbackResponse::SubmitCode(code) => assert_eq!(code, "123456"),
+            _ => panic!("expected SubmitCode"),
+        }
+
+        match parse_two_factor_response(r#"{"SendSms":2}"#).unwrap() {
+            TwoFactorCallbackResponse::SendSms(id) => assert_eq!(id, 2),
+            _ => panic!("expected SendSms"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

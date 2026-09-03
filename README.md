@@ -127,6 +127,7 @@ Thank you to everyone who has contributed translations! See the [Translating](#t
 - [DD00031](https://github.com/DD00031): Dutch (nl)
 - [Toritan123](https://github.com/Toritan123): Improved Japanese (ja)
 - [marcinmajsc](https://github.com/marcinmajsc): Improved Polish (pl)
+- [dleiferives](https://github.com/dleiferives): Greek (el)
 - [ShadowWLX](https://github.com/ShadowWLX): Improved French (fr)
 - [fkpcomposer](https://github.com/fkpcomposer) Brazilian Portuguese (pt_br)
 

@@ -44,6 +44,8 @@ const PAIRING_APPS: &[(&str, &str)] = &[
     ),
     ("Feather", "pairingFile.plist"),
     ("StikDebug", "pairingFile.plist"),
+    ("掌上Java启动器", "pairingFile.plist"),
+    ("PocketJ Launcher", "pairingFile.plist"),
     ("StikDebug (Sideloaded)", "rp_pairing_file.plist"),
     ("StikTest", "stiktest_pairing.plist"),
     ("Protokolle", "pairingFile.plist"),

@@ -228,21 +228,36 @@ impl Application {
             return Ok(());
         };
 
-        if matches!(
+        if !matches!(
             special,
             SpecialApp::SideStoreLc
                 | SpecialApp::SideStore
                 | SpecialApp::AltStore
                 | SpecialApp::StikStore
+                | SpecialApp::LiveContainer
         ) {
-            if !matches!(special, SpecialApp::StikStore) {
-                self.bundle.app_info.insert(
-                    "ALTAppGroups".to_string(),
-                    plist::Value::Array(vec![plist::Value::String(group_identifier.to_string())]),
-                );
-            }
-            info!("Injecting certificate for {}", special);
+            return Ok(());
+        }
 
+        if matches!(
+            special,
+            SpecialApp::SideStoreLc | SpecialApp::SideStore | SpecialApp::AltStore
+        ) {
+            self.bundle.app_info.insert(
+                "ALTAppGroups".to_string(),
+                plist::Value::Array(vec![plist::Value::String(group_identifier.to_string())]),
+            );
+        }
+
+        info!("Injecting certificate for {}", special);
+
+        // Encode the p12 once; it may be written into more than one bundle below.
+        let p12_bytes = cert
+            .as_p12(&cert.machine_id)
+            .await
+            .context("Failed to encode cert as p12")?;
+
+        if !matches!(special, SpecialApp::LiveContainer) {
             let target_bundle =
                 match special {
                     SpecialApp::SideStoreLc => self.bundle.frameworks_mut().iter_mut().find(|fw| {
@@ -265,10 +280,6 @@ impl Application {
                     plist::Value::String(cert.get_serial_number()),
                 );
 
-                let p12_bytes = cert
-                    .as_p12(&cert.machine_id)
-                    .await
-                    .context("Failed to encode cert as p12")?;
                 let alt_cert_path = target_bundle.bundle_dir.join(cert_file_name);
 
                 let mut file = tokio::fs::File::create(&alt_cert_path)
@@ -279,6 +290,30 @@ impl Application {
                     .context(format!("Failed to write {}", cert_file_name))?;
             }
         }
+
+        // LiveContainer reads the certificate straight out of its own main bundle,
+        // so it also needs the p12 password (the Apple machine ID) written out.
+        if matches!(special, SpecialApp::SideStoreLc | SpecialApp::LiveContainer) {
+            info!("Injecting certificate into main bundle for LiveContainer");
+
+            self.bundle.app_info.insert(
+                "ALTCertificateID".to_string(),
+                plist::Value::String(cert.get_serial_number()),
+            );
+            self.bundle.app_info.insert(
+                "ALTCertificatePassword".to_string(),
+                plist::Value::String(cert.machine_id.clone()),
+            );
+
+            let alt_cert_path = self.bundle.bundle_dir.join("ALTCertificate.p12");
+            let mut file = tokio::fs::File::create(&alt_cert_path)
+                .await
+                .context("Failed to create ALTCertificate.p12")?;
+            file.write_all(&p12_bytes)
+                .await
+                .context("Failed to write ALTCertificate.p12")?;
+        }
+
         Ok(())
     }
 }

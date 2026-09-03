@@ -27,7 +27,8 @@ const languages = [
   ["hu", "Magyar"],
   ["kh", "ភាសាខ្មែរ"],
   ["id", "Bahasa Indonesia"],
-  ["pt_br", "Português (Brasileiro)"]
+  ["pt_br", "Português (Brasileiro)"],
+  ["uk", "Українська"]
 ] as const;
 
 export const sortedLanguages = [...languages].sort((a, b) =>

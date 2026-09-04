@@ -8,14 +8,6 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async () => ({
   plugins: [react()],
 
-  esbuild: {
-    target: "es2018",
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      target: "es2018",
-    },
-  },
   build: {
     target: "es2018",
   },

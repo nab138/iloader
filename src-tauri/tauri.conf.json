@@ -42,6 +42,14 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "linux": {
+      "deb": {
+        "desktopTemplate": "iloader.desktop"
+      },
+      "rpm": {
+        "desktopTemplate": "iloader.desktop"
+      }
+    }
   }
 }

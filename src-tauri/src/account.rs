@@ -6,14 +6,18 @@ use isideload::{
         app_ids::{AppIdsApi, ListAppIdsResponse},
         certificates::{CertificatesApi, DevelopmentCertificate},
         developer_session::DeveloperSession,
+        teams::DeveloperTeam,
     },
-    sideload::{SideloaderBuilder, builder::MaxCertsBehavior, sideloader::Sideloader},
+    sideload::{
+        SideloaderBuilder, TeamSelection, builder::MaxCertsBehavior, sideloader::Sideloader,
+    },
 };
 use keyring::Entry;
 use rootcause::prelude::*;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::time::Duration;
+use std::{sync::Mutex, time::Duration};
 use tauri::{AppHandle, Emitter, Listener, State, Window};
 use tauri_plugin_store::StoreExt;
 use tracing::debug;
@@ -23,6 +27,48 @@ use crate::{
     secure_storage::create_sideloading_storage,
     sideload::{SideloaderGuard, SideloaderMutex},
 };
+
+static TEAM_SELECTION_WINDOW: Lazy<Mutex<Option<Window>>> = Lazy::new(|| Mutex::new(None));
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeveloperTeamInfo {
+    name: Option<String>,
+    team_id: String,
+    r#type: Option<String>,
+    status: Option<String>,
+}
+
+impl From<&DeveloperTeam> for DeveloperTeamInfo {
+    fn from(team: &DeveloperTeam) -> Self {
+        Self {
+            name: team.name.clone(),
+            team_id: team.team_id.clone(),
+            r#type: team.r#type.clone(),
+            status: team.status.clone(),
+        }
+    }
+}
+
+fn prompt_for_team(teams: &Vec<DeveloperTeam>) -> Option<String> {
+    let window = TEAM_SELECTION_WINDOW.lock().ok()?.as_ref().cloned()?;
+    let team_infos = teams
+        .iter()
+        .map(DeveloperTeamInfo::from)
+        .collect::<Vec<_>>();
+
+    window.emit("team-selection-required", team_infos).ok()?;
+
+    let (tx, rx) = std::sync::mpsc::channel::<Option<String>>();
+    let handler_id = window.listen("team-selection-response", move |event| {
+        let selection = serde_json::from_str::<Option<String>>(event.payload()).unwrap_or(None);
+        let _ = tx.send(selection);
+    });
+
+    let result = rx.recv_timeout(Duration::from_secs(300));
+    window.unlisten(handler_id);
+    result.unwrap_or(None)
+}
 
 #[tauri::command]
 pub async fn login_new(
@@ -122,6 +168,20 @@ pub fn logged_in_as(sideloader_state: State<'_, SideloaderMutex>) -> Option<Stri
         return Some(account.get_email().to_string());
     }
     None
+}
+
+#[tauri::command]
+pub async fn logged_in_team(
+    sideloader_state: State<'_, SideloaderMutex>,
+) -> Result<Option<DeveloperTeamInfo>, AppError> {
+    let mut sideloader = match SideloaderGuard::take(&sideloader_state) {
+        Ok(sideloader) => sideloader,
+        Err(AppError::NotLoggedIn) => return Ok(None),
+        Err(error) => return Err(error),
+    };
+    let team = sideloader.get_mut().get_team().await?;
+
+    Ok(Some(DeveloperTeamInfo::from(&team)))
 }
 
 #[tauri::command]
@@ -240,13 +300,22 @@ async fn login(
         }
     };
 
-    // TODO: Team Selection
-
-    let sideloader = SideloaderBuilder::new(dev_session, email.to_lowercase())
+    let mut sideloader = SideloaderBuilder::new(dev_session, email.to_lowercase())
         .machine_name("iloader".into())
         .storage(create_sideloading_storage(app)?)
+        .team_selection(TeamSelection::PromptOnce(prompt_for_team))
         .max_certs_behavior(MaxCertsBehavior::Prompt(Box::new(max_certs_callback)))
         .build();
+
+    *TEAM_SELECTION_WINDOW
+        .lock()
+        .map_err(|_| AppError::Misc("Failed to prepare team selection".into()))? =
+        Some(window.clone());
+    let team_result = sideloader.get_team().await;
+    *TEAM_SELECTION_WINDOW
+        .lock()
+        .map_err(|_| AppError::Misc("Failed to clean up team selection".into()))? = None;
+    team_result?;
 
     debug!("Built sideloader");
 

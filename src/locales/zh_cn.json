@@ -49,6 +49,7 @@
   "apple_id": {
     "title": "Apple ID",
     "logged_in_as": "已登录为",
+    "developer_team": "开发者团队",
     "sign_out": "登出",
     "signing_out": "正在登出...",
     "sign_out_failed": "登出失败",
@@ -78,7 +79,13 @@
     "max_certs_desc": "iloader 将撤销您现有的证书并生成一个新的。",
     "hide_certificate_list": "隐藏证书列表",
     "choose_what_to_revoke": "选择要撤销的内容",
-    "continue": "继续"
+    "continue": "继续",
+    "team_selection_title": "选择开发者团队",
+    "team_selection_prompt": "此账户属于多个开发者团队。请选择用于签名的团队。",
+    "unnamed_team": "未命名团队",
+    "team_id": "团队 ID",
+    "team_type": "类型",
+    "team_status": "状态"
   },
   "device": {
     "title": "iDevice",

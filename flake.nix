@@ -14,7 +14,12 @@
   };
 
   outputs =
-    { nixpkgs, flake-utils, ... }@inputs:
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      ...
+    }@inputs:
     with builtins;
     with nixpkgs.lib;
 
@@ -128,5 +133,34 @@
           programs.nixfmt.enable = true;
         };
       }
-    );
+    )
+    // {
+      nixosModules.default =
+        {
+          config,
+          lib,
+          pkgs,
+          ...
+        }:
+        let
+          cfg = config.programs.iloader;
+        in
+        {
+          options.programs.iloader = {
+            enable = lib.mkEnableOption "iloader, a user friendly iOS sideloader";
+
+            package = lib.mkOption {
+              type = lib.types.package;
+              default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+              description = "The iloader package to use.";
+            };
+          };
+
+          config = lib.mkIf cfg.enable {
+            environment.systemPackages = [ cfg.package ];
+            # iloader talks to devices over usbmux, same as libimobiledevice tools.
+            services.usbmuxd.enable = true;
+          };
+        };
+    };
 }

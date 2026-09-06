@@ -51,12 +51,16 @@
       # bun2nix doesn't ship a stable `bun.nix` in the repo, so regenerate it from bun.lock
       # at build time with the bun2nix CLI itself.
       bunNixFor =
-        pkgs: src:
+        pkgs: lockFile:
         pkgs.stdenv.mkDerivation {
-          inherit src;
           name = "bun.nix";
+          src = lockFile;
+          dontUnpack = true;
           nativeBuildInputs = [ pkgs.bun2nix ];
-          buildPhase = "bun2nix -o bun.nix";
+          buildPhase = ''
+            cp $src bun.lock
+            bun2nix -o bun.nix
+          '';
           installPhase = "cp bun.nix $out";
         };
 
@@ -64,6 +68,7 @@
         pkgs:
         let
           src = cleanSource ./.;
+          lockFile = ./bun.lock;
           json = fromJSON (readFile (src + "/package.json"));
         in
         pkgs.rustPlatform.buildRustPackage (final: {
@@ -72,7 +77,7 @@
 
           inherit src;
           bunDeps = pkgs.bun2nix.fetchBunDeps {
-            bunNix = bunNixFor pkgs src;
+            bunNix = bunNixFor pkgs lockFile;
           };
           cargoRoot = "src-tauri";
           cargoLock = {

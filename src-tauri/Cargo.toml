@@ -46,3 +46,9 @@ strum = {version = "0.28.0", features = ["derive"] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
+
+# Build against the local isideload fork carrying the GSA 503 fix.
+# isideload is pulled in as a *git* dependency above, so the patch has to target that
+# git source; a [patch.crates-io] section would be silently ignored.
+[patch."https://github.com/nab138/isideload"]
+isideload = { path = "../../isideload/isideload" }

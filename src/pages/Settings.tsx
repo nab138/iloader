@@ -13,6 +13,7 @@ import { Trans, useTranslation } from "react-i18next";
 import i18n, { sortedLanguages } from "../i18next";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { DeviceInfo } from "../Device";
+import { CLIENT_INFO_PRESETS, DEFAULT_CLIENT_INFO } from "../clientInfo";
 
 type SettingsProps = {
   ensureSelectedDevice: () => boolean;
@@ -45,6 +46,11 @@ export const Settings = ({
     "ani.sidestore.io",
   );
 
+  const [clientInfo, setClientInfo] = useStore<string>(
+    "clientInfo",
+    DEFAULT_CLIENT_INFO,
+  );
+
   const [overrideKeyring, setOverrideKeyring] = useStore<boolean>(
     "overrideKeyring",
     false,
@@ -62,6 +68,10 @@ export const Settings = ({
   const anisetteOptions = anisetteServers.map(([value, label]) => ({
     value,
     label,
+  }));
+  const clientInfoOptions = CLIENT_INFO_PRESETS.map((preset) => ({
+    value: preset.value,
+    label: t(preset.labelKey),
   }));
   const logLevelOptions = [
     // { value: String(LogLevel.Trace), label: "Trace" },
@@ -120,6 +130,24 @@ export const Settings = ({
           customToggleLabel={t("settings.use_custom_anisette")}
           presetToggleLabel={t("settings.back_preset_servers")}
         />
+        <div>
+          <Dropdown
+            label={t("settings.client_info")}
+            labelId="client-info-label"
+            options={clientInfoOptions}
+            value={clientInfo}
+            onChange={setClientInfo}
+            allowCustom
+            defaultCustomValue={DEFAULT_CLIENT_INFO}
+            customPlaceholder={t("settings.custom_client_info_placeholder")}
+            customLabel={t("settings.custom_anisette")}
+            customToggleLabel={t("settings.use_custom_client_info")}
+            presetToggleLabel={t("settings.back_preset_client_info")}
+          />
+          <span className="settings-hint">
+            {t("settings.client_info_message")}
+          </span>
+        </div>
         <div>
           <Dropdown
             label={t("app.language")}

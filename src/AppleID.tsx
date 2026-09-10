@@ -9,6 +9,7 @@ import { useStore } from "./StoreContext";
 import { useError } from "./ErrorContext";
 import { Certificate } from "./pages/Certificates";
 import { useTranslation } from "react-i18next";
+import { DEFAULT_CLIENT_INFO } from "./clientInfo";
 
 const storePromise = load("data.json");
 
@@ -34,6 +35,7 @@ export const AppleID = ({
     "anisetteServer",
     "ani.sidestore.io",
   );
+  const [clientInfo] = useStore<string>("clientInfo", DEFAULT_CLIENT_INFO);
   const [certs, setCerts] = useState<Certificate[] | null>(null);
   const [selectedSerials, setSelectedSerials] = useState<string[]>([]);
   const [chooseCertsOpen, setChooseCertsOpen] = useState<boolean>(false);
@@ -145,6 +147,7 @@ export const AppleID = ({
                             await invoke("login_stored", {
                               email: id,
                               anisetteServer,
+                              clientInfo,
                             });
                             setForceUpdateIds((v) => v + 1);
                           };
@@ -213,6 +216,7 @@ export const AppleID = ({
                     password: passwordInput,
                     saveCredentials: saveCredentials,
                     anisetteServer,
+                    clientInfo,
                   });
                   setForceUpdateIds((v) => v + 1);
                 };

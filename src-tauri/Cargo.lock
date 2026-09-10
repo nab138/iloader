@@ -2679,7 +2679,7 @@ dependencies = [
 [[package]]
 name = "isideload"
 version = "0.3.17"
-source = "git+https://github.com/nab138/isideload?branch=apple-codesign-quick#3d42025ecac97a2548d5b88aefc8028307e369c1"
+source = "git+https://github.com/spideywv/isideload?branch=fix-akd-client-info#61ff748f135a47ac4b479d8b33cb58a2a8aeeacc"
 dependencies = [
  "aes 0.9.2",
  "aes-gcm",

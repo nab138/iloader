@@ -44,6 +44,8 @@ pub enum AppError {
     #[error("{0}")]
     Anisette(String),
     #[error("{0}")]
+    GsaUnavailable(String),
+    #[error("{0}")]
     Keyring(String),
     #[error("Keyring error: {0} - {1}")]
     KeyringWithMessage(String, String),
@@ -113,6 +115,14 @@ impl From<Report> for AppError {
                 || cause_str.contains("Failed to get anisette headers")
             {
                 return AppError::Anisette(report_str);
+            }
+            // Apple's GSA edge has intermittently blocked login requests
+            // (unrelated to the anisette server or the user's credentials).
+            // See https://github.com/nab138/iloader/issues/685
+            if cause_str.contains("gsa.apple.com")
+                && (cause_str.contains("503") || cause_str.contains("502"))
+            {
+                return AppError::GsaUnavailable(report_str);
             }
         }
 

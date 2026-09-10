@@ -28,6 +28,7 @@ export const errorSuggestionKeys = {
   not_logged_in: ["error.suggestions.not_logged_in"],
   no_device_selected: ["error.suggestions.no_device_selected"],
   anisette: ["error.suggestions.anisette"],
+  gsa_unavailable: ["error.suggestions.gsa_unavailable"],
   keyring: ["error.suggestions.keyring", "error.suggestions.admin"],
   keyring_with_message: [
     "error.suggestions.keyring",

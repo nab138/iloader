@@ -252,6 +252,11 @@
         "Change your anisette server. Try several different servers.",
         "Make sure you can access ((link:{{anisetteServerUrl}})) in a browser."
       ],
+      "gsa_unavailable": [
+        "Apple's authentication servers are temporarily rejecting this login request. This is not caused by your password, account, or anisette server, so switching anisette servers will not fix it.",
+        "This is a known, ongoing issue affecting most sideloading tools. Check ((link:https://github.com/nab138/iloader/issues/685)) for current status and available fixes.",
+        "Try again later, it may resolve on its own."
+      ],
       "keyring": [
         "Try enabling \"Don't use keyring\" in settings to bypass this issue. Note that this is less secure."
       ],

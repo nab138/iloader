@@ -11,6 +11,7 @@ mod secure_storage;
 mod error;
 mod logging;
 mod operation;
+mod security_key;
 
 use crate::{
     account::{

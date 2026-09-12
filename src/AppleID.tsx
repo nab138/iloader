@@ -29,6 +29,20 @@ export const AppleID = ({
   const [saveCredentials, setSaveCredentials] = useState<boolean>(false);
   const [tfaOpen, setTfaOpen] = useState<boolean>(false);
   const [tfaCode, setTfaCode] = useState<string>("");
+  const [securityKeyOpen, setSecurityKeyOpen] = useState<boolean>(false);
+  const [securityKeyPin, setSecurityKeyPin] = useState<string>("");
+  const [securityKeyStatus, setSecurityKeyStatus] = useState<{
+    kind:
+      | "waiting"
+      | "touch"
+      | "pinRequired"
+      | "invalidPin"
+      | "retry"
+      | "error";
+    attempts?: number | null;
+    message?: string | null;
+  }>({ kind: "waiting" });
+  const [securityKeyKeyNames, setSecurityKeyKeyNames] = useState<string[]>([]);
   const [addAccountOpen, setAddAccountOpen] = useState<boolean>(false);
   const [anisetteServer] = useStore<string>(
     "anisetteServer",
@@ -73,6 +87,52 @@ export const AppleID = ({
     }
     return () => {
       unlisten.current();
+    };
+  }, []);
+
+  const securityKeyListenerAdded = useRef<boolean>(false);
+  const securityKeyUnlisten = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    if (!securityKeyListenerAdded.current) {
+      (async () => {
+        const unlistenRequired = await listen<{ keyNames: string[] }>(
+          "security-key-required",
+          (event) => {
+            setSecurityKeyKeyNames(event.payload.keyNames ?? []);
+            setSecurityKeyStatus({ kind: "waiting" });
+            setSecurityKeyPin("");
+            setSecurityKeyOpen(true);
+          },
+        );
+        const unlistenStatus = await listen<{
+          kind:
+            | "waiting"
+            | "touch"
+            | "pinRequired"
+            | "invalidPin"
+            | "retry"
+            | "error";
+          attempts?: number | null;
+          message?: string | null;
+        }>("security-key-status", (event) => {
+          setSecurityKeyStatus(event.payload);
+        });
+        const unlistenClose = await listen("security-key-close", () => {
+          setSecurityKeyOpen(false);
+          setSecurityKeyPin("");
+          setSecurityKeyStatus({ kind: "waiting" });
+        });
+        securityKeyUnlisten.current = () => {
+          unlistenRequired();
+          unlistenStatus();
+          unlistenClose();
+        };
+      })();
+      securityKeyListenerAdded.current = true;
+    }
+    return () => {
+      securityKeyUnlisten.current();
     };
   }, []);
 
@@ -289,7 +349,93 @@ export const AppleID = ({
             style={{ marginRight: "0.5em" }}
           />
           <button type="submit">{t("apple_id.submit")}</button>
+          <button
+            type="button"
+            onClick={async () => {
+              await emit("2fa-abort");
+              setTfaOpen(false);
+              setTfaCode("");
+            }}
+          >
+            {t("common.cancel")}
+          </button>
         </form>
+      </Modal>
+      <Modal sizeFit isOpen={securityKeyOpen} zIndex={2000}>
+        <h2>{t("apple_id.security_key_title")}</h2>
+        <p>{t("apple_id.security_key_prompt")}</p>
+        {securityKeyKeyNames.length > 0 && (
+          <p>
+            {t("apple_id.security_key_keys", {
+              keys: securityKeyKeyNames.join(", "),
+            })}
+          </p>
+        )}
+        {securityKeyStatus.kind === "touch" && (
+          <p className="security-key-status">
+            {t("apple_id.security_key_touch")}
+          </p>
+        )}
+        {securityKeyStatus.kind === "retry" && (
+          <p className="security-key-status">
+            {t("apple_id.security_key_retry")}
+          </p>
+        )}
+        {securityKeyStatus.kind === "error" && (
+          <p className="security-key-status">
+            {securityKeyStatus.message === "pinBlocked"
+              ? t("apple_id.security_key_pin_blocked")
+              : securityKeyStatus.message === "pinAuthBlocked"
+                ? t("apple_id.security_key_pin_auth_blocked")
+                : t("apple_id.security_key_error")}
+          </p>
+        )}
+        {(securityKeyStatus.kind === "pinRequired" ||
+          securityKeyStatus.kind === "invalidPin") && (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!securityKeyPin) {
+                return;
+              }
+              await emit("security-key-response", { pin: securityKeyPin });
+              setSecurityKeyPin("");
+              setSecurityKeyStatus({ kind: "waiting" });
+            }}
+          >
+            {securityKeyStatus.kind === "invalidPin" && (
+              <p className="security-key-status">
+                {securityKeyStatus.attempts
+                  ? t("apple_id.security_key_invalid_pin_attempts", {
+                      attempts: securityKeyStatus.attempts,
+                    })
+                  : t("apple_id.security_key_invalid_pin")}
+              </p>
+            )}
+            <input
+              type="password"
+              autoFocus
+              placeholder={t("apple_id.security_key_pin_placeholder")}
+              value={securityKeyPin}
+              onChange={(e) => setSecurityKeyPin(e.target.value)}
+              style={{ marginRight: "0.5em" }}
+            />
+            <button type="submit">{t("apple_id.submit")}</button>
+          </form>
+        )}
+        <div className="certs-buttons">
+          <button
+            className="action-button danger"
+            onClick={async () => {
+              await emit("security-key-response", { abort: true });
+              setSecurityKeyOpen(false);
+              setSecurityKeyPin("");
+              setSecurityKeyStatus({ kind: "waiting" });
+            }}
+          >
+            {t("common.cancel")}
+          </button>
+        </div>
       </Modal>
       <Modal sizeFit isOpen={certs !== null} zIndex={2000}>
         <h2 className="cert-header">{t("apple_id.max_certs_title")}</h2>

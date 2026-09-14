@@ -8,7 +8,6 @@ edition = "2024"
 repository = "https://github.com/nab138/isideload"
 documentation = "https://docs.rs/isideload"
 keywords = ["ios", "sideload"]
-readme = "README.md"
 
 [features]
 default = ["install", "keyring-storage", "tokio-mt"]

@@ -71,8 +71,5 @@ parsed plist error, not the HTML 503.
   PR against `apple-codesign-quick`? Default: keep it vendored.
 
 ## Live claims
-
-None. No simulator lane held, no booted devices, no background agents, working
-tree clean on `visionos-tunnel`. The test-launched 2.3.4 `.app` was quit; the
-separately installed `/Applications/iloader.app` (older build) may still be
-running from before this session.
+- Fork build 2.3.4 (`src-tauri/target/.../bundle/macos/iloader.app`) is left OPEN at a macOS login-keychain prompt (SecurityAgent) awaiting Austin, 2026-09-13 18:13 local. No simulators booted, no devices claimed.
+- Blocked: one-click Apple ID sign-in test in 2.3.4, then install `~/dev/sidestore/build/SideStore-visionOS.ipa` to the Vision Pro and on-headset sign-in (adi.pb reset first).

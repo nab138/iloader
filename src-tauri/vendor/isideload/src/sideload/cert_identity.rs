@@ -1,7 +1,4 @@
-use apple_codesign::{
-    SigningSettings,
-    cryptography::{InMemoryPrivateKey, PrivateKey},
-};
+use apple_codesign::ProvisioningProfile;
 use hex::ToHex;
 use rcgen::{CertificateParams, DistinguishedName, DnType, KeyPair, PKCS_RSA_SHA256};
 use rootcause::{option_ext::OptionExt, prelude::*};
@@ -14,7 +11,10 @@ use rsa::{
 use sha1::Sha1;
 use sha2::{Digest, Sha256};
 use tracing::{error, info};
-use x509_certificate::CapturedX509Certificate;
+use x509_cert::{
+    Certificate,
+    der::{Decode, Encode},
+};
 
 use crate::{
     SideloadError,
@@ -27,12 +27,14 @@ use crate::{
     util::storage::SideloadingStorage,
 };
 
+pub const APPLE_ROOT: &[u8] = include_bytes!("../assets/apple_root.cer");
+pub const APPLE_WWDR_G3_CERTIFICATE_DER: &[u8] = include_bytes!("../assets/AppleWWDRCAG3.cer");
+
 pub struct CertificateIdentity {
     pub machine_id: String,
     pub machine_name: String,
-    pub certificate: CapturedX509Certificate,
     pub private_key: RsaPrivateKey,
-    pub signing_key: InMemoryPrivateKey,
+    pub certificate: Certificate,
 }
 
 impl CertificateIdentity {
@@ -40,7 +42,7 @@ impl CertificateIdentity {
     /// Exports the certificate and private key as a PKCS#12 archive
     /// If you plan to import into SideStore/AltStore, use the machine id as the password
     pub async fn as_p12(&self, password: &str) -> Result<Vec<u8>, Report> {
-        let cert_der = self.certificate.encode_der()?;
+        let cert_der = self.certificate.to_der()?;
         let cert_der_len = cert_der.len();
         let key_der = self.private_key.to_pkcs8_der()?.as_bytes().to_vec();
         let key_der_len = key_der.len();
@@ -98,7 +100,12 @@ impl CertificateIdentity {
     }
 
     pub fn get_serial_number(&self) -> String {
-        let serial: String = self.certificate.serial_number_asn1().encode_hex();
+        let serial: String = self
+            .certificate
+            .tbs_certificate
+            .serial_number
+            .as_bytes()
+            .encode_hex::<String>();
         serial.trim_start_matches('0').to_string().to_uppercase()
     }
 
@@ -111,7 +118,6 @@ impl CertificateIdentity {
         max_certs_behavior: &MaxCertsBehavior,
     ) -> Result<Self, Report> {
         let pr = Self::retrieve_private_key(apple_email, storage).await?;
-        let signing_key = Self::build_signing_key(&pr)?;
 
         let found = Self::find_matching(&pr, machine_name, developer_session, team).await;
         if let Ok(Some((cert, x509_cert))) = found {
@@ -121,7 +127,6 @@ impl CertificateIdentity {
                 machine_name: cert.machine_name.clone().unwrap_or_default(),
                 certificate: x509_cert,
                 private_key: pr,
-                signing_key,
             });
         }
 
@@ -145,8 +150,76 @@ impl CertificateIdentity {
             machine_name: cert.machine_name.clone().unwrap_or_default(),
             certificate: x509_cert,
             private_key: pr,
-            signing_key,
         })
+    }
+
+    pub fn profile_to_certificate_chain(
+        &self,
+        profile: &ProvisioningProfile,
+    ) -> Result<Vec<Certificate>, Report> {
+        let mut certificate_chain_der = Vec::with_capacity(profile.certificate_chain_der().len());
+
+        certificate_chain_der.extend(profile.certificate_chain_der().iter().cloned());
+
+        let mut certificate_candidates = Vec::new();
+
+        for certificate_der in certificate_chain_der {
+            let certificate = Certificate::from_der(certificate_der.as_ref())
+                .context(format!("failed to decode chain certificate"))?;
+            if !certificate_candidates.contains(&certificate) {
+                certificate_candidates.push(certificate);
+            }
+        }
+
+        for (name, certificate_der) in [
+            ("Apple WWDR G3", APPLE_WWDR_G3_CERTIFICATE_DER),
+            ("Apple Root CA", APPLE_ROOT),
+        ] {
+            let certificate = Certificate::from_der(certificate_der)
+                .context(format!("failed to decode bundled {name} certificate"))?;
+            if !certificate_candidates.contains(&certificate) {
+                certificate_candidates.push(certificate);
+            }
+        }
+
+        let certificate_chain = self.certificate_chain_for_signer(&certificate_candidates)?;
+        Ok(certificate_chain)
+    }
+
+    fn certificate_chain_for_signer(
+        &self,
+        certificate_candidates: &[Certificate],
+    ) -> Result<Vec<Certificate>, Report> {
+        if self.certificate.tbs_certificate.subject == self.certificate.tbs_certificate.issuer {
+            return Ok(Vec::new());
+        }
+
+        let mut issuer = self.certificate.tbs_certificate.issuer.clone();
+        let mut certificate_chain = Vec::new();
+
+        loop {
+            let certificate = certificate_candidates
+                .iter()
+                .find(|candidate| candidate.tbs_certificate.subject == issuer)
+                .ok_or_else(|| {
+                    report!(
+                        "missing issuer certificate {issuer} for the code-signing certificate chain"
+                    )
+                })?
+                .clone();
+
+            if certificate_chain.contains(&certificate) {
+                bail!("certificate chain contains a cycle");
+            }
+
+            let is_root = certificate.tbs_certificate.subject == certificate.tbs_certificate.issuer;
+            issuer = certificate.tbs_certificate.issuer.clone();
+            certificate_chain.push(certificate);
+
+            if is_root {
+                return Ok(certificate_chain);
+            }
+        }
     }
 
     async fn retrieve_private_key(
@@ -163,7 +236,7 @@ impl CertificateIdentity {
             return Ok(RsaPrivateKey::from_pkcs8_der(&priv_key)?);
         }
 
-        let mut rng = rand::rng();
+        let mut rng = rand::thread_rng();
         let private_key = RsaPrivateKey::new(&mut rng, 2048)?;
         storage.store_data(
             &format!("{}/key", email_hash),
@@ -178,7 +251,7 @@ impl CertificateIdentity {
         machine_name: &str,
         developer_session: &mut DeveloperSession,
         team: &DeveloperTeam,
-    ) -> Result<Option<(DevelopmentCertificate, CapturedX509Certificate)>, Report> {
+    ) -> Result<Option<(DevelopmentCertificate, Certificate)>, Report> {
         let public_key_der = private_key
             .to_public_key()
             .to_pkcs1_der()?
@@ -194,11 +267,18 @@ impl CertificateIdentity {
                     && c.machine_id.is_some()
             })
         {
-            let x509_cert = CapturedX509Certificate::from_der(
-                cert.cert_content.as_ref().ok_or_report()?.as_ref(),
-            )?;
+            let x509_cert =
+                Certificate::from_der(cert.cert_content.as_ref().ok_or_report()?.as_ref())?;
 
-            if public_key_der == x509_cert.public_key_data().as_ref() {
+            let apple_public_key_der = x509_cert
+                .tbs_certificate
+                .subject_public_key_info
+                .subject_public_key
+                .as_bytes()
+                .ok_or_report()?
+                .to_vec();
+
+            if public_key_der == apple_public_key_der {
                 return Ok(Some((cert.clone(), x509_cert)));
             }
         }
@@ -212,7 +292,7 @@ impl CertificateIdentity {
         developer_session: &mut DeveloperSession,
         team: &DeveloperTeam,
         max_certs_behavior: &MaxCertsBehavior,
-    ) -> Result<(DevelopmentCertificate, CapturedX509Certificate), Report> {
+    ) -> Result<(DevelopmentCertificate, Certificate), Report> {
         let csr = Self::build_csr(private_key).context("Failed to generate CSR")?;
 
         let mut i = 0;
@@ -236,7 +316,7 @@ impl CertificateIdentity {
                             report!("Failed to find certificate after submitting CSR")
                         })?;
 
-                    let x509_cert = CapturedX509Certificate::from_der(
+                    let x509_cert = Certificate::from_der(
                         apple_cert
                             .cert_content
                             .as_ref()
@@ -304,11 +384,6 @@ impl CertificateIdentity {
         Ok(params.serialize_request(&subject_key)?.pem()?)
     }
 
-    fn build_signing_key(private_key: &RsaPrivateKey) -> Result<InMemoryPrivateKey, Report> {
-        let pkcs8 = private_key.to_pkcs8_der()?;
-        Ok(InMemoryPrivateKey::from_pkcs8_der(pkcs8.as_bytes())?)
-    }
-
     async fn revoke_others(
         developer_session: &mut DeveloperSession,
         team: &DeveloperTeam,
@@ -349,19 +424,5 @@ impl CertificateIdentity {
                 Ok(())
             }
         }
-    }
-
-    pub fn setup_signing_settings<'a>(
-        &'a self,
-        settings: &mut SigningSettings<'a>,
-    ) -> Result<(), Report> {
-        settings.set_signing_key(
-            self.signing_key.as_key_info_signer(),
-            self.certificate.clone(),
-        );
-        settings.chain_apple_certificates();
-        settings.set_team_id_from_signing_certificate();
-
-        Ok(())
     }
 }

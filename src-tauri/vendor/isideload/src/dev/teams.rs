@@ -14,7 +14,8 @@ pub struct DeveloperTeam {
     pub status: Option<String>,
 }
 
-#[async_trait::async_trait]
+#[cfg_attr(feature = "wasm", async_trait::async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait::async_trait)]
 pub trait TeamsApi {
     fn developer_session(&mut self) -> &mut DeveloperSession;
 

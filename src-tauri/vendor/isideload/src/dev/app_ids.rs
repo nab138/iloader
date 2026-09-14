@@ -51,7 +51,8 @@ pub struct Profile {
     pub is_free_provisioning_profile: Option<bool>,
 }
 
-#[async_trait::async_trait]
+#[cfg_attr(feature = "wasm", async_trait::async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait::async_trait)]
 pub trait AppIdsApi {
     fn developer_session(&mut self) -> &mut DeveloperSession;
 

@@ -55,5 +55,6 @@ pub fn init() -> Result<(), Report> {
         .context_formatter::<reqwest::Error, _>(ReqwestErrorFormatter)
         .install()
         .context("Failed to install error reporting hooks")?;
+
     Ok(())
 }

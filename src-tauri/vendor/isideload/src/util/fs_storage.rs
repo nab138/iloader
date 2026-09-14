@@ -24,15 +24,15 @@ impl SideloadingStorage for FsStorage {
     fn store_data(&self, key: &str, data: &[u8]) -> Result<(), Report> {
         let path = self.path.join(key);
         let parent = path.parent().unwrap_or(Path::new("."));
-        std::fs::create_dir_all(parent).context("Failed to create storage directory")?;
-        std::fs::write(&path, data).context("Failed to write data to file")?;
+        isideload_vfs::fs::create_dir_all(parent).context("Failed to create storage directory")?;
+        isideload_vfs::fs::write(&path, data).context("Failed to write data to file")?;
 
         Ok(())
     }
 
     fn retrieve_data(&self, key: &str) -> Result<Option<Vec<u8>>, Report> {
         let path = self.path.join(key);
-        match std::fs::read(&path) {
+        match isideload_vfs::fs::read(&path) {
             Ok(data) => Ok(Some(data)),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
             Err(e) => Err(report!(e).context("Failed to read data from file").into()),

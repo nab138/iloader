@@ -20,7 +20,8 @@ pub struct DeveloperDevice {
     pub status: Option<String>,
 }
 
-#[async_trait::async_trait]
+#[cfg_attr(feature = "wasm", async_trait::async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait::async_trait)]
 pub trait DevicesApi {
     fn developer_session(&mut self) -> &mut DeveloperSession;
 
@@ -83,11 +84,6 @@ pub trait DevicesApi {
 
         info!("Registering development device");
         if let Err(e) = self.add_device(team, name, udid, device_type).await {
-            // Apple returns developer error 35 ("device already exists") when the
-            // UDID is already registered to the team under a different platform —
-            // e.g. an Apple Vision Pro registered under visionOS while we query the
-            // iOS device list. That is the state we want, so treat it as success
-            // instead of failing the whole install.
             let already_registered = e
                 .iter_reports()
                 .find_map(|node| node.downcast_current_context::<SideloadError>())

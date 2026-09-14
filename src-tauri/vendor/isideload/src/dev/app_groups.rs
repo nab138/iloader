@@ -17,7 +17,8 @@ pub struct AppGroup {
     pub application_group: String,
 }
 
-#[async_trait::async_trait]
+#[cfg_attr(feature = "wasm", async_trait::async_trait(?Send))]
+#[cfg_attr(not(feature = "wasm"), async_trait::async_trait)]
 pub trait AppGroupsApi {
     fn developer_session(&mut self) -> &mut DeveloperSession;
 

@@ -5,13 +5,14 @@ use tokio::sync::RwLock;
 
 use crate::{
     anisette::{AnisetteDataGenerator, AnisetteProvider, remote_v3::RemoteV3AnisetteProvider},
-    auth::apple_account::AppleAccount,
+    auth::apple_account::{AppleAccount, TwoFactorCallbackParams, TwoFactorCallbackResponse},
 };
 
 pub struct AppleAccountBuilder {
     email: String,
     debug: Option<bool>,
     anisette_generator: Option<AnisetteDataGenerator>,
+    proxy_url: Option<String>,
 }
 
 impl AppleAccountBuilder {
@@ -24,6 +25,7 @@ impl AppleAccountBuilder {
             email: email.to_string(),
             debug: None,
             anisette_generator: None,
+            proxy_url: None,
         }
     }
 
@@ -33,6 +35,11 @@ impl AppleAccountBuilder {
     /// - `debug`: If true, accept invalid certificates and enable verbose connection logging
     pub fn danger_debug(mut self, debug: bool) -> Self {
         self.debug = Some(debug);
+        self
+    }
+
+    pub fn proxy_url(mut self, proxy_url: String) -> Self {
+        self.proxy_url = Some(proxy_url);
         self
     }
 
@@ -60,7 +67,7 @@ impl AppleAccountBuilder {
             }
         };
 
-        AppleAccount::new(&self.email, anisette_generator, debug).await
+        AppleAccount::new(&self.email, anisette_generator, debug, self.proxy_url).await
     }
 
     /// Build the AppleAccount and log in
@@ -70,13 +77,30 @@ impl AppleAccountBuilder {
     /// - `two_factor_callback`: A callback function that returns the two-factor authentication code
     /// # Errors
     /// Returns an error if the reqwest client cannot be built
-    pub async fn login<F>(
+    #[cfg(target_arch = "wasm32")]
+    pub async fn login<C, Fut>(
         self,
         password: &str,
-        two_factor_callback: F,
+        two_factor_callback: C,
     ) -> Result<AppleAccount, Report>
     where
-        F: Fn() -> Option<String>,
+        C: Fn(TwoFactorCallbackParams) -> Fut + Send + Sync,
+        Fut: std::future::Future<Output = Result<TwoFactorCallbackResponse, Report>>,
+    {
+        let mut account = self.build().await?;
+        account.login(password, two_factor_callback).await?;
+        Ok(account)
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    pub async fn login<C, Fut>(
+        self,
+        password: &str,
+        two_factor_callback: C,
+    ) -> Result<AppleAccount, Report>
+    where
+        C: Fn(TwoFactorCallbackParams) -> Fut + Send + Sync,
+        Fut: std::future::Future<Output = Result<TwoFactorCallbackResponse, Report>> + Send,
     {
         let mut account = self.build().await?;
         account.login(password, two_factor_callback).await?;

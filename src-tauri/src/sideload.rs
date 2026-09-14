@@ -146,7 +146,12 @@ async fn sideload_vision(
 
     let (signed_path, special) = sideloader
         .get_mut()
-        .sign_app(app_path.into(), Some(team), false)
+        .sign_app(
+            app_path.into(),
+            Some(team),
+            false,
+            None::<fn(f32) -> std::future::Ready<()>>,
+        )
         .await?;
 
     // Fresh tunnel for the install itself (signing above is network-bound and could

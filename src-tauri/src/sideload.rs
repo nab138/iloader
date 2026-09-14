@@ -1,13 +1,54 @@
 use std::{path::PathBuf, sync::Mutex};
 
 use crate::{
-    device::{DeviceInfoMutex, get_provider, get_provider_from_connection, get_usbmuxd},
+    device::{
+        DeviceInfoMutex, DeviceInfoWithPairing, DeviceTransport, get_provider,
+        get_provider_from_connection, get_usbmuxd,
+    },
     error::AppError,
     operation::Operation,
     pairing::{get_sidestore_info, place_file},
+    vision,
 };
+use isideload::dev::devices::DevicesApi;
 use isideload::sideload::{application::SpecialApp, sideloader::Sideloader};
 use tauri::{AppHandle, Manager, State, Window};
+
+/// The RP pairing file name a Vision Pro build of SideStore reads on boot (its
+/// AppBootManager prefers this over the classic usbmux pairing).
+const VISION_PAIRING_FILENAME: &str = "rp_pairing_file.plist";
+
+/// Vision Pro build of SideStore: patched with visionOS support (device-class
+/// registration tolerance, RemotePairing boot preference, arm64). Tracks the
+/// rebelancap/SideStore fork until the fixes land upstream. There is no nightly or
+/// LiveContainer visionOS build, so a Vision Pro always installs this.
+///
+/// Pinned to the `visionos-0.7.0` release, which carries the same GSA fix as
+/// iloader 2.3.5 (Apple started returning HTTP 503 for the Xcode client
+/// identifier, so sign-in now uses the akd one). Users updating from an earlier
+/// build must reset `adi.pb` in SideStore's settings before signing in again.
+const SIDESTORE_VP_URL: &str =
+    "https://github.com/rebelancap/SideStore/releases/download/visionos-0.7.0/SideStore-visionOS.ipa";
+
+/// LiveContainer with the visionOS-patched SideStore embedded (built by
+/// rebelancap/LiveContainer's CI from the patched LiveContainer/SideStore). The
+/// embedded SideStore reads its pairing from `SideStore/Documents/` inside the
+/// LiveContainer container.
+const LIVECONTAINER_VP_URL: &str =
+    "https://github.com/rebelancap/LiveContainer/releases/download/visionos/LiveContainer-SideStore-visionOS.ipa";
+
+/// Where the LiveContainer-embedded SideStore looks for its RP pairing file (relative
+/// to the LiveContainer container's Documents), mirroring the classic
+/// `SideStore/Documents/ALTPairingFile.mobiledevicepairing` iOS path.
+const LIVECONTAINER_VISION_PAIRING_PATH: &str = "SideStore/Documents/rp_pairing_file.plist";
+
+/// LiveContainer2 — the auto-return relay sibling. On visionOS nothing inside a dying
+/// app's own process tree survives it, so after a guest app runs or quits, this second
+/// LiveContainer install is what reopens LiveContainer automatically. Installed
+/// alongside LiveContainer on the Vision Pro; LiveContainer degrades gracefully
+/// (manual reopen) if this install fails, so its failure never fails the operation.
+const LIVECONTAINER2_VP_URL: &str =
+    "https://github.com/rebelancap/LiveContainer/releases/download/visionos/LiveContainer2-visionOS.ipa";
 
 pub type SideloaderMutex = Mutex<Option<Sideloader>>;
 
@@ -53,6 +94,13 @@ pub async fn sideload(
         }
     };
 
+    // Vision Pro isn't a usbmux device: sign with the Apple account (transport-agnostic),
+    // then install the signed bundle over the RP tunnel instead of isideload's usbmux
+    // install path.
+    if device.info.transport == DeviceTransport::Vision {
+        return sideload_vision(device, sideloader_state, app_path).await;
+    }
+
     let provider = get_provider(&device.info).await?;
 
     let mut sideloader = SideloaderGuard::take(&sideloader_state)?;
@@ -66,6 +114,61 @@ pub async fn sideload(
             None::<fn(f32) -> std::future::Ready<()>>,
         )
         .await?;
+
+    Ok(special)
+}
+
+/// Sign + install onto a Vision Pro over Wi-Fi. Signing reuses isideload's account
+/// flow (it only talks to Apple + the local filesystem); only registration needs the
+/// device UDID, and only the install runs over the RP tunnel.
+async fn sideload_vision(
+    device: DeviceInfoWithPairing,
+    sideloader_state: State<'_, SideloaderMutex>,
+    app_path: String,
+) -> Result<Option<SpecialApp>, AppError> {
+    let ip = device
+        .info
+        .ip
+        .clone()
+        .ok_or_else(|| AppError::RemotePairing("Vision Pro has no IP address".into()))?;
+    let ips = vision::live_ips(&device.info.name, &ip);
+
+    // The UDID is needed to register the device with the developer account. Prefer the
+    // one captured at selection; otherwise read it over a short-lived tunnel now.
+    let udid = if device.info.udid.is_empty() {
+        vision::read_udid_any(&ips, &device.pairing).await?
+    } else {
+        device.info.udid.clone()
+    };
+
+    let mut sideloader = SideloaderGuard::take(&sideloader_state)?;
+    let team = sideloader.get_mut().get_team().await?;
+    sideloader
+        .get_mut()
+        .get_dev_session()
+        .ensure_device_registered(&team, &device.info.name, &udid, None)
+        .await?;
+
+    let (signed_path, special) = sideloader
+        .get_mut()
+        .sign_app(
+            app_path.into(),
+            Some(team),
+            false,
+            None::<fn(f32) -> std::future::Ready<()>>,
+        )
+        .await?;
+
+    // Fresh tunnel for the install itself (signing above is network-bound and could
+    // otherwise idle out an earlier tunnel). Re-read the live addresses too — signing
+    // can take minutes, plenty of time for the headset's address to move.
+    let mut session =
+        vision::VisionSession::connect_any(&vision::live_ips(&device.info.name, &ip), &device.pairing)
+            .await?;
+    vision::install_app(&mut session, &signed_path, |pct| {
+        tracing::info!("Installing to Vision Pro: {pct}%");
+    })
+    .await?;
 
     Ok(special)
 }
@@ -98,8 +201,27 @@ pub async fn install_sidestore_operation(
 ) -> Result<(), AppError> {
     let op = Operation::new("install_sidestore".to_string(), &window);
     op.start("download")?;
+
+    // A Vision Pro needs a patched arm64 visionOS build; there's no visionOS *nightly*,
+    // so nightly is routed to the same patched build, while LiveContainer has its own
+    // patched visionOS build (LiveContainer + the visionOS-patched SideStore embedded).
+    // iPhone/iPad keep the upstream SideStore builds.
+    let is_vision = {
+        let guard = device_state.lock().unwrap();
+        matches!(
+            guard.as_ref().map(|d| d.info.transport),
+            Some(DeviceTransport::Vision)
+        )
+    };
+
     // TODO: Cache & check version to avoid re-downloading
-    let (filename, url) = if live_container {
+    let (filename, url) = if is_vision {
+        if live_container {
+            ("LiveContainer-SideStore-visionOS.ipa", LIVECONTAINER_VP_URL)
+        } else {
+            ("SideStore-visionOS.ipa", SIDESTORE_VP_URL)
+        }
+    } else if live_container {
         if nightly {
             (
                 "LiveContainerSideStore-Nightly.ipa",
@@ -129,6 +251,23 @@ pub async fn install_sidestore_operation(
         .map_err(|e| AppError::Filesystem("Failed to get temp dir".into(), e.to_string()))?
         .join(filename);
     op.fail_if_err("download", download(url, &dest).await)?;
+    // The Vision LiveContainer install brings its auto-return relay sibling along.
+    let lc2_dest = if is_vision && live_container {
+        let dest2 = handle
+            .path()
+            .temp_dir()
+            .map_err(|e| AppError::Filesystem("Failed to get temp dir".into(), e.to_string()))?
+            .join("LiveContainer2-visionOS.ipa");
+        match download(LIVECONTAINER2_VP_URL, &dest2).await {
+            Ok(()) => Some(dest2),
+            Err(e) => {
+                tracing::warn!("LiveContainer2 download failed (auto-return will need a manual reopen): {e:?}");
+                None
+            }
+        }
+    } else {
+        None
+    };
     op.move_on("download", "install")?;
     let device = {
         let device_guard = device_state.lock().unwrap();
@@ -140,37 +279,82 @@ pub async fn install_sidestore_operation(
     op.fail_if_err(
         "install",
         sideload(
-            device_state,
-            sideloader_state,
+            device_state.clone(),
+            sideloader_state.clone(),
             dest.to_string_lossy().to_string(),
         )
         .await,
     )?;
+    if let Some(dest2) = lc2_dest {
+        // Best-effort: LiveContainer works without its relay (auto-return just
+        // becomes a manual reopen), so LC2 failing must not fail the install.
+        if let Err(e) = sideload(
+            device_state.clone(),
+            sideloader_state.clone(),
+            dest2.to_string_lossy().to_string(),
+        )
+        .await
+        {
+            tracing::warn!("LiveContainer2 install failed (auto-return will need a manual reopen): {e:?}");
+        }
+    }
     op.move_on("install", "pairing")?;
-    let sidestore_info = op.fail_if_err(
-        "pairing",
-        get_sidestore_info(&device.info, live_container).await,
-    )?;
-    if let Some(info) = sidestore_info {
-        let mut usbmuxd = op.fail_if_err("pairing", get_usbmuxd().await)?;
-
-        let provider = op.fail_if_err(
+    if device.info.transport == DeviceTransport::Vision {
+        // Place the RP pairing file into SideStore over the tunnel so it can reach the
+        // device on its own (SideStore-on-visionOS boots from rp_pairing_file.plist).
+        let ip = match device.info.ip.clone() {
+            Some(ip) => ip,
+            None => {
+                return op.fail(
+                    "pairing",
+                    AppError::RemotePairing("Vision Pro has no IP address".into()),
+                );
+            }
+        };
+        let ips = vision::live_ips(&device.info.name, &ip);
+        let mut session = op.fail_if_err(
             "pairing",
-            get_provider_from_connection(&device.info, &mut usbmuxd).await,
+            vision::VisionSession::connect_any(&ips, &device.pairing).await,
         )?;
-
+        // LiveContainer runs SideStore as a guest, so its pairing lives under
+        // SideStore/Documents/ inside the LiveContainer container; a plain SideStore
+        // install reads rp_pairing_file.plist straight from its own Documents.
+        let (needle, path) = if live_container {
+            ("livecontainer", LIVECONTAINER_VISION_PAIRING_PATH)
+        } else {
+            ("sidestore", VISION_PAIRING_FILENAME)
+        };
+        let bundle = op.fail_if_err("pairing", vision::find_app(&mut session, needle).await)?;
         op.fail_if_err(
             "pairing",
-            place_file(device.pairing, &provider, info.bundle_id, info.path).await,
+            vision::place_into(&mut session, &bundle, path, &device.pairing).await,
         )?;
     } else {
-        return op.fail(
+        let sidestore_info = op.fail_if_err(
             "pairing",
-            AppError::HouseArrest(
-                "SideStore's not found".into(),
-                "The device did not report SideStore's bundle ID as installed".into(),
-            ),
-        );
+            get_sidestore_info(&device.info, live_container).await,
+        )?;
+        if let Some(info) = sidestore_info {
+            let mut usbmuxd = op.fail_if_err("pairing", get_usbmuxd().await)?;
+
+            let provider = op.fail_if_err(
+                "pairing",
+                get_provider_from_connection(&device.info, &mut usbmuxd).await,
+            )?;
+
+            op.fail_if_err(
+                "pairing",
+                place_file(device.pairing, &provider, info.bundle_id, info.path).await,
+            )?;
+        } else {
+            return op.fail(
+                "pairing",
+                AppError::HouseArrest(
+                    "SideStore's not found".into(),
+                    "The device did not report SideStore's bundle ID as installed".into(),
+                ),
+            );
+        }
     }
 
     op.complete("pairing")?;

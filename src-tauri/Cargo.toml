@@ -1,6 +1,6 @@
 [package]
 name = "iloader"
-version = "2.3.3"
+version = "2.3.5"
 description = "User-friendly sideloader"
 authors = ["nab138"]
 edition = "2024"
@@ -22,7 +22,7 @@ tauri = { version = "2", features = ["devtools"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-idevice = { version = "0.1.57", features = ["usbmuxd", "house_arrest", "afc", "core_device_proxy", "remote_pairing", "tcp", "tunnel_tcp_stack", "xpc", "rsd", "pair"] }
+idevice = { version = "0.1.65", features = ["usbmuxd", "house_arrest", "afc", "installation_proxy", "core_device_proxy", "remote_pairing", "tcp", "tunnel_tcp_stack", "xpc", "rsd", "pair"] }
 isideload = { version = "0.3.17", features = ["fs-storage"], git = "https://github.com/nab138/isideload", package = "isideload", branch = "apple-codesign-quick" }
 keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "linux-native-sync-persistent"] }
 tauri-plugin-store = "2"
@@ -44,5 +44,34 @@ rootcause = "0.12.1"
 thiserror = "2.0.18"
 strum = {version = "0.28.0", features = ["derive"] }
 
+# Vision Pro discovery. On macOS we go through the system Bonjour daemon
+# (dns_sd / mDNSResponder) — raw-multicast mDNS is silently dropped by macOS 15+
+# Local Network privacy when the OS fails to attribute it (no prompt, no Settings
+# entry). Elsewhere there is no such gatekeeper and mdns-sd works fine.
+[target.'cfg(target_os = "macos")'.dependencies]
+async-dnssd = "0.5.1"
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+mdns-sd = "0.19"
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
+
+# isideload is overridden with an in-repo copy (vendor/isideload) of exactly the
+# commit upstream pins (nab138/isideload @ f6a4d5db, branch apple-codesign-quick,
+# 0.3.17), carrying one Vision Pro patch: apply_special_app_behavior also writes
+# ALTCertificate.p12 + ALTCertificateID + ALTCertificatePassword into the MAIN app
+# bundle for LiveContainer and SideStore+LiveContainer, so LiveContainer can open
+# the p12 without user interaction. Drop this once that lands upstream.
+# (The "device already registered" / developer error 35 tolerance we used to carry
+# here is now in upstream 0.3.17, so it is no longer a local patch.)
+[patch."https://github.com/nab138/isideload"]
+isideload = { path = "vendor/isideload" }
+
+# Vision Pro first-time pairing: published idevice hardcodes PIN "000000" when the
+# device answers `awaitingUserConsent` (a Trust-dialog assumption). A Vision Pro
+# answers that whenever its code screen isn't up yet, so every first pairing attempt
+# failed with "missing server proof in SRP response". The vendored copy waits for the
+# pairing data and asks the callback for the real on-screen code instead.
+[patch.crates-io]
+idevice = { path = "vendor/idevice" }

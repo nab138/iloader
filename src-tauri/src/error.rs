@@ -27,6 +27,19 @@ pub enum AppError {
     HouseArrest(String, String),
     #[error("{0}")]
     RemotePairing(String),
+    /// The Vision Pro couldn't be reached over the network at all (no TCP connection
+    /// established). Kept distinct from `RemotePairing` so that a dozing headset or a
+    /// stale address is never mistaken for a pairing gone bad — a stored pairing must
+    /// survive this.
+    #[error("{0}")]
+    VisionUnreachable(String),
+    /// The Vision Pro was reached and answered, but rejected the stored pairing during
+    /// pair-verify. This is the ONE error that proves the pairing is stale (e.g. this
+    /// Mac was removed from the headset's Remote Devices) — only it may trigger
+    /// discarding the stored pairing. Failures after pair-verify (tunnel setup, RSD)
+    /// say nothing about the pairing and must not.
+    #[error("{0}")]
+    VisionPairingRejected(String),
     #[error("{0}: {1}")]
     LockdownPairing(String, String),
     #[error("{0} canceled")]

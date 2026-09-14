@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- iloader browses mDNS for an Apple Vision Pro (which advertises these
+	     services) to reach it over Wi-Fi. macOS requires declaring local-network
+	     usage and the specific Bonjour service types, or it silently blocks the
+	     multicast discovery. -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>iloader finds your Apple Vision Pro on your local network to pair with it and install apps over Wi-Fi.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_remotepairing._tcp</string>
+		<string>_remotepairing-manual-pairing._tcp</string>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,116 @@
+// VCMediaNegotiationBlobV2 - Apple AVConference media negotiation blob.
+//
+// The CoreDevice displayservice `startvideooutput`/`startmediastream` feature
+// takes a `negotiatorOffer: Data` which is:
+//
+//     negotiatorOffer = zlib( protobuf( VCMediaNegotiationBlobV2 ) )
+//
+// The device's answer (in the StartResponse) is the same format.
+//
+// Schema reverse-engineered from AVConference (Xcode beta, dyld shared cache,
+// 2026-06-08) by decompiling each `_<Class>ReadFrom` / `writeTo:` function.
+// Field numbers are authoritative (taken from PBDataWriterWrite*Field calls).
+// Scalar varint fields are written via WriteUint32Field/WriteUint64Field; the
+// true proto type may be int32/enum/bool but the wire encoding is identical.
+// `bytes` fields use WriteDataField (NSData) and themselves often carry packed
+// sub-structures (codec params). TBD by reversing AVCMediaStreamNegotiator.
+//
+// Messages 4 (microphoneU1), 5 (cameraU1), 6 (momentsSettings) are FaceTime
+// camera/mic/moments and are NOT needed for device screen streaming; left out.
+//
+// We don't actually use this file in idevice, but it's kept for reference.
+
+syntax = "proto2";
+
+package idevice.coredevice.media;
+
+message VCMediaNegotiationBlobV2 {
+  optional GeneralInfo       general_info       = 1;
+  optional BandwidthSettings bandwidth_settings = 2;
+  optional CodecFeatures     codec_support      = 3;
+  // 4 = microphoneU1 (MicrophoneSettingsU1)  - FaceTime, unused
+  // 5 = cameraU1 (CameraSettingsU1)          - FaceTime, unused
+  // 6 = momentsSettings (MomentsSettings)    - FaceTime, unused
+  repeated StreamGroup       stream_groups      = 7;
+}
+
+message GeneralInfo {
+  optional uint64 ntp_time           = 1;
+  optional string cname              = 2;
+  optional uint32 ab_switches        = 3;
+  optional uint32 screen_res         = 4;
+  optional uint32 fec_header_version = 5;
+  optional uint32 rtx_version        = 6;
+}
+
+message BandwidthSettings {
+  optional uint32 cap_2g   = 1;
+  optional uint32 cap_3g   = 2;
+  optional uint32 cap_lte  = 3;
+  optional uint32 cap_5g   = 4;
+  optional uint32 cap_wifi = 5;
+}
+
+message CodecFeatures {
+  optional uint32 audio_features = 1; // bitfield; bit0 = allowAudioRecording
+  optional bytes  video_features = 2;
+}
+
+message StreamGroup {
+  optional uint32                stream_group = 1;
+  repeated StreamGroupPayload     payloads    = 2;
+  repeated StreamGroupStream      streams     = 3;
+  optional SettingsU1             settings_u1 = 4;
+}
+
+message StreamGroupPayload {
+  optional uint32 codec_type       = 1;
+  optional uint32 rtp_payload      = 2;
+  optional uint32 p_time           = 3;
+  optional uint32 rtcp_flags       = 4;
+  optional uint32 media_flags      = 5;
+  optional uint32 profile_level_id = 6;
+  optional uint32 rtp_sample_rate  = 7;
+  optional uint32 cipher_suite     = 8;
+  optional bytes  packed_payload   = 9;
+  optional uint32 encoder_usage    = 10;
+}
+
+message StreamGroupStream {
+  optional uint32 metadata                       = 1;
+  optional uint32 payload_spec_or_payloads       = 2;
+  optional uint32 quality_index                  = 3;
+  optional uint32 rtp_ssrc                        = 4;
+  optional uint32 stream_id                       = 5;
+  optional uint32 max_network_bitrate            = 6;
+  optional uint32 repaired_max_network_bitrate   = 7;
+  optional uint32 audio_channel_count            = 8;
+  optional uint32 stream_index                    = 9;
+  optional bytes  required_packed_payload        = 10;
+  optional bytes  optional_packed_payload        = 11;
+  optional uint32 coordinate_system              = 12;
+  optional uint32 payloads_version               = 13;
+  optional uint32 max_network_bitrate_v2         = 14;
+  optional uint32 repaired_max_network_bitrate_v2 = 15;
+}
+
+message SettingsU1 {
+  optional uint32                rtp_ssrc              = 1;
+  repeated EncodeDecodeFeatures  encode_decode_features = 2;
+}
+
+message EncodeDecodeFeatures {
+  optional uint32 rtp_payload           = 1;
+  optional bytes  encode_decode_features = 2;
+}
+
+// Stands alone in the V2 hierarchy (not referenced by StreamGroup); kept for
+// completeness.
+message VideoPayload {
+  optional uint32 video_payload           = 1;
+  optional uint32 parameter_set           = 2;
+  optional uint32 encode_formats          = 3;
+  optional uint32 decode_formats          = 4;
+  optional bytes  encode_decode_features  = 5;
+  optional uint32 preferred_decode_format = 6;
+}

@@ -46,6 +46,10 @@ parsed plist error, not the HTML 503.
   Independently confirmed with curl that GSA `POST /grandslam/GsService2` returns
   503 for the Xcode client-info string and does not for the akd one.
 
+## Last round (addendum, 2026-09-13 evening)
+
+Fork 2.3.4 signed in to GSA for real (`Successfully logged in to Apple ID`, `Successfully retrieved app token`, no 503) and sideloaded ~/dev/sidestore/build/SideStore-visionOS.ipa (0.7.0) onto the Vision Pro over the RP tunnel: error-35 tolerance fired, InstallComplete, pairing file placed via Manage Pairing File. Sonnet review of the re-applied patches: no bugs.
+
 ## Next steps
 
 1. Full sign-in with the real password for `austin@archibalds.tv` (keychain
@@ -71,5 +75,5 @@ parsed plist error, not the HTML 503.
   PR against `apple-codesign-quick`? Default: keep it vendored.
 
 ## Live claims
-- Fork build 2.3.4 (`src-tauri/target/.../bundle/macos/iloader.app`) is left OPEN at a macOS login-keychain prompt (SecurityAgent) awaiting Austin, 2026-09-13 18:13 local. No simulators booted, no devices claimed.
-- Blocked: one-click Apple ID sign-in test in 2.3.4, then install `~/dev/sidestore/build/SideStore-visionOS.ipa` to the Vision Pro and on-headset sign-in (adi.pb reset first).
+- Fork build 2.3.4 left running on the Mac, signed in as austin@archibalds.tv, Vision Pro (Network) selected. No simulators booted.
+- Waiting on Austin: on-headset SideStore 0.7.0 sign-in (adi.pb reset with all boxes unchecked, then sign in). Then: create rebelancap/SideStore release visionos-0.7.0 with ~/dev/sidestore/build/SideStore-visionOS.ipa, update rebelancap/LiveContainer release `visionos` with ~/dev/LiveContainer/build/*.ipa, push sidestore submodule branches (SideSign fb1a307, minimuxer eb67fe9) to rebelancap forks, repoint URLs in src-tauri/src/sideload.rs if the tag changes, then push.

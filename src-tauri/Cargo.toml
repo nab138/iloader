@@ -1,6 +1,6 @@
 [package]
 name = "iloader"
-version = "2.3.4"
+version = "2.3.5"
 description = "User-friendly sideloader"
 authors = ["nab138"]
 edition = "2024"

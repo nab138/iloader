@@ -1,6 +1,6 @@
 # iloader (rebelancap fork) — STATUS
 
-Branch: `visionos-tunnel` · version **2.3.4** · last updated 2026-09-13
+Branch: `visionos-tunnel` · version **2.3.5** · last updated 2026-09-14
 
 ## Current state
 
@@ -20,6 +20,32 @@ verbatim. `vendor/idevice` is untouched at 0.1.65 (upstream's lock still resolve
 Cargo resolves a single idevice. Signed release build and DMG produced, all 5
 unit tests pass, frontend typechecks. A real GSA sign-in reaches Apple and gets a
 parsed plist error, not the HTML 503.
+
+## Last round (2026-09-14, 2.3.5 release prep)
+
+- `SIDESTORE_VP_URL` in `src-tauri/src/sideload.rs` repointed to
+  `rebelancap/SideStore` release **`visionos-0.7.0`**; the doc comment now records
+  the akd sign-in fix and the adi.pb reset requirement. LiveContainer URLs on the
+  rolling `visionos` tag are unchanged.
+- Version bumped 2.3.4 -> **2.3.5**. `bun run bump-patch` covers `package.json`,
+  `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json` but runs with `--no-lock`,
+  so `src-tauri/Cargo.lock`'s `iloader` entry was edited by hand — check it every
+  bump.
+- Signed release build succeeded (`bun run tauri build --target aarch64-apple-darwin
+  --config src-tauri/ci.conf.json`); the bundle_dmg.sh hang did not recur. DMG
+  copied to `build/iloader-visionOS-aarch64.dmg` (9.4 MB); `build/` is git-ignored.
+- Release notes for the rolling `visionos` release drafted at
+  `build/release-notes.md` (existing body plus a "What's new in 2.3.5" section).
+- **BLOCKED: notarization.** `xcrun notarytool submit --keychain-profile iloader`
+  fails with `Error: No Keychain password item found for profile: iloader`, and no
+  `com.apple.gke.notary.tool` item is visible in the (unlocked, no-timeout) login
+  keychain. `spctl -a -t open -vv build/iloader-visionOS-aarch64.dmg` therefore
+  reports `rejected / source=Unnotarized Developer ID`. The DMG IS validly signed
+  with `Developer ID Application: Austin Archibald (57G8J46Z2T)`. Austin must
+  re-run `xcrun notarytool store-credentials iloader` (apple-id
+  austin@archibalds.tv, team 57G8J46Z2T, app-specific password) before the DMG can
+  be notarized, stapled and published. **Do not upload the DMG as-is.**
+- Nothing pushed, nothing uploaded.
 
 ## Last round (2026-09-13, upstream sync)
 
@@ -52,19 +78,23 @@ Fork 2.3.4 signed in to GSA for real (`Successfully logged in to Apple ID`, `Suc
 
 ## Next steps
 
-1. Full sign-in with the real password for `austin@archibalds.tv` (keychain
-   service `iloader`), either in the app UI or
-   `ILOADER_TEST_PASSWORD=… cargo test --test gsa_signin -- --ignored --nocapture`.
-   Expect a 2FA prompt.
-2. Resolve the Local Network permission state for the rebuilt app: on launch
-   2.3.4 logged `local-network probe: REFUSED (No route to host (os error 65))`
-   and discovered no headset in 20s, while `dns-sd -B _remotepairing._tcp` from
-   the shell sees two devices. Allow/toggle iloader in Settings ▸ Privacy &
-   Security ▸ Local Network and relaunch before any pairing test.
-3. End-to-end Vision Pro round: pair, then sign + install the SideStore IPA a
-   separate agent is producing, and confirm LiveContainer picks up the injected
-   certificate with no user interaction.
-4. Nothing is pushed and no release exists for 2.3.4 — Austin decides if/when.
+1. **Restore the notarytool credential**: `xcrun notarytool store-credentials
+   iloader` (Apple ID austin@archibalds.tv, team 57G8J46Z2T, app-specific
+   password). Then, from `~/dev/iloader`:
+   `xcrun notarytool submit build/iloader-visionOS-aarch64.dmg --keychain-profile
+   iloader --wait` → `xcrun stapler staple build/iloader-visionOS-aarch64.dmg` →
+   `spctl -a -t open -vv build/iloader-visionOS-aarch64.dmg` (expect
+   `source=Notarized Developer ID`). The DMG needs no rebuild.
+2. Create the `rebelancap/SideStore` release **`visionos-0.7.0`** with
+   `~/dev/sidestore/build/SideStore-visionOS.ipa` — iloader 2.3.5 already points at
+   that URL, so it 404s until the release exists.
+3. Update the rolling `rebelancap/iloader` release `visionos`: body from
+   `build/release-notes.md`, asset `iloader-visionOS-aarch64.dmg` (`--clobber`),
+   only once notarized and stapled.
+4. Update the `rebelancap/LiveContainer` `visionos` release with
+   `~/dev/LiveContainer/build/*.ipa`; push the sidestore submodule branches
+   (SideSign fb1a307, minimuxer eb67fe9) to the rebelancap forks.
+5. Push `visionos-tunnel`. Austin decides whether 2.3.5 gets a GitHub release.
 
 ## Open questions
 
@@ -75,5 +105,10 @@ Fork 2.3.4 signed in to GSA for real (`Successfully logged in to Apple ID`, `Suc
   PR against `apple-codesign-quick`? Default: keep it vendored.
 
 ## Live claims
-- Fork build 2.3.4 left running on the Mac, signed in as austin@archibalds.tv, Vision Pro (Network) selected. No simulators booted.
-- Waiting on Austin: on-headset SideStore 0.7.0 sign-in (adi.pb reset with all boxes unchecked, then sign in). Then: create rebelancap/SideStore release visionos-0.7.0 with ~/dev/sidestore/build/SideStore-visionOS.ipa, update rebelancap/LiveContainer release `visionos` with ~/dev/LiveContainer/build/*.ipa, push sidestore submodule branches (SideSign fb1a307, minimuxer eb67fe9) to rebelancap forks, repoint URLs in src-tauri/src/sideload.rs if the tag changes, then push.
+- Fork build **2.3.4** still running on the Mac from
+  `src-tauri/target/aarch64-apple-darwin/release/bundle/macos/iloader.app` (another
+  session is driving it); the on-disk bundle there is now the 2.3.5 rebuild, so the
+  next launch of that path is 2.3.5.
+- No simulators booted, no background agents, working tree clean.
+- Waiting on Austin: notarytool credential (blocker above), and the on-headset
+  SideStore 0.7.0 sign-in check (reset adi.pb with all boxes unchecked first).

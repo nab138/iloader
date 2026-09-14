@@ -27,3 +27,5 @@ keys
 *.mobileprovision
 
 dockerfile
+# Local release artifacts
+/build/

@@ -2656,7 +2656,7 @@ dependencies = [
 
 [[package]]
 name = "iloader"
-version = "2.3.4"
+version = "2.3.5"
 dependencies = [
  "async-dnssd",
  "chrono",

@@ -22,8 +22,13 @@ const VISION_PAIRING_FILENAME: &str = "rp_pairing_file.plist";
 /// registration tolerance, RemotePairing boot preference, arm64). Tracks the
 /// rebelancap/SideStore fork until the fixes land upstream. There is no nightly or
 /// LiveContainer visionOS build, so a Vision Pro always installs this.
+///
+/// Pinned to the `visionos-0.7.0` release, which carries the same GSA fix as
+/// iloader 2.3.5 (Apple started returning HTTP 503 for the Xcode client
+/// identifier, so sign-in now uses the akd one). Users updating from an earlier
+/// build must reset `adi.pb` in SideStore's settings before signing in again.
 const SIDESTORE_VP_URL: &str =
-    "https://github.com/rebelancap/SideStore/releases/download/visionos-0.6.4/SideStore-visionOS.ipa";
+    "https://github.com/rebelancap/SideStore/releases/download/visionos-0.7.0/SideStore-visionOS.ipa";
 
 /// LiveContainer with the visionOS-patched SideStore embedded (built by
 /// rebelancap/LiveContainer's CI from the patched LiveContainer/SideStore). The

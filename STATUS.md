@@ -76,6 +76,10 @@ parsed plist error, not the HTML 503.
 
 Fork 2.3.4 signed in to GSA for real (`Successfully logged in to Apple ID`, `Successfully retrieved app token`, no 503) and sideloaded ~/dev/sidestore/build/SideStore-visionOS.ipa (0.7.0) onto the Vision Pro over the RP tunnel: error-35 tolerance fired, InstallComplete, pairing file placed via Manage Pairing File. Sonnet review of the re-applied patches: no bugs.
 
+## Published (2026-09-14)
+
+Published 2026-09-14: iloader 2.3.5 (notarized) on rebelancap/iloader release `visionos`; SideStore 0.7.0 on rebelancap/SideStore release `visionos-0.7.0` (iloader URL updated); LC combo on rebelancap/LiveContainer release `visionos`. Branch visionos-tunnel force-pushed (rebased); backup branch pushed. Verified on headset: sign-in, registration, app update, icon after reboot.
+
 ## Next steps
 
 1. **Restore the notarytool credential**: `xcrun notarytool store-credentials
@@ -105,10 +109,5 @@ Fork 2.3.4 signed in to GSA for real (`Successfully logged in to Apple ID`, `Suc
   PR against `apple-codesign-quick`? Default: keep it vendored.
 
 ## Live claims
-- Fork build **2.3.4** still running on the Mac from
-  `src-tauri/target/aarch64-apple-darwin/release/bundle/macos/iloader.app` (another
-  session is driving it); the on-disk bundle there is now the 2.3.5 rebuild, so the
-  next launch of that path is 2.3.5.
-- No simulators booted, no background agents, working tree clean.
-- Waiting on Austin: notarytool credential (blocker above), and the on-headset
-  SideStore 0.7.0 sign-in check (reset adi.pb with all boxes unchecked first).
+
+None. Session closed cleanly 2026-09-14: nothing booted, no agents running, tree clean.

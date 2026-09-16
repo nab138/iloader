@@ -1,8 +1,5 @@
 /* ==========================================================================
    Operation view
-   This is the screen users actually watch — a sideload runs for a while and
-   this is all they have to look at. It gets a real progress rail rather than
-   a stack of identical boxes.
    ========================================================================== */
 
 .operation-content {
@@ -57,8 +54,6 @@
     border-color var(--dur) var(--ease);
 }
 
-/* The rail that joins one step to the next, so the list reads as a sequence
-   rather than as unrelated rows. */
 .operation-step::after {
   content: "";
   position: absolute;
@@ -73,8 +68,6 @@
   display: none;
 }
 
-/* Only the step in flight gets a surface. Everything else stays quiet, which
-   is what makes the active one findable at a glance. */
 .operation-step:has(.loading-icon) {
   background: rgba(0, 202, 74, 0.07);
   border-color: rgba(0, 202, 74, 0.2);
@@ -206,8 +199,6 @@
   color: var(--text-primary);
 }
 
-/* Recovery suggestions matter most exactly when something failed, so they
-   get a surface instead of being loose text under the error. */
 .operation-suggestions {
   padding: 0.85rem 1rem;
   margin-bottom: 1rem;

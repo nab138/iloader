@@ -53,8 +53,6 @@
 
 /* --- Signed-in state ------------------------------------------------------ */
 
-/* The signed-in block is the app's "you are ready" signal, so it gets a
-   surface of its own with a live indicator rather than sitting as loose text. */
 .logged-in-as {
   width: 100%;
   display: flex;
@@ -163,8 +161,6 @@
   box-shadow: var(--edge-light);
 }
 
-/* Destructive actions stay quiet until they are approached. A permanently
-   red button is the loudest thing on the panel and it should not be. */
 .action-button.danger {
   background: transparent;
   border-color: rgba(255, 82, 71, 0.28);

@@ -70,8 +70,6 @@
   color: var(--text-primary);
 }
 
-/* A divider above this row, so "Reset" and "Delete" are visibly separate
-   from the preferences above them. */
 .settings-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -150,8 +148,7 @@
   color: var(--text-primary);
 }
 
-/* Log levels. Tuned for legibility on the near-black log surface — the CSS
-   named colours these replace were close to invisible there. */
+/* Log levels, tuned for legibility on the near-black log surface. */
 .log-level {
   font-weight: 700;
 }

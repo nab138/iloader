@@ -14,8 +14,8 @@
   padding: 2rem;
   z-index: 1000;
 
-  /* A dark scrim under the blur. Blur alone leaves the dialog floating on a
-     smear of the page; the scrim is what makes it sit in front of it. */
+  /* A dark scrim under the blur, so the dialog sits in front of the page
+   rather than on a smear of it. */
   background: rgba(4, 5, 6, 0.55);
   backdrop-filter: blur(20px) saturate(150%);
   -webkit-backdrop-filter: blur(20px) saturate(150%);
@@ -48,7 +48,6 @@
   animation: modal-in 220ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* Rises and settles rather than appearing. */
 @keyframes modal-in {
   from {
     opacity: 0;
@@ -124,8 +123,6 @@
   position: relative;
 }
 
-/* The current page stretches into a capsule instead of only brightening —
-   readable at a glance and a better use of the brand colour. */
 .active-page {
   background-color: var(--brand-500);
   width: 1.15rem;

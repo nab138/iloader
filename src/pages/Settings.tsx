@@ -299,11 +299,6 @@ export const Settings = ({
 };
 
 // convert level to a properly colored html string
-//
-// These were the CSS named colours (purple, blue, green, ...). Against the
-// log viewer's near-black background `blue` (#0000FF) and `green` (#008000)
-// sit at roughly 2:1 contrast and are genuinely hard to read, so the levels
-// now use palette tokens tuned for a dark surface.
 function getHtmlForLevel(level: LogLevel) {
   switch (level) {
     case LogLevel.Trace:

@@ -1,8 +1,6 @@
 /* ==========================================================================
    iloader — design tokens
-   The palette is pulled from the logo (#00CA4A / #06581F) so the interface and
-   the mark belong to the same product. Everything else is a scale, not a
-   one-off value, so a change here lands everywhere at once.
+   The palette is pulled from the logo (#00CA4A / #06581F).
    ========================================================================== */
 
 :root {
@@ -18,8 +16,6 @@
   --bg-base: #08090b;
   --bg-app: #0b0c0e;
 
-  /* Surfaces are translucent so they layer over the ambient wash rather than
-     covering it. Depth comes from light, not from a darker box. */
   --surface-1: rgba(255, 255, 255, 0.032);
   --surface-2: rgba(255, 255, 255, 0.055);
   --surface-3: rgba(255, 255, 255, 0.08);
@@ -30,9 +26,6 @@
   --line-strong: rgba(255, 255, 255, 0.14);
   --line-faint: rgba(255, 255, 255, 0.05);
 
-  /* The 1px of light along a surface's top edge. The single most useful
-     detail in a dark interface — it is what makes a panel read as a raised
-     object instead of a lighter rectangle. */
   --edge-light: inset 0 1px 0 rgba(255, 255, 255, 0.07);
 
   /* Text ----------------------------------------------------------------- */
@@ -46,8 +39,7 @@
   --danger-rgb: 255, 82, 71;
   --warning: #ffc95c;
 
-  /* Elevation — a tight contact shadow plus a wide ambient one. A single
-     large blur reads as fog; two layers read as a lit object. */
+  /* Elevation ------------------------------------------------------------ */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.24);
   --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.38), 0 10px 24px rgba(0, 0, 0, 0.36);
   --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.4), 0 24px 56px rgba(0, 0, 0, 0.5);
@@ -61,8 +53,7 @@
   --r-xl: 24px;
   --r-full: 999px;
 
-  /* Motion — one easing curve everywhere. Mixed curves are the tell of an
-     interface assembled rather than designed. */
+  /* Motion ---------------------------------------------------------------- */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-fast: 130ms;
   --dur: 200ms;
@@ -143,7 +134,6 @@ body {
   border-radius: var(--r-sm);
 }
 
-/* Scrollbars, so they stop looking like a browser bolted into a desktop app. */
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
@@ -182,15 +172,10 @@ h4 {
    Workspace shell
    ========================================================================== */
 
-/* Ambient light. Two soft washes of the brand colour keep the ground from
-   being a flat black field, which is what made the old layout feel like a
-   wireframe.
-
-   These are background layers on the element itself rather than a fixed
-   pseudo-element behind it. A `position: fixed` layer at `z-index: -1` under
-   a `backdrop-filter` header composites unreliably — WebKitGTK, which this
-   app ships on Linux, leaves paint artifacts on scroll. `background-attachment:
-   fixed` keeps the glow anchored to the viewport with no extra layer. */
+/* Ambient light. These are background layers on the element itself rather
+   than a `z-index: -1` fixed pseudo-element, which composites unreliably
+   under the blurred header on WebKitGTK. `background-attachment: fixed`
+   keeps the glow anchored to the viewport with no extra layer. */
 .workspace {
   position: relative;
   min-height: 100vh;
@@ -262,8 +247,6 @@ h4 {
   text-overflow: ellipsis;
 }
 
-/* The mark sits in a lit tile so it reads as an app icon rather than a
-   floating graphic. */
 .logo {
   width: 2.5rem;
   height: 2.5rem;
@@ -442,10 +425,6 @@ h4 {
   border-radius: var(--r-lg);
 }
 
-/* Every panel titles itself the same way. Previously "Apple ID" and
-   "iDevice" were full h2s competing with the section labels directly above
-   them; this keeps the label as the heading and the panel title as its
-   quieter echo. */
 .glass-card > h2,
 .glass-card > h2:first-child,
 .panel > h2 {
@@ -516,9 +495,6 @@ select:focus {
     0 0 0 3px rgba(0, 202, 74, 0.22);
 }
 
-/* Checkboxes. The browser default is a small white square that ignores every
-   other decision on this page, and it was the last obviously unstyled control
-   in the app. */
 input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
@@ -592,8 +568,6 @@ button:active:not(:disabled) {
   transition-duration: 60ms;
 }
 
-/* Accent buttons carry the brand gradient and a coloured glow, so the
-   primary action in any group is obvious before a single word is read. */
 .btn-primary,
 .action-button.primary {
   background: linear-gradient(180deg, var(--brand-400), var(--brand-600));
@@ -617,9 +591,6 @@ button:active:not(:disabled) {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Where several actions are genuine peers — the four installers — a full
-   accent fill on more than one cancels itself out. A brand tint marks the
-   recommended pair while keeping the group calm. */
 .btn-accent {
   background: rgba(0, 202, 74, 0.1);
   border-color: rgba(0, 202, 74, 0.34);
@@ -634,8 +605,6 @@ button:active:not(:disabled) {
   box-shadow: var(--edge-light), 0 6px 18px rgba(0, 202, 74, 0.16);
 }
 
-/* A file picker is a different kind of action from an install, and the
-   dashed edge says so without needing a label change. */
 .btn-dashed {
   background: transparent;
   border: 1px dashed var(--line-strong);
@@ -675,9 +644,6 @@ button:active:not(:disabled) {
   min-width: 160px;
 }
 
-/* The installers are two pairs — a stable build and a nightly build of each
-   target. A two-column grid makes that pairing visible; the old single row
-   of five equal buttons hid it. */
 .installer-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -740,7 +706,6 @@ button:active:not(:disabled) {
   border-bottom: none;
 }
 
-/* Keyboard shortcuts read as keycaps rather than dim afterthoughts. */
 .workspace-list-item span {
   font-size: 0.7rem;
   font-weight: 600;
@@ -768,8 +733,6 @@ button:active:not(:disabled) {
   border-color: var(--line);
 }
 
-/* A hairline of brand colour slides in on hover — the small moment of
-   polish that separates a designed list from a stack of buttons. */
 .workspace-list-item::before {
   content: "";
   position: absolute;
@@ -837,7 +800,6 @@ button:active:not(:disabled) {
   }
 }
 
-/* Respect the system setting — every transition above collapses to nothing. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -24,8 +24,6 @@
   white-space: nowrap;
 }
 
-/* Column headings are labels, not content — they should not compete with the
-   rows for attention. */
 .certificate-table th {
   font-size: 0.68rem;
   font-weight: 700;
@@ -62,8 +60,6 @@
   font-weight: 550;
 }
 
-/* Serial numbers are identifiers — monospace makes them scannable and stops
-   them from being mistaken for prose. */
 .certificate-item td:nth-child(2) {
   font-family: var(--font-mono);
   font-size: 0.82rem;

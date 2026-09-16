@@ -1,7 +1,5 @@
 /* ==========================================================================
    Device list
-   Choosing a device is the pivot of the whole app, so the selected card is
-   the loudest thing on screen — and an unselected one still looks clickable.
    ========================================================================== */
 
 .device-card {
@@ -25,7 +23,6 @@
     transform var(--dur-fast) var(--ease);
 }
 
-/* Connection indicator. A device that is present reads as present. */
 .device-card::before {
   content: "";
   position: absolute;
@@ -86,7 +83,6 @@
   color: var(--text-primary);
 }
 
-/* USB / Network is metadata, not a heading. */
 .device-connection {
   font-size: 0.76rem;
   font-weight: 550;
@@ -113,7 +109,6 @@
   flex-shrink: 0;
 }
 
-/* The pairing modal's spinner, which had no styling of its own before. */
 .pairing-modal-content {
   display: flex;
   flex-direction: column;

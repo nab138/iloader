@@ -11,6 +11,7 @@ mod secure_storage;
 mod error;
 mod logging;
 mod operation;
+mod wifi_rsd;
 
 use crate::{
     account::{

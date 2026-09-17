@@ -43,6 +43,7 @@ tokio-util = "0.7.18"
 rootcause = "0.12.1"
 thiserror = "2.0.18"
 strum = {version = "0.28.0", features = ["derive"] }
+mdns-sd = "0.21.3"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"

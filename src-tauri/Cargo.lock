@@ -2618,7 +2618,7 @@ dependencies = [
 
 [[package]]
 name = "iloader"
-version = "2.3.2"
+version = "2.3.3"
 dependencies = [
  "chrono",
  "futures",
@@ -2729,7 +2729,6 @@ dependencies = [
 [[package]]
 name = "isideload"
 version = "0.3.17"
-source = "git+https://github.com/nab138/isideload?branch=apple-codesign-quick#f6a4d5dba717d72fc2af63eaba26b27ba44116be"
 dependencies = [
  "aes 0.9.3",
  "aes-gcm",

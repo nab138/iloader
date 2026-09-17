@@ -1,0 +1,6 @@
+target
+
+state.plist
+
+*.mobileprovision
+*.pem

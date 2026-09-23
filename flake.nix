@@ -102,6 +102,7 @@
               [
                 glib-networking
                 openssl
+                udev
                 webkitgtk_4_1
               ]
             );

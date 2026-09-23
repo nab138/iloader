@@ -16,11 +16,12 @@ use serde_json::Value;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Listener, State, Window};
 use tauri_plugin_store::StoreExt;
-use tracing::debug;
+use tracing::{debug, warn};
 
 use crate::{
     error::AppError,
     secure_storage::create_sideloading_storage,
+    security_key,
     sideload::{SideloaderGuard, SideloaderMutex},
 };
 
@@ -162,29 +163,46 @@ async fn login(
     password: &str,
     anisette_server: String,
 ) -> Result<Sideloader, AppError> {
-    let tfa_closure = {
-        let window_clone = window.clone();
-        move |params: TwoFactorCallbackParams| {
-            let window_clone = window_clone.clone();
+    let make_tfa_closure = {
+        let window = window.clone();
+        move || {
+            let window = window.clone();
+            move |params: TwoFactorCallbackParams| {
+                let window = window.clone();
 
-            async move {
-                window_clone
-                    .emit("2fa-required", params)
-                    .context("Failed to emit 2fa-required event")?;
+                async move {
+                    window
+                        .emit("2fa-required", params)
+                        .context("Failed to emit 2fa-required event")?;
 
-                let (tx, rx) = std::sync::mpsc::channel::<String>();
-                let handler_id = window_clone.listen("2fa-recieved", move |event| {
-                    let code = event.payload();
-                    let _ = tx.send(code.to_string());
-                });
+                    let (tx, rx) = std::sync::mpsc::channel::<TwoFactorCallbackResponse>();
 
-                let result = rx.recv_timeout(Duration::from_secs(120))?;
-                window_clone.unlisten(handler_id);
+                    let code_handler = window.listen("2fa-recieved", {
+                        let tx = tx.clone();
+                        move |event| {
+                            let code = event.payload();
+                            let _ = tx.send(TwoFactorCallbackResponse::SubmitCode(
+                                code.trim_matches('"').to_string(),
+                            ));
+                        }
+                    });
+                    let abort_handler = window.listen("2fa-abort", move |_| {
+                        let _ = tx.send(TwoFactorCallbackResponse::Abort);
+                    });
 
-                let code = result.trim_matches('"').to_string();
-                Ok(TwoFactorCallbackResponse::SubmitCode(code))
+                    let result = rx.recv_timeout(Duration::from_secs(120));
+                    window.unlisten(code_handler);
+                    window.unlisten(abort_handler);
+
+                    match result {
+                        Ok(response) => Ok(response),
+                        Err(_) => Err(report!(
+                            "Timed out waiting for two-factor authentication code"
+                        )),
+                    }
+                }
+                .boxed()
             }
-            .boxed()
         }
     };
 
@@ -201,8 +219,21 @@ async fn login(
                 .set_storage(create_sideloading_storage(app)?)
                 .set_url(&anisette_url),
         )
-        .login(password, Box::new(tfa_closure))
+        .build()
         .await?;
+
+    if let Err(login_error) = account.login(password, Box::new(make_tfa_closure())).await {
+        warn!("Initial login failed, checking for security key requirement");
+        match security_key::try_security_key_login(window, &mut account, password).await {
+            Ok(true) => {
+                account
+                    .login(password, Box::new(make_tfa_closure()))
+                    .await?;
+            }
+            Ok(false) => return Err(login_error.into()),
+            Err(security_key_error) => return Err(security_key_error),
+        }
+    }
 
     debug!("Logged in");
 

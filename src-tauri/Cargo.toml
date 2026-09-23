@@ -25,11 +25,19 @@ serde_json = "1"
 idevice = { version = "0.1.57", features = ["usbmuxd", "house_arrest", "afc", "core_device_proxy", "remote_pairing", "tcp", "tunnel_tcp_stack", "xpc", "rsd", "pair"] }
 isideload = { version = "0.3.17", features = ["fs-storage"], git = "https://github.com/nab138/isideload", package = "isideload", branch = "apple-codesign-quick" }
 keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "linux-native-sync-persistent"] }
+authenticator = { version = "0.5", default-features = false, features = ["crypto_rust"] }
+base64 = "0.22"
+srp = "0.7.0-rc.3"
+pbkdf2 = "0.13"
+hmac = "0.13"
+sha2 = "0.11"
+hex = "0.4"
+rand = "0.8.5"
 tauri-plugin-store = "2"
 futures = "0.3.31"
 once_cell = "1.21.3"
 tauri-plugin-dialog = "2"
-reqwest = "0.13.2"
+reqwest = { version = "0.13.2", features = ["cookies"] }
 tokio = "1.49.0"
 tauri-plugin-process = "2"
 chrono = "0.4"

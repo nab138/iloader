@@ -12,6 +12,13 @@ import { useTranslation } from "react-i18next";
 
 const storePromise = load("data.json");
 
+type DeveloperTeamInfo = {
+  name: string | null;
+  teamId: string;
+  type: string | null;
+  status: string | null;
+};
+
 export const AppleID = ({
   loggedInAs,
   setLoggedInAs,
@@ -37,12 +44,19 @@ export const AppleID = ({
   const [certs, setCerts] = useState<Certificate[] | null>(null);
   const [selectedSerials, setSelectedSerials] = useState<string[]>([]);
   const [chooseCertsOpen, setChooseCertsOpen] = useState<boolean>(false);
+  const [teams, setTeams] = useState<DeveloperTeamInfo[] | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+  const [activeTeam, setActiveTeam] = useState<DeveloperTeamInfo | null>(null);
   const { err } = useError();
 
   useEffect(() => {
     let getLoggedInAs = async () => {
       let account = await invoke<string | null>("logged_in_as");
       setLoggedInAs(account);
+      let team = account
+        ? await invoke<DeveloperTeamInfo | null>("logged_in_team")
+        : null;
+      setActiveTeam(team);
     };
     let getStoredIds = async () => {
       const store = await storePromise;
@@ -97,6 +111,28 @@ export const AppleID = ({
     };
   }, []);
 
+  const teamListenerAdded = useRef<boolean>(false);
+  const teamUnlisten = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    if (!teamListenerAdded.current) {
+      (async () => {
+        const unlistenFn = await listen<DeveloperTeamInfo[]>(
+          "team-selection-required",
+          (event) => {
+            setSelectedTeamId("");
+            setTeams(event.payload);
+          },
+        );
+        teamUnlisten.current = unlistenFn;
+      })();
+      teamListenerAdded.current = true;
+    }
+    return () => {
+      teamUnlisten.current();
+    };
+  }, []);
+
   return (
     <>
       <h2 style={{ marginTop: 0 }}>{t("apple_id.title")}</h2>
@@ -106,6 +142,16 @@ export const AppleID = ({
             <div className="logged-info">
               <span className="logged-label">{t("apple_id.logged_in_as")}</span>
               <span className="logged-value">{loggedInAs}</span>
+              {activeTeam && (
+                <span className="logged-team">
+                  <span className="logged-team-label">
+                    {t("apple_id.developer_team")}
+                  </span>
+                  <span className="logged-team-value">
+                    {activeTeam.name ?? activeTeam.teamId}
+                  </span>
+                </span>
+              )}
             </div>
             <div className="action-row">
               <button
@@ -266,6 +312,77 @@ export const AppleID = ({
           </div>
         )}
       </div>
+      <Modal sizeFit isOpen={teams !== null} zIndex={2000}>
+        <div className="team-selection">
+          <h2 className="team-header">
+            {t("apple_id.team_selection_title")}
+          </h2>
+          <p className="team-description">
+            {t("apple_id.team_selection_prompt")}
+          </p>
+          <div className="team-list" role="radiogroup">
+            {teams?.map((team) => (
+              <label
+                key={team.teamId}
+                className={`team-item${
+                  selectedTeamId === team.teamId ? " selected" : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="developer-team"
+                  value={team.teamId}
+                  checked={selectedTeamId === team.teamId}
+                  onChange={() => setSelectedTeamId(team.teamId)}
+                />
+                <span className="team-details">
+                  <span className="team-name">
+                    {team.name ?? t("apple_id.unnamed_team")}
+                  </span>
+                  <span className="team-metadata">
+                    <span>
+                      {t("apple_id.team_id")}: {team.teamId}
+                    </span>
+                    {team.type && (
+                      <span>
+                        {t("apple_id.team_type")}: {team.type}
+                      </span>
+                    )}
+                    {team.status && (
+                      <span>
+                        {t("apple_id.team_status")}: {team.status}
+                      </span>
+                    )}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+          <div className="team-buttons">
+            <button
+              className="action-button primary"
+              disabled={!selectedTeamId}
+              onClick={async () => {
+                await emit("team-selection-response", selectedTeamId);
+                setTeams(null);
+                setSelectedTeamId("");
+              }}
+            >
+              {t("common.confirm")}
+            </button>
+            <button
+              className="action-button danger"
+              onClick={async () => {
+                await emit("team-selection-response", null);
+                setTeams(null);
+                setSelectedTeamId("");
+              }}
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        </div>
+      </Modal>
       <Modal sizeFit isOpen={tfaOpen} zIndex={2000}>
         <h2>{t("apple_id.two_factor_title")}</h2>
         <p>{t("apple_id.two_factor_prompt")}</p>

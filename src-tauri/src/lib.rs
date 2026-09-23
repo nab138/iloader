@@ -15,7 +15,8 @@ mod operation;
 use crate::{
     account::{
         delete_account, delete_app_id, get_certificates, invalidate_account, list_app_ids,
-        logged_in_as, login_new, login_stored, reset_anisette_state, revoke_certificate,
+        logged_in_as, logged_in_team, login_new, login_stored, reset_anisette_state,
+        revoke_certificate,
     },
     device::{
         DeviceInfoMutex, PairingCancelToken, cancel_pairing, list_devices, set_selected_device,
@@ -107,6 +108,7 @@ pub fn run() {
             login_new,
             invalidate_account,
             logged_in_as,
+            logged_in_team,
             login_stored,
             delete_account,
             list_devices,

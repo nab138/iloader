@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./AppleID.css";
 import { invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
@@ -11,6 +11,28 @@ import { Certificate } from "./pages/Certificates";
 import { useTranslation } from "react-i18next";
 
 const storePromise = load("data.json");
+
+type TrustedNumber = {
+  numberWithDialCode: string;
+  lastTwoDigits: string;
+  pushMode: string;
+  id: number;
+};
+
+type TwoFactorParams = {
+  lastError: string | null;
+  unknown: boolean;
+  sms: boolean;
+  numbers: TrustedNumber[];
+  selectedNumberId: number | null;
+};
+
+type TwoFactorResponse =
+  | "Abort"
+  | "ResendCode"
+  | "SendToDevices"
+  | { SubmitCode: string }
+  | { SendSms: number };
 
 export const AppleID = ({
   loggedInAs,
@@ -27,8 +49,9 @@ export const AppleID = ({
   const [emailInput, setEmailInput] = useState<string>("");
   const [passwordInput, setPasswordInput] = useState<string>("");
   const [saveCredentials, setSaveCredentials] = useState<boolean>(false);
-  const [tfaOpen, setTfaOpen] = useState<boolean>(false);
+  const [tfaParams, setTfaParams] = useState<TwoFactorParams | null>(null);
   const [tfaCode, setTfaCode] = useState<string>("");
+  const [showSmsNumbers, setShowSmsNumbers] = useState<boolean>(false);
   const [addAccountOpen, setAddAccountOpen] = useState<boolean>(false);
   const [anisetteServer] = useStore<string>(
     "anisetteServer",
@@ -58,23 +81,56 @@ export const AppleID = ({
     setSelectedSerials(certs?.map((c) => c.serialNumber) ?? []);
   }, [certs]);
 
-  const listenerAdded = useRef<boolean>(false);
-  const unlisten = useRef<() => void>(() => {});
+  const tfaRequestId = useRef<number>(0);
+  const tfaResponding = useRef<boolean>(false);
 
   useEffect(() => {
-    if (!listenerAdded.current) {
-      (async () => {
-        const unlistenFn = await listen("2fa-required", () => {
-          setTfaOpen(true);
-        });
-        unlisten.current = unlistenFn;
-      })();
-      listenerAdded.current = true;
-    }
+    let disposed = false;
+    let unlisten: (() => void) | null = null;
+
+    listen<TwoFactorParams>("2fa-required", (event) => {
+      tfaRequestId.current += 1;
+      tfaResponding.current = false;
+      setTfaCode("");
+      setShowSmsNumbers(event.payload.unknown);
+      setTfaParams(event.payload);
+    }).then((unlistenFn) => {
+      if (disposed) {
+        unlistenFn();
+      } else {
+        unlisten = unlistenFn;
+      }
+    });
+
     return () => {
-      unlisten.current();
+      disposed = true;
+      unlisten?.();
     };
   }, []);
+
+  const respondTfa = useCallback(
+    async (response: TwoFactorResponse) => {
+      if (tfaResponding.current) return;
+      tfaResponding.current = true;
+      const requestId = tfaRequestId.current;
+
+      try {
+        await emit("2fa-response", response);
+        if (tfaRequestId.current === requestId) {
+          setTfaParams(null);
+          setTfaCode("");
+          setShowSmsNumbers(false);
+        }
+      } catch (error) {
+        if (tfaRequestId.current === requestId) {
+          tfaResponding.current = false;
+        }
+        toast.error(t("apple_id.two_factor_response_failed"));
+        console.error("Failed to send 2FA response", error);
+      }
+    },
+    [t],
+  );
 
   const certListenerAdded = useRef<boolean>(false);
   const certUnlisten = useRef<() => void>(() => {});
@@ -266,30 +322,121 @@ export const AppleID = ({
           </div>
         )}
       </div>
-      <Modal sizeFit isOpen={tfaOpen} zIndex={2000}>
-        <h2>{t("apple_id.two_factor_title")}</h2>
-        <p>{t("apple_id.two_factor_prompt")}</p>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            if (tfaCode.length !== 6) {
-              toast.warning(t("apple_id.valid_6digit"));
-              return;
-            }
-            await emit("2fa-recieved", tfaCode);
-            setTfaOpen(false);
-            setTfaCode("");
-          }}
-        >
-          <input
-            type="text"
-            placeholder={t("apple_id.verification_placeholder")}
-            value={tfaCode}
-            onChange={(e) => setTfaCode(e.target.value)}
-            style={{ marginRight: "0.5em" }}
-          />
-          <button type="submit">{t("apple_id.submit")}</button>
-        </form>
+      <Modal
+        sizeFit
+        isOpen={tfaParams !== null}
+        close={() => respondTfa("Abort")}
+        zIndex={2000}
+      >
+        {tfaParams && (
+          <div className="tfa-dialog">
+            <h2>
+              {tfaParams.unknown
+                ? t("apple_id.two_factor_choose_method_title")
+                : tfaParams.sms
+                  ? t("apple_id.two_factor_sms_title")
+                  : t("apple_id.two_factor_title")}
+            </h2>
+            {tfaParams.lastError && (
+              <p className="tfa-error" role="alert">
+                {tfaParams.lastError}
+              </p>
+            )}
+            {tfaParams.unknown ? (
+              <p>{t("apple_id.two_factor_choose_method_prompt")}</p>
+            ) : (
+              <p>
+                {tfaParams.sms
+                  ? t("apple_id.two_factor_sms_prompt", {
+                      number:
+                        tfaParams.numbers.find(
+                          (number) =>
+                            number.id === tfaParams.selectedNumberId,
+                        )?.numberWithDialCode ??
+                        t("apple_id.two_factor_selected_phone"),
+                    })
+                  : t("apple_id.two_factor_prompt")}
+              </p>
+            )}
+
+            {!tfaParams.unknown && (
+              <form
+                className="tfa-code-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!/^\d{6}$/.test(tfaCode)) {
+                    toast.warning(t("apple_id.valid_6digit"));
+                    return;
+                  }
+                  respondTfa({ SubmitCode: tfaCode });
+                }}
+              >
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder={t("apple_id.verification_placeholder")}
+                  value={tfaCode}
+                  onChange={(e) =>
+                    setTfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  autoFocus
+                />
+                <button type="submit">{t("apple_id.submit")}</button>
+              </form>
+            )}
+
+            <div className="tfa-actions">
+              {!tfaParams.unknown && (
+                <button
+                  type="button"
+                  onClick={() => respondTfa("ResendCode")}
+                >
+                  {t("apple_id.two_factor_resend_code")}
+                </button>
+              )}
+              {(tfaParams.unknown || tfaParams.sms) && (
+                <button
+                  type="button"
+                  onClick={() => respondTfa("SendToDevices")}
+                >
+                  {t("apple_id.two_factor_send_to_devices")}
+                </button>
+              )}
+              {!tfaParams.unknown && tfaParams.numbers.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowSmsNumbers((current) => !current)}
+                >
+                  {tfaParams.sms
+                    ? t("apple_id.two_factor_change_number")
+                    : t("apple_id.two_factor_use_sms")}
+                </button>
+              )}
+            </div>
+
+            {(tfaParams.unknown || showSmsNumbers) &&
+              tfaParams.numbers.length > 0 && (
+                <div className="tfa-phone-list">
+                  <p className="tfa-phone-list-label">
+                    {t("apple_id.two_factor_choose_phone")}
+                  </p>
+                  {tfaParams.numbers.map((number) => (
+                    <button
+                      type="button"
+                      key={number.id}
+                      onClick={() => respondTfa({ SendSms: number.id })}
+                    >
+                      {t("apple_id.two_factor_send_sms_to", {
+                        number: number.numberWithDialCode,
+                      })}
+                    </button>
+                  ))}
+                </div>
+              )}
+          </div>
+        )}
       </Modal>
       <Modal sizeFit isOpen={certs !== null} zIndex={2000}>
         <h2 className="cert-header">{t("apple_id.max_certs_title")}</h2>

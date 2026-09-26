@@ -92,7 +92,7 @@ async fn generate_lockdown_plist(
     )
     .await
     .map_err(|e| {
-        AppError::LockdownPairing("Failed to enable wifi debugging".into(), e.to_string())
+        AppError::LockdownPairing("Failed to enable Wi-Fi debugging".into(), e.to_string())
     })?;
 
     plist::Value::from_reader_xml(std::io::Cursor::new(pairing_file.serialize().map_err(

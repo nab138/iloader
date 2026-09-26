@@ -85,15 +85,24 @@ async fn generate_lockdown_plist(
         AppError::DeviceComsWithMessage("Failed to start lockdown session".into(), e.to_string())
     })?;
 
-    lc.set_value(
-        "EnableWifiDebugging",
-        true.into(),
-        Some("com.apple.mobile.wireless_lockdown"),
-    )
-    .await
-    .map_err(|e| {
-        AppError::LockdownPairing("Failed to enable wifi debugging".into(), e.to_string())
-    })?;
+    let is_apple_tv = lc
+        .get_value(Some("ProductType"), None)
+        .await
+        .ok()
+        .and_then(|v| v.as_string().map(str::to_string))
+        .is_some_and(|product_type| product_type.starts_with("AppleTV"));
+
+    if !is_apple_tv {
+        lc.set_value(
+            "EnableWifiDebugging",
+            true.into(),
+            Some("com.apple.mobile.wireless_lockdown"),
+        )
+        .await
+        .map_err(|e| {
+            AppError::LockdownPairing("Failed to enable Wi-Fi debugging".into(), e.to_string())
+        })?;
+    }
 
     plist::Value::from_reader_xml(std::io::Cursor::new(pairing_file.serialize().map_err(
         |e| AppError::LockdownPairing("Failed to serialize pairing file".into(), e.to_string()),

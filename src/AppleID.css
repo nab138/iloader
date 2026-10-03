@@ -195,3 +195,48 @@
 .credentials-warning {
   margin: 0;
 }
+
+.tfa-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: min(26rem, 80vw);
+}
+
+.tfa-dialog h2,
+.tfa-dialog p {
+  margin: 0;
+}
+
+.tfa-error {
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 69, 58, 0.55);
+  border-radius: 10px;
+  color: var(--danger);
+  background: rgba(255, 69, 58, 0.12);
+  white-space: pre-wrap;
+}
+
+.tfa-code-form,
+.tfa-actions,
+.tfa-phone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tfa-code-form input,
+.tfa-code-form button,
+.tfa-actions button,
+.tfa-phone-list button {
+  width: 100%;
+}
+
+.tfa-phone-list {
+  padding-top: 0.25rem;
+}
+
+.tfa-phone-list-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}

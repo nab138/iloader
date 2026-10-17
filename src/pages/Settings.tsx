@@ -40,6 +40,7 @@ let anisetteServers = [
   ["ani.jkcoxson.com", "Jkcoxson (Windows)"],
   ["ani3.stikstore.app", "StikStore (Mac)"],
   ["ani2.stikstore.app", "StikStore (Windows)"],
+  ["new.ani.sidestore.io", "SideStore (new)"]
 ];
 
 export const Settings = ({

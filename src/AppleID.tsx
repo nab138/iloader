@@ -272,7 +272,7 @@ export const AppleID = ({
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            if (tfaCode.length !== 6) {
+            if (tfaCode.length !== 6 && tfaCode.length !== 4) {
               toast.warning(t("apple_id.valid_6digit"));
               return;
             }

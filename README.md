@@ -31,7 +31,7 @@ Install SideStore (or other apps) and import your pairing file with ease
   - macOS: Included
   - Linux: Potentially included, if not, install via your package manager
 - Install the latest version for your platform from the [releases](https://github.com/nab138/iloader/releases)
-  - NixOS: Use the flake `github:nab138/iloader`
+  - NixOS: Install [`iloader`](https://search.nixos.org/packages?channel=unstable&query=iloader) from nixpkgs-unstable, or use the flake `github:nab138/iloader`
   - Fedora: Use the .RPM or the unofficial [Fedora COPR repository](https://copr.fedorainfracloud.org/coprs/anudeepd/iloader)
   - Arch: Use the unofficial [AUR package](https://aur.archlinux.org/packages/iloader-bin),
 - Plug in your iDevice to your computer

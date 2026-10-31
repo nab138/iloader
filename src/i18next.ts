@@ -9,6 +9,7 @@ const languages = [
   ["am", "Հայերեն"],
   ["es", "Español"],
   ["it", "Italiano"],
+  ["ge", "ქართული"],
   ["de", "Deutsch"],
   ["de_ch", "Schweizerdeutsch"],
   ["fr", "Français"],

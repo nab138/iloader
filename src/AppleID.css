@@ -195,3 +195,8 @@
 .credentials-warning {
   margin: 0;
 }
+
+.tfa-error {
+  color: var(--danger);
+  margin: 0 0 0.5em;
+}

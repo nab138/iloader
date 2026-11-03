@@ -2731,8 +2731,7 @@ dependencies = [
 [[package]]
 name = "isideload"
 version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cab6348bffd8f32c9358b80c8723bc1da45ad97b0c1f30a1533ade22d4d9496"
+source = "git+https://github.com/mindflowgo/isideload?branch=sms-2fa-id-recovery#8814c5ee16981bfa00efeba120bab17ea894cdfa"
 dependencies = [
  "aes 0.9.3",
  "aes-gcm",

@@ -44,6 +44,10 @@ const PAIRING_APPS: &[(&str, &str)] = &[
         "LiveContainer",
         "SideStore/Documents/ALTPairingFile.mobiledevicepairing",
     ),
+    (
+        "Cartouche",
+        "SideStore/Documents/ALTPairingFile.mobiledevicepairing",
+    ),
     ("Feather", "pairingFile.plist"),
     ("StikDebug", "pairingFile.plist"),
     ("StikDebug (Sideloaded)", "pairingFile.plist"),

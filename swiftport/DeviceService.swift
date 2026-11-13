@@ -1,8 +1,15 @@
 import Foundation
-enum DeviceServiceError: LocalizedError {
- case unavailableOnIPadOS
- var errorDescription: String? { "USB device discovery is unavailable to this iPadOS app. The desktop implementation depends on usbmuxd and lockdown access." }
-}
+import UIKit
+
+/// Describes the iPad running this app. It intentionally does not expose
+/// serial numbers, UDIDs, or other persistent hardware identifiers.
 struct DeviceService {
- func discoverDevices() async throws -> [String] { throw DeviceServiceError.unavailableOnIPadOS }
+    func currentDevice() -> CurrentDeviceInfo {
+        let device = UIDevice.current
+        return CurrentDeviceInfo(
+            name: device.name,
+            model: device.model,
+            operatingSystem: "\(device.systemName) \(device.systemVersion)"
+        )
+    }
 }

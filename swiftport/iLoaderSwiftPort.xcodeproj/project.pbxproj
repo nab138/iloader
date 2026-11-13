@@ -23,6 +23,7 @@
   A1000000000000000000002E /* DeviceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000002F /* DeviceService.swift */; };
   A10000000000000000000031 /* AccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000032 /* AccountService.swift */; };
   A10000000000000000000034 /* SideloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000035 /* SideloadService.swift */; };
+  A10000000000000000000037 /* SigningIdentityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000038 /* SigningIdentityStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,7 @@
   A1000000000000000000002F /* DeviceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceService.swift; sourceTree = "<group>"; };
   A10000000000000000000032 /* AccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountService.swift; sourceTree = "<group>"; };
   A10000000000000000000035 /* SideloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideloadService.swift; sourceTree = "<group>"; };
+  A10000000000000000000038 /* SigningIdentityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningIdentityStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,7 +73,8 @@
     A1000000000000000000002C /* PlatformServices.swift */,
     A1000000000000000000002F /* DeviceService.swift */,
     A10000000000000000000032 /* AccountService.swift */,
-    A10000000000000000000035 /* SideloadService.swift */
+    A10000000000000000000035 /* SideloadService.swift */,
+    A10000000000000000000038 /* SigningIdentityStore.swift */
   ); path = ..; sourceTree = "<group>"; };
   A40000000000000000000003 /* Products */ = {isa = PBXGroup; children = (A20000000000000000000001 /* iLoaderSwiftPort.app */,); name = Products; sourceTree = "<group>"; };
 /* End PBXGroup section */
@@ -107,7 +110,8 @@
     A1000000000000000000002B /* PlatformServices.swift in Sources */,
     A1000000000000000000002E /* DeviceService.swift in Sources */,
     A10000000000000000000031 /* AccountService.swift in Sources */,
-    A10000000000000000000034 /* SideloadService.swift in Sources */
+    A10000000000000000000034 /* SideloadService.swift in Sources */,
+    A10000000000000000000037 /* SigningIdentityStore.swift in Sources */
   ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 

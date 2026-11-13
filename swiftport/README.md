@@ -1,30 +1,35 @@
 # iLoader SwiftPort (iPadOS)
 
-Native SwiftUI rewrite of the iLoader app interface and the functions that can run inside an ordinary iPadOS app.
+A native SwiftUI iPadOS workspace based on the desktop iLoader project. The target is the iPad running the app itself.
 
-## Included
-- Native iPad navigation and dashboard
-- IPA file import into the app Documents container (storage/reference only)
-- Pairing-file import, listing, sharing/export, and deletion within the app sandbox
-- Settings and structured in-app logs
-- Keychain helper for future supported local tokens
-- Separate account, device-discovery, and sideload service boundaries
-- Dedicated device, account, certificate, and App ID screens
+## Implemented in this branch
 
-## iPadOS capability boundary
-The desktop backend uses Rust libraries such as idevice and isideload, plus usbmuxd/lockdown and desktop account/signing flows. An ordinary iPadOS app cannot simply run that desktop stack. iPadOS also does not let an app install arbitrary IPA files itself or write into another app's private container. Device discovery, installation, developer portal, certificate, and App ID screens therefore report that a compatible companion/service is required. No fake success state or fabricated device/account data is shown.
+- Native iPad navigation and dashboard.
+- Automatic identification of the current iPad using public UIKit properties (device name, model family, and OS version); no serial number or UDID collection.
+- IPA document import into the app's private Documents directory (storage/reference only).
+- Pairing-file import, listing, sharing/export, and deletion inside the app sandbox.
+- Keychain-backed storage for a PKCS#12 identity.
+- PKCS#12 import validation using Security.framework: the imported file must contain a certificate and its matching private key, and the supplied password must be correct.
+- PKCS#12 export and removal from the Certificates screen.
+- Settings and structured in-app logs.
+- A macOS GitHub Actions workflow that builds the iOS Simulator target without code signing.
 
-Pairing files can be imported and exported as user-selected documents, but importing a file is not the same as performing a device pairing handshake.
+## Certificate behavior and current limitation
 
-## Add to Xcode
-Create an iOS App project named iLoaderSwiftPort, choose SwiftUI, set deployment target to iPadOS 17 or later, then add every Swift file in this folder to the app target. The app entry point is ILoaderApp.swift.
+The Certificates screen can import a real existing `.p12` identity, securely store the original password-protected file in the iPad Keychain, and export that same identity. The future certificate-generation backend must save its completed PKCS#12 bytes through `SigningIdentityStore.importPKCS12(_:password:)` or an equivalent validated save method.
 
-JSON locale files, SVG artwork, licenses, and build metadata are resources/documentation rather than executable scripts; they are not meaningfully converted into Swift source.
+**This branch does not yet perform Apple developer login, create a CSR, request a development certificate, generate a provisioning profile, or create a new PKCS#12 bundle.** The original desktop code performs those steps inside the external Rust `isideload` crate. They have not been translated into a functioning iPadOS implementation. The iOS Security API can import PKCS#12 identities, but Apple DTS confirms that iOS has no API to export a Keychain digital identity to PKCS#12; therefore the iPad app must preserve/create the PKCS#12 data itself or use a supported companion implementation.
 
+Apple's official App Store Connect API supports certificate creation from a CSR for eligible developer teams using its API authentication model. It is not the same as the desktop project's Apple-ID/Anisette private authentication flow and is not a drop-in replacement for free-account sign-in.
 
-## Signing identity export
-The Certificates screen now exposes **Export Signing Certificate (.p12)**. It reads the PKCS#12 identity from the app Keychain entry:
-- service: `app.iloader.signing`
-- account: `developer-identity.p12`
+## iPadOS capability boundaries
 
-The future certificate-creation flow must generate a PKCS#12 bundle containing the certificate and its matching private key, protect it with an export password, and store those bytes using `KeychainStore.save(_:service:account:)` with the identifiers above. The export button remains disabled until that real identity exists. The current iPadOS branch still does not implement Apple developer login, certificate creation, or IPA installation; this UI is the export path, not a claim that signing credentials are already being generated.
+The desktop backend uses Rust libraries such as `idevice` and `isideload`, plus desktop `usbmuxd`/lockdown and account/signing flows. An ordinary iPadOS app cannot simply run that desktop stack, inspect arbitrary other app containers, or install arbitrary IPA files itself. The app can identify itself and handle user-selected files, but external-device management and arbitrary IPA installation need supported Apple platform capabilities or a compatible companion.
+
+Importing a pairing file is not the same as performing a device pairing handshake. Importing an IPA is not signing or installing it.
+
+## Build
+
+Open `swiftport/iLoaderSwiftPort.xcodeproj` in Xcode 16 or later. The project targets iPadOS 17 or later and supports iPad device family 2. GitHub Actions builds the iOS Simulator target on pushes to `swiftport-ipados`.
+
+No signing credentials or Apple account passwords are stored in the repository. Never commit private keys, provisioning profiles, Apple account credentials, or exported `.p12` files.

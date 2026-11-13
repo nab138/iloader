@@ -1,0 +1,38 @@
+name: Build iLoader SwiftPort
+
+on:
+  push:
+    branches:
+      - swiftport-ipados
+    paths:
+      - "swiftport/**"
+      - ".github/workflows/ios-swiftport-build.yml"
+  pull_request:
+    paths:
+      - "swiftport/**"
+      - ".github/workflows/ios-swiftport-build.yml"
+  workflow_dispatch:
+
+jobs:
+  build-ios-simulator:
+    runs-on: macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: List project schemes
+        run: xcodebuild -list -project swiftport/iLoaderSwiftPort.xcodeproj
+
+      - name: Build iPadOS app for Simulator
+        run: |
+          xcodebuild \
+            -project swiftport/iLoaderSwiftPort.xcodeproj \
+            -scheme iLoaderSwiftPort \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/iLoaderDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build

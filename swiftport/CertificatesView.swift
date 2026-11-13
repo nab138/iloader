@@ -1,8 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// PKCS#12 identity document. The .p12 must already contain the certificate
-/// and matching private key, protected with a password when it was created.
 struct PKCS12Document: FileDocument {
     static var readableContentTypes: [UTType] { [.pkcs12] }
     var data: Data
@@ -10,7 +8,10 @@ struct PKCS12Document: FileDocument {
     init(data: Data) { self.data = data }
 
     init(configuration: ReadConfiguration) throws {
-        data = configuration.file.regularFileContents ?? Data()
+        guard let contents = configuration.file.regularFileContents else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        data = contents
     }
 
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
@@ -22,50 +23,79 @@ struct CertificatesView: View {
     @EnvironmentObject private var state: AppState
     @State private var exportDocument = PKCS12Document(data: Data())
     @State private var isExporting = false
+    @State private var isImporting = false
     @State private var hasIdentity = false
+    @State private var importPassword = ""
     @State private var statusMessage: String?
 
-    private let keychainService = "app.iloader.signing"
-    private let identityAccount = "developer-identity.p12"
-
     var body: some View {
-        VStack(spacing: 18) {
-            Image(systemName: "checkmark.seal")
-                .font(.system(size: 42))
-                .foregroundStyle(.secondary)
+        ScrollView {
+            VStack(spacing: 18) {
+                Image(systemName: "checkmark.seal")
+                    .font(.system(size: 42))
+                    .foregroundStyle(.secondary)
 
-            Text("Signing Certificate")
-                .font(.title2.bold())
+                Text("Signing Identity")
+                    .font(.title2.bold())
 
-            Text(hasIdentity
-                 ? "A signing identity is stored on this iPad. Export the .p12 file to use it with a compatible IPA-signing tool."
-                 : "No signing identity is stored yet. After the Apple developer login and certificate service creates a PKCS#12 identity, it will be stored securely here.")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                Text(hasIdentity
+                     ? "A PKCS#12 identity is stored in this iPad's Keychain. It contains a certificate and its matching private key."
+                     : "No signing identity is stored yet. Import an existing .p12 file below. The future Apple developer certificate flow can save its generated identity here.")
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
 
-            Button {
-                exportIdentity()
-            } label: {
-                Label("Export Signing Certificate (.p12)", systemImage: "square.and.arrow.up")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(!hasIdentity)
+                if hasIdentity {
+                    Button {
+                        exportIdentity()
+                    } label: {
+                        Label("Export Signing Identity (.p12)", systemImage: "square.and.arrow.up")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
 
-            if let statusMessage {
-                Text(statusMessage)
+                    Button(role: .destructive) {
+                        deleteIdentity()
+                    } label: {
+                        Label("Remove stored identity", systemImage: "trash")
+                    }
+                    .buttonStyle(.bordered)
+                } else {
+                    SecureField("Existing .p12 password", text: $importPassword)
+                        .textFieldStyle(.roundedBorder)
+
+                    Button {
+                        isImporting = true
+                    } label: {
+                        Label("Import signing identity (.p12)", systemImage: "square.and.arrow.down")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+
+                if let statusMessage {
+                    Text(statusMessage)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
+                Text("A .p12 contains a private signing key. Keep its password private. Importing or exporting an identity does not itself install or sign an IPA.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
             }
-
-            Text("A .p12 contains a private signing key. Keep it private and use a strong export password when the identity is created. Do not share it in chats or upload it to public repositories.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.top, 8)
+            .padding(24)
+            .frame(maxWidth: 620)
+            .frame(maxWidth: .infinity)
         }
-        .padding()
         .navigationTitle("Certificates")
+        .fileImporter(
+            isPresented: $isImporting,
+            allowedContentTypes: [.pkcs12],
+            allowsMultipleSelection: false
+        ) { result in
+            importIdentity(result)
+        }
         .fileExporter(
             isPresented: $isExporting,
             document: exportDocument,
@@ -74,9 +104,11 @@ struct CertificatesView: View {
             onCompletion: { result in
                 switch result {
                 case .success:
-                    statusMessage = "Signing identity exported."
+                    statusMessage = "Signing identity exported successfully."
+                    state.log(.info, "Exported PKCS#12 signing identity")
                 case .failure(let error):
-                    statusMessage = "Export failed: \\(error.localizedDescription)"
+                    statusMessage = "Export failed: \(error.localizedDescription)"
+                    state.log(.error, "PKCS#12 export failed: \(error.localizedDescription)")
                 }
             }
         )
@@ -85,30 +117,52 @@ struct CertificatesView: View {
 
     private func refreshIdentityStatus() {
         do {
-            hasIdentity = try KeychainStore.read(
-                service: keychainService,
-                account: identityAccount
-            ) != nil
+            hasIdentity = try SigningIdentityStore.hasIdentity()
         } catch {
             hasIdentity = false
-            statusMessage = "Could not check Keychain: \\(error.localizedDescription)"
+            statusMessage = "Could not check Keychain: \(error.localizedDescription)"
+        }
+    }
+
+    private func importIdentity(_ result: Result<[URL], Error>) {
+        do {
+            guard let source = try result.get().first else { return }
+            let didStartAccessing = source.startAccessingSecurityScopedResource()
+            defer {
+                if didStartAccessing {
+                    source.stopAccessingSecurityScopedResource()
+                }
+            }
+            let data = try Data(contentsOf: source)
+            let metadata = try SigningIdentityStore.importPKCS12(data, password: importPassword)
+            importPassword = ""
+            hasIdentity = true
+            statusMessage = "Imported identity: \(metadata.subject)"
+            state.log(.info, "Imported PKCS#12 identity: \(metadata.subject)")
+        } catch {
+            statusMessage = error.localizedDescription
+            state.log(.error, "PKCS#12 import failed: \(error.localizedDescription)")
         }
     }
 
     private func exportIdentity() {
         do {
-            guard let data = try KeychainStore.read(
-                service: keychainService,
-                account: identityAccount
-            ), !data.isEmpty else {
-                hasIdentity = false
-                statusMessage = "No signing identity is available to export."
-                return
-            }
-            exportDocument = PKCS12Document(data: data)
+            exportDocument = PKCS12Document(data: try SigningIdentityStore.exportData())
             isExporting = true
         } catch {
-            statusMessage = "Could not read signing identity: \\(error.localizedDescription)"
+            hasIdentity = false
+            statusMessage = error.localizedDescription
+        }
+    }
+
+    private func deleteIdentity() {
+        do {
+            try SigningIdentityStore.deleteIdentity()
+            hasIdentity = false
+            statusMessage = "Stored signing identity removed from this iPad."
+            state.log(.warning, "Removed stored PKCS#12 signing identity")
+        } catch {
+            statusMessage = "Could not remove identity: \(error.localizedDescription)"
         }
     }
 }

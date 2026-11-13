@@ -3,8 +3,16 @@ struct ContentView: View {
  @EnvironmentObject private var state: AppState
  var body: some View {
   NavigationSplitView {
-   List(WorkspaceSection.allCases, selection: $state.selectedSection) { item in Label(item.rawValue, systemImage: item.symbol).tag(item) }
-    .navigationTitle("iLoader").listStyle(.sidebar)
+   List {
+    ForEach(WorkspaceSection.allCases) { item in
+     Button { state.selectedSection = item } label: {
+      Label(item.rawValue, systemImage: item.symbol)
+       .foregroundStyle(state.selectedSection == item ? Color.accentColor : Color.primary)
+     }
+     .listRowBackground(state.selectedSection == item ? Color.accentColor.opacity(0.12) : Color.clear)
+    }
+   }
+   .navigationTitle("iLoader").listStyle(.sidebar)
   } detail: {
    Group {
     switch state.selectedSection {

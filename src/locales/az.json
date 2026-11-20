@@ -1,0 +1,286 @@
+{
+  "subtitle": "Sideloading Köməkçisi",
+  "version": "Versiya",
+  "common": {
+    "confirm": "Təsdiq",
+    "cancel": "Ləğv et",
+    "dismiss": "Bağla",
+    "refresh": "Yenilə",
+    "delete": "Sil",
+    "copy_to_clipboard": "Buferə kopyala",
+    "more_details": "Daha çox məlumat",
+    "no_error": "Xəta yoxdur",
+    "copied_success": "Buferə kopyalandı"
+  },
+  "dropdown": {
+    "custom_value": "Xüsusi dəyər",
+    "custom": "Xüsusi",
+    "use_custom_value": "Xüsusi dəyərdən istifadə et",
+    "back_preset_options": "Hazır seçimlərə qayıt",
+    "select": "Seç"
+  },
+  "app": {
+    "language": "Dil",
+    "github": "GitHub",
+    "open_github_failed": "GitHub linki açıla bilmədi",
+    "section_account": "Hesab",
+    "section_placeholder": "Yer tutucu",
+    "section_management": "İdarəetmə",
+    "manage_pairing_file": "Cütləşmə Faylını İdarə Et",
+    "refresh_devices": "Cihazları Yenilə",
+    "certificates": "Sertifikatlar",
+    "app_ids": "Tətbiq ID-ləri",
+    "devices": "Cihazlar",
+    "active_device": "Aktiv: {{name}}",
+    "select_device": "Cihaz seçin",
+    "installers": "Quraşdırıcılar",
+    "choose_build": "Versiya seçin",
+    "sidestore_stable": "SideStore (Stabil)",
+    "sidestore_nightly": "SideStore (Nightly)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stabil)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
+    "import_ipa": "IPA faylını seç",
+    "settings": "Parametrlər",
+    "must_be_logged_in": "Daxil olmalısınız!",
+    "must_select_device": "Bir cihaz seçməlisiniz!",
+    "ipa_files": "IPA Faylları",
+    "logo_alt": "iloader loqosu"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "Daxil olunub:",
+    "sign_out": "Çıxış",
+    "signing_out": "Çıxış edilir...",
+    "sign_out_failed": "Çıxış uğursuz oldu",
+    "signed_out_success": "Uğurla çıxış edildi!",
+    "saved_logins": "Saxlanılmış Girişlər",
+    "sign_in": "Daxil ol",
+    "logging_in": "Daxil olunur...",
+    "logged_in_success": "Uğurla daxil olundu!",
+    "login_failed": "Giriş uğursuz oldu",
+    "deleting": "Silinir...",
+    "deletion_failed": "Silmə uğursuz oldu",
+    "deleted_success": "Uğurla silindi!",
+    "add_account": "Hesab Əlavə Et +",
+    "new_login": "Yeni Giriş",
+    "email_placeholder": "Apple ID E-poçtu...",
+    "password_placeholder": "Apple ID Şifrəsi...",
+    "save_credentials": "Məlumatları Saxla",
+    "enter_email_password": "Zəhmət olmasa e-poçt və şifrəni daxil edin.",
+    "valid_email": "Zəhmət olmasa etibarlı e-poçt ünvanı daxil edin.",
+    "login": "Daxil ol",
+    "two_factor_title": "İki Faktorlu Doğrulama",
+    "two_factor_prompt": "Zəhmət olmasa cihazınıza göndərilən doğrulama kodunu daxil edin.",
+    "verification_placeholder": "Doğrulama Kodu...",
+    "valid_6digit": "Zəhmət olmasa etibarlı 6 rəqəmli kod daxil edin.",
+    "submit": "Göndər",
+    "max_certs_title": "Maksimum sertifikat sayına çatıldı",
+    "max_certs_desc": "iloader mövcud sertifikatlarınızı ləğv edib yeni bir sertifikat yaradacaq.",
+    "hide_certificate_list": "Sertifikat siyahısını gizlət",
+    "choose_what_to_revoke": "Nəyi ləğv etmək istədiyinizi seçin",
+    "continue": "Davam et",
+    "no_keyring_available": "Bu cihazda giriş məlumatları saxlanıla bilmir."
+  },
+  "device": {
+    "title": "iDevice",
+    "loading_devices": "Cihazlar yüklənir...",
+    "no_devices_found": "Heç bir cihaz tapılmadı",
+    "found_device": "Cihaz tapıldı",
+    "found_devices": "Cihazlar tapıldı",
+    "unable_load_devices_prefix": "Cihazlar yüklənə bilmir",
+    "no_devices_found_period": "Heç bir cihaz tapılmadı.",
+    "selected": "Seçildi",
+    "pairing_in_progress_header": "{{device}} ilə cütləşdirilir...",
+    "pairing_in_progress_hint": "Zəhmət olmasa cihazınızın kilidini açın və \"Etibar et\" (\"Trust\") düyməsinə basın, sonra tələb olunarsa şifrənizi daxil edin.",
+    "pairing_cancel": "Ləğv et",
+    "failed_select": "Cihaz seçilə bilmədi"
+  },
+  "operation": {
+    "failed": "Əməliyyat uğursuz oldu.",
+    "completed": "Əməliyyat tamamlandı",
+    "please_wait": "Zəhmət olmasa gözləyin...",
+    "copy_error_clipboard": "Xətanı buferə kopyala"
+  },
+  "operations": {
+    "install_sidestore_title": "SideStore Quraşdırılır",
+    "install_sidestore_success_title": "SideStore Quraşdırıldı!",
+    "install_sidestore_success_message": "Quraşdırmanı tamamlamaq üçün SideStore-u açın və yeniləyin!",
+    "install_sidestore_step_download": "SideStore Yüklə",
+    "install_sidestore_step_install": "İmzala və SideStore Quraşdır",
+    "install_sidestore_step_pairing": "Cütləşmə Faylını Yerləşdir",
+    "install_livecontainer_title": "LiveContainer+SideStore Quraşdırılır",
+    "install_livecontainer_success_title": "LiveContainer+SideStore Quraşdırıldı!",
+    "install_livecontainer_success_message": "Quraşdırmanı tamamlamaq üçün LiveContainer-ı açın, parametrlərə keçin və \"SideStore-dan Sertifikat İdxal Et\" düyməsinə basın. Sonra tətbiqlərə keçin, sidestore ikonuna basın və LiveContainer-ı yeniləyin.",
+    "install_livecontainer_step_download": "LiveContainer+SideStore Yüklə",
+    "install_livecontainer_step_install": "İmzala və LiveContainer+SideStore Quraşdır",
+    "install_livecontainer_step_pairing": "Cütləşmə Faylını Yerləşdir",
+    "sideload_title": "Tətbiq Quraşdırılır",
+    "sideload_step_install": "İmzala və Tətbiqi Quraşdır"
+  },
+  "certificates": {
+    "manage": "Sertifikatları İdarə Et",
+    "loading": "Sertifikatlar yüklənir...",
+    "loaded_success": "Sertifikatlar uğurla yükləndi!",
+    "failed_load": "Sertifikatlar yüklənə bilmədi",
+    "revoking": "Sertifikat ləğv edilir...",
+    "revoked_success": "Sertifikat uğurla ləğv edildi!",
+    "failed_revoke": "Sertifikat ləğv edilə bilmədi: ",
+    "none_found": "Heç bir sertifikat tapılmadı.",
+    "name": "Ad",
+    "serial_number": "Seriya Nömrəsi",
+    "machine_name": "Cihaz Adı",
+    "machine_id": "Cihaz ID",
+    "revoke": "Ləğv Et"
+  },
+  "app_ids": {
+    "manage": "Tətbiq ID-lərini İdarə Et",
+    "loading": "Tətbiq ID-ləri yüklənir...",
+    "loaded_success": "Tətbiq ID-ləri uğurla yükləndi!",
+    "failed_load": "Tətbiq ID-ləri yüklənə bilmədi",
+    "deleted_success": "Tətbiq ID uğurla silindi!",
+    "failed_delete": "Tətbiq ID silinə bilmədi",
+    "available": "{{available}}/{{max}} ID mövcuddur",
+    "none_found": "Heç bir tətbiq ID-si tapılmadı.",
+    "name": "Ad",
+    "expiration": "Bitmə tarixi",
+    "id": "ID",
+    "identifier": "Tanımlayıcı",
+    "never": "Heç vaxt"
+  },
+  "pairing": {
+    "manage": "Cütləşmə Faylını İdarə Et",
+    "loading_apps": "Tətbiqlər yüklənir...",
+    "apps_loaded_success": "Tətbiqlər uğurla yükləndi!",
+    "failed_load_apps": "Tətbiqlər yüklənə bilmədi",
+    "placing_pairing_file": "Cütləşmə faylı yerləşdirilir...",
+    "pairing_file_placed_success": "Cütləşmə faylı uğurla yerləşdirildi!",
+    "failed_place_pairing": "Cütləşmə faylı yerləşdirilə bilmədi",
+    "loading_app": "Tətbiq yüklənir...",
+    "no_supported_apps_found": "Dəstəklənən tətbiq tapılmadı.",
+    "name": "Ad",
+    "bundle_id": "Bundle ID",
+    "place_pairing_file": "Cütləşmə Faylını Yerləşdir",
+    "place": "Yerləşdir",
+    "advanced_export_title": "Qabaqcıl: Cütləşmə Faylını İxrac Et",
+    "advanced_export_message": "Nə etdiyinizi bilmirsinizsə bu tövsiyə edilmir. Bunun əvəzinə, faylı avtomatik köçürmək üçün tətbiqin yanındakı \"Yerləşdir\" düyməsinə basın. Cütləşmə faylınızı ixrac etmək istədiyinizə əminsinizmi?",
+    "exporting_pairing_file": "Cütləşmə faylı ixrac edilir...",
+    "pairing_file_exported_success": "Cütləşmə faylı uğurla ixrac edildi!",
+    "failed_export_pairing_file": "Cütləşmə faylı ixrac edilə bilmədi",
+    "export_not_recommended": "İxrac Et (Tövsiyə edilmir)",
+    "refresh_installed_apps": "Quraşdırılmış Tətbiqləri Yenidən Tara",
+    "place_all": "Bütün Tətbiqlərə Yerləşdir"
+  },
+  "settings": {
+    "anisette_server": "Anisette Server:",
+    "custom_anisette_placeholder": "Xüsusi Anisette Server",
+    "custom_anisette": "Xüsusi",
+    "use_custom_anisette": "Xüsusi Anisette serverindən istifadə et",
+    "back_preset_servers": "Hazır serverlərə qayıt",
+    "reset_anisette_title": "Anisette Vəziyyətini Sıfırla",
+    "reset_anisette_message": "Anisette vəziyyətini sıfırlamaq istədiyinizə əminsinizmi? 2FA kodunuzu yenidən daxil etməli olacaqsınız.",
+    "resetting_anisette_state": "Anisette vəziyyəti sıfırlanır...",
+    "anisette_state_reset_success": "Anisette vəziyyəti uğurla sıfırlandı",
+    "anisette_state_not_found": "Sıfırlanacaq anisette vəziyyəti tapılmadı",
+    "failed_reset_anisette_state": "Anisette vəziyyəti sıfırlana bilmədi",
+    "view_logs": "Jurnallara Bax",
+    "logs": "Jurnallar",
+    "log_level": "Jurnal Səviyyəsi:",
+    "no_logs_yet": "Hələ jurnal yoxdur.",
+    "debug": "Sazlama",
+    "info": "Məlumat",
+    "warn": "Xəbərdarlıq",
+    "error": "Xəta",
+    "language_hint": "Tərcüməyə kömək etmək üçün <translation>bura</translation> klikləyin.",
+    "delete_stored_rppairing": "Saxlanılmış Cütləşməni Sil",
+    "delete_stored_rppairing_message": "Bu cihaz üçün saxlanılmış cütləşmə faylını silmək istədiyinizə əminsinizmi? Yenidən cütləşməli olacaqsınız.",
+    "deleting_stored_rppairing": "Saxlanılmış cütləşmə silinir...",
+    "stored_rppairing_deleted_success": "Saxlanılmış cütləşmə uğurla silindi!",
+    "failed_delete_stored_rppairing": "Saxlanılmış cütləşmə silinə bilmədi",
+    "dont_use_keyring": "Açar zəncirindən istifadə etmə",
+    "dont_use_keyring_message": "Bu seçim cütləşmə fayllarını, anisette vəziyyətini və sertifikatları diskdə saxladığından iloader-i daha az təhlükəsiz edir. Yalnız standart açar zənciri işləmədikdə və riskləri anladığınızda aktivləşdirin."
+  },
+  "dialog": {
+    "confirm": "Təsdiq",
+    "cancel": "Ləğv et"
+  },
+  "error": {
+    "title": "Xəta baş verdi: {{msg}}",
+    "unknown": "Naməlum",
+    "suggestions_heading": "Təkliflər",
+    "suggestions": {
+      "underage": [
+        "Apple ID-niz developer xidmətlərindən istifadə üçün tələb olunan yaş həddinin altında ola bilər."
+      ],
+      "account_locked": [
+        "Narahat olmayın! Bu adətən bir neçə uğursuz giriş cəhdindən sonra baş verir, lakin tamamilə zərərsizdir.",
+        "Hesabınızın kilidini açmaq üçün ((link:https://iforgot.apple.com/)) saytına daxil olun."
+      ],
+      "auth": [
+        "Giriş məlumatlarınızın düzgün olduğundan əmin olun və yenidən cəhd edin, hətta düzgün olsa belə.",
+        "Problem davam edərsə, başqa bir Apple ID istifadə etməyə cəhd edin.",
+        "Təhlükəsizlik açarı 2FA dəstəklənmir. Mümkünsə, 2FA olmayan və ya etibarlı cihaz 2FA-sı olan Apple ID istifadə edin."
+      ],
+      "download": [
+        "SideStore-u ((link:https://github.com/SideStore/SideStore/releases)) saytından əl ilə yükləyin və quraşdırmaq üçün \"IPA İdxal Et\" düyməsindən istifadə edin."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Cihazınızın iOS 26.3 developer betasında olmadığından əmin olun, çünki bu versiyada house arrest ilə bağlı bir xəta var."
+      ],
+      "pairing": [
+        "Cihazı yenidən qoşun və əməliyyatı yenidən cəhd edin.",
+        "Cihazınızda şifrənin təyin edildiyindən əmin olun.",
+        "Cihazınızın simsiz deyil, USB vasitəsilə bağlandığından əmin olun."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]((link:https://apple.co/ms:iTunes)) proqramının quraşdırıldığından əmin olun və cihazınızı aşkarlaya bildiyini yoxlayın.",
+        "[platform::windows]iTunes və Apple Mobile Device Support proqramlarını silin, sonra Microsoft Store-dan \"Apple Devices\" tətbiqini quraşdırın.",
+        "[platform::linux]usbmuxd-nin quraşdırıldığından və işlədiyindən əmin olun."
+      ],
+      "trust": [
+        "Cihazınızın kilidini açın, ana ekrana keçin və görünən bütün etibar sorğularını qəbul edin."
+      ],
+      "device_coms": [
+        "Cihazınızın kompüterinizə düzgün bağlandığından əmin olun.",
+        "Cihazı çıxarıb yenidən qoşun. Problem davam edərsə, başqa USB port və kabel sınayın."
+      ],
+      "not_logged_in": ["Əvvəlcə Apple ID-nizə daxil olun."],
+      "no_device_selected": ["Davam etməzdən əvvəl bir cihaz seçin."],
+      "anisette": [
+        "Kompüterinizin internetə bağlı olduğundan əmin olun.",
+        "Anisette serverinizi dəyişdirin. Bir neçə fərqli server sınayın.",
+        "Brauzerinizdə ((link:{{anisetteServerUrl}})) ünvanına daxil ola bildiyinizdən əmin olun."
+      ],
+      "keyring": [
+        "Bu problemi həll etmək üçün parametrlərdə \"Açar zəncirindən istifadə etmə\" seçimini aktivləşdirməyə cəhd edin. Nəzərə alın ki, bu daha az təhlükəsizdir."
+      ],
+      "misc": [
+        "Yenidən cəhd edin. Tətbiqi, kompüteri və/yaxud telefonu yenidən başlatmaq da kömək edə bilər."
+      ],
+      "admin": [
+        "Tətbiqi yüksəldilmiş icazələrlə (administrator/root olaraq) işlətməyə cəhd edin."
+      ],
+      "filesystem": [
+        "iloader-in sisteminizdə fayl oxuma və yazma icazəsinə sahib olduğundan əmin olun."
+      ],
+      "not_enough_app_ids": [
+        "Bu tətbiqi quraşdırmaq üçün kifayət qədər tətbiq ID-niz yoxdur.",
+        "7 gün sonra tətbiq ID-lərinin vaxtının bitməsini gözləyin (daha tez silinə bilməz), sonra yenidən cəhd edin.",
+        "SideStore-dan tətbiq quraşdırmaq bəzən daha az tətbiq ID-si istifadə etməyə imkan verir, ona görə oradan quraşdırmağa cəhd edin."
+      ],
+      "max_apps": [
+        "Pulsuz Apple ID ilə eyni anda yalnız 3 sideloaded tətbiq quraşdıra bilərsiniz.",
+        "Bu tətbiq üçün yer açmaq üçün digər sideloaded tətbiqləri silin.",
+        "Vaxtı bitmiş tətbiqlər hələ də 3 tətbiq limitinə daxildir."
+      ]
+    },
+    "support_message": "Problem davam edərsə, \"Buferə kopyala\" düyməsinə basın və xətanı dəstək üçün <discord>Discord</discord> serverinə və ya bir <github>GitHub issue</github>-ya göndərin."
+  },
+  "update": {
+    "new_version_available": "Yeni versiya mövcuddur: {{version}}. Yeniləmək istəyirsinizmi?",
+    "updating": "Yenilənir...",
+    "downloaded_restarting": "Yeniləmə yükləndi! Tətbiq yenidən başladılır...",
+    "failed_download": "Yeniləmə yüklənə bilmədi: {{error}}"
+  }
+}

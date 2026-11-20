@@ -1,0 +1,132 @@
+name: Bug Report/Support
+description: Report a bug or get help with iloader
+body:
+- type: markdown
+  attributes:
+    value: "Thank you for helping iloader improve! To help us track down the bug, please fill out the following information:"
+- type: markdown
+  attributes:
+    value: "## Bug Information"
+- type: textarea
+  id: info
+  attributes:
+    label: Describe the issue
+    description: A brief summary of the problem and how to reproduce it
+    placeholder: Description here...
+  validations:
+    required: true
+- type: textarea
+  id: error
+  attributes:
+    label: Error message
+    description: "If this issue has an error message, click \"Copy to Clipboard\" in iloader and paste here. You can also upload screenshots, paste logs, or upload logfiles here."
+    placeholder: Paste error here
+- type: checkboxes
+  id: suggestions
+  attributes:
+    label: "Please read and follow any suggestions iloader gives before making this issue."
+    description: iloader gives intelligent suggestions for many common errors. If you open an issue about one of these errors and did not try the suggestions, you will simply be told to follow the suggestions.
+    options:
+      - label: I followed ALL suggestions given by iloader
+        required: true
+- type: markdown
+  attributes:
+    value: "## Desktop Information"
+- type: input
+  id: os
+  attributes:
+    label: Computer OS
+    description: What operating system is the computer you're running iloader on using and what version is it? (Windows 11, Ubuntu, etc)
+    placeholder: Windows 11
+  validations:
+    required: true
+- type: input
+  id: version
+  attributes:
+    label: iloader version
+    description: What version of iloader are you experiencing this problem with?
+    placeholder: v2.0.0
+  validations:
+    required: true
+- type: dropdown
+  id: package
+  attributes:
+    label: What distribution of iloader did you download?
+    description: "Most Windows users use `.msi`. If unsure, check the extension of the file you downloaded to install iloader."
+    options:
+      - .msi (Windows)
+      - .exe (Windows)
+      - .dmg (macOS)
+      - .app (macOS)
+      - .deb (Linux)
+      - .rpm (Linux)
+      - .AppImage(Linux)
+      - AUR (Linux) (Unofficial)
+      - Homebrew (Linux) (Unofficial)
+      - Other (Specify in additional info)
+  validations:
+    required: true
+- type: checkboxes
+  id: computerceritifcation
+  attributes:
+    label: Please certify that if you use Windows, you have iTunes or Apple Mobile Devices installed, or if you use Linux, you have usbmuxd installed.
+    description: If you are on macOS, you do not need any additional software.
+    options:
+      - label: I certify the above is true
+        required: true
+- type: markdown
+  attributes:
+    value: "## iPhone/iPad Information"
+- type: input
+  id: ios
+  attributes:
+    label: iOS Version
+    description: What iOS version is your iPhone/iPad running? If you are on a developer beta, please include that
+    placeholder: "26.3"
+  validations:
+    required: true
+- type: input
+  id: phone
+  attributes:
+    label: Phone model
+    description: What kind of iPhone/iPad is this?
+    placeholder: iPhone 16
+  validations:
+    required: true
+- type: checkboxes
+  id: phonecertification
+  attributes:
+    label: "Please certify the following about your iPhone/iPad:"
+    description: If any of these things are not true, please make sure they are and try again before opening this issue.
+    options:
+      - label: My phone is in developer mode
+        required: true
+      - label: My phone has a passcode set
+        required: true
+      - label: My phone is connected to my computer over USB
+        required: true
+- type: markdown
+  attributes:
+    value: "## Apple Account Information"
+- type: dropdown
+  id: free
+  attributes:
+    label: Do you have a paid or free developer account?
+    description: Unless you specifically paid to join Apple's developer program, choose free.
+    options:
+      - Free
+      - Paid
+  validations:
+    required: true
+- type: dropdown
+  id: 2fa
+  attributes:
+    label: Two-factor auth (2FA) type 
+    description: "Most accounts use \"Trusted Device\" authentication, meaning signing in on a new device will send a notification to your phone to allow the sign in."
+    options:
+      - Trusted Device
+      - SMS
+      - No 2FA
+      - Security Key (Unsupported)
+  validations:
+    required: true

@@ -1,0 +1,49 @@
+[package]
+name = "iloader"
+version = "2.4.2"
+description = "User-friendly sideloader"
+authors = ["nab138"]
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "iloader_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["devtools"] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+idevice = { version = "0.1.68", features = ["usbmuxd", "house_arrest", "afc", "core_device_proxy", "remote_pairing", "tcp", "tunnel_tcp_stack", "xpc", "rsd", "pair"] }
+isideload = { version = "0.5.2", features = ["fs-storage"] } #, path = "../../isideload/isideload" } #, git = "https://github.com/nab138/isideload", package = "isideload", branch = "apple-codesign-quick" }
+keyring = { version = "3.6.3", features = ["apple-native", "windows-native", "linux-native-sync-persistent"] }
+tauri-plugin-store = "2"
+futures = "0.3.31"
+once_cell = "1.21.3"
+tauri-plugin-dialog = "2"
+reqwest = "0.13.2"
+tokio = "1.49.0"
+tauri-plugin-process = "2"
+chrono = "0.4"
+tracing-subscriber = "0.3.22"
+tracing = "0.1.44"
+tracing-appender = "0.2"
+rustls = "0.23.36"
+plist = "1.8.0"
+plist-macro = "0.1.6"
+tokio-util = "0.7.18"
+rootcause = "0.12.1"
+thiserror = "2.0.18"
+strum = {version = "0.28.0", features = ["derive"] }
+uuid = { version = "1", features = ["v4"] }
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"

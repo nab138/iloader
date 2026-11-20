@@ -1,0 +1,286 @@
+{
+  "subtitle": "Помощник по установке",
+  "version": "Версия",
+  "common": {
+    "confirm": "Подтвердить",
+    "cancel": "Отменить",
+    "dismiss": "Закрыть",
+    "refresh": "Обновить",
+    "delete": "Удалить",
+    "copy_to_clipboard": "Скопировать в буфер обмена",
+    "more_details": "Дополнительно",
+    "no_error": "Ошибок нет",
+    "copied_success": "Скопировано в буфер обмена"
+  },
+  "dropdown": {
+    "custom_value": "Своё значение",
+    "custom": "Пользовательское",
+    "use_custom_value": "Использовать своё значение",
+    "back_preset_options": "Вернуть параметры по умолчанию",
+    "select": "Выбрать"
+  },
+  "app": {
+    "language": "Язык",
+    "github": "GitHub",
+    "open_github_failed": "Не удаётся открыть ссылку на GitHub",
+    "section_account": "Аккаунт",
+    "section_placeholder": "Заглушка",
+    "section_management": "Управление",
+    "manage_pairing_file": "Файлы сопряжения",
+    "refresh_devices": "Обновить устройства",
+    "certificates": "Сертификаты",
+    "app_ids": "ID приложений",
+    "devices": "Устройства",
+    "active_device": "Выбрано: {{name}}",
+    "select_device": "Выберите устройство",
+    "installers": "Установщики",
+    "choose_build": "Выберите сборку",
+    "sidestore_stable": "SideStore (Стабильная)",
+    "sidestore_nightly": "SideStore (Предварительная)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Стабильная)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Предварительная)",
+    "import_ipa": "Импорт IPA",
+    "settings": "Настройки",
+    "must_be_logged_in": "Необходимо выполнить вход!",
+    "must_select_device": "Выберите устройство!",
+    "ipa_files": "Файлы IPA",
+    "logo_alt": "Логотип iloader"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "Вход выполнен как",
+    "sign_out": "Выйти",
+    "signing_out": "Выход...",
+    "sign_out_failed": "Не удалось выйти",
+    "signed_out_success": "Выход выполнен успешно!",
+    "saved_logins": "Сохраненные аккаунты",
+    "sign_in": "Войти",
+    "logging_in": "Вход...",
+    "logged_in_success": "Вход выполнен успешно!",
+    "login_failed": "Не удалось войти",
+    "deleting": "Удаление...",
+    "deletion_failed": "Не удалось удалить",
+    "deleted_success": "Удалено!",
+    "add_account": "Добавить аккаунт +",
+    "new_login": "Новый вход",
+    "email_placeholder": "Электронная почта Apple ID...",
+    "password_placeholder": "Пароль Apple ID...",
+    "save_credentials": "Сохранить данные входа",
+    "enter_email_password": "Пожалуйста, введите логин и пароль.",
+    "valid_email": "Пожалуйста, введите корректный email.",
+    "login": "Вход",
+    "two_factor_title": "Двухфакторная аутентификация",
+    "two_factor_prompt": "Пожалуйста, введите код проверки, отправленный на Ваше устройство.",
+    "verification_placeholder": "Код проверки...",
+    "valid_6digit": "Пожалуйста, введите корректный 6-значный код.",
+    "submit": "Подтвердить",
+    "max_certs_title": "Достигнут лимит сертификатов",
+    "max_certs_desc": "iloader отзовёт Ваши текущие сертификаты и создаст новый.",
+    "hide_certificate_list": "Скрыть список сертификатов",
+    "choose_what_to_revoke": "Выберите сертификат для  отзыва",
+    "continue": "Продолжить",
+    "no_keyring_available": "Не удалось сохранить данные входа на этом устройстве."
+  },
+  "device": {
+    "title": "iDevice",
+    "loading_devices": "Загрузка устройств...",
+    "no_devices_found": "Устройства не найдены",
+    "found_device": "Обнаружено устройство",
+    "found_devices": "Обнаружены устройства",
+    "unable_load_devices_prefix": "Не удалось загрузить устройства",
+    "no_devices_found_period": "Устройства не найдены.",
+    "selected": "Выбрано",
+    "pairing_in_progress_header": "Создание пары с {{device}}...",
+    "pairing_in_progress_hint": "Разблокируйте устройство и нажмите \"Доверять\", затем введите пароль разблокировки, если потребуется.",
+    "pairing_cancel": "Отмена",
+    "failed_select": "Не удалось выбрать устройство"
+  },
+  "operation": {
+    "failed": "Процесс завершился ошибкой.",
+    "completed": "Процесс выполнен",
+    "please_wait": "Пожалуйста, подождите...",
+    "copy_error_clipboard": "Скопировать ошибку в буфер обмена"
+  },
+  "operations": {
+    "install_sidestore_title": "Установка SideStore",
+    "install_sidestore_success_title": "SideStore установлен!",
+    "install_sidestore_success_message": "Откройте SideStore и обновите его для завершения установки!",
+    "install_sidestore_step_download": "Скачайте SideStore",
+    "install_sidestore_step_install": "Подпишите и установите SideStore",
+    "install_sidestore_step_pairing": "Выберите файл сопряжения",
+    "install_livecontainer_title": "Установка LiveContainer+SideStore",
+    "install_livecontainer_success_title": "LiveContainer+SideStore установлены!",
+    "install_livecontainer_success_message": "Для продолжения установки откройте LiveContainer, зайдите в настройки и выберите \"Import Certificate From SideStore.\" Затем выберите приложения, нажмите на иконку SideStore и обновите LiveContainer.",
+    "install_livecontainer_step_download": "Скачайте LiveContainer+SideStore",
+    "install_livecontainer_step_install": "Подпишите и установите LiveContainer+SideStore",
+    "install_livecontainer_step_pairing": "Выберите файл сопряжения",
+    "sideload_title": "Установка приложения",
+    "sideload_step_install": "Подпишите и установите приложение"
+  },
+  "certificates": {
+    "manage": "Управлять сертификатами",
+    "loading": "Загрузка сертификатов...",
+    "loaded_success": "Сертификаты успешно загружены!",
+    "failed_load": "Не удалось загрузить сертификаты",
+    "revoking": "Отзыв сертификата...",
+    "revoked_success": "Сертификат успешно отозван!",
+    "failed_revoke": "Не удалось отозвать сертификат: ",
+    "none_found": "Сертификаты не найдены.",
+    "name": "Название",
+    "serial_number": "Серийный номер",
+    "machine_name": "Название устройства",
+    "machine_id": "ID устройства",
+    "revoke": "Отозвать"
+  },
+  "app_ids": {
+    "manage": "Управлять ID приложений",
+    "loading": "Загрузка ID приложений...",
+    "loaded_success": "ID приложений успешно загружены!",
+    "failed_load": "Не удалось загрузить ID приложений",
+    "deleted_success": "ID приложения успешно удалено!",
+    "failed_delete": "Ошибка удаления ID приложения",
+    "available": "Доступно App ID: {{available}}/{{max}}",
+    "none_found": "ID приложений не найдены.",
+    "name": "Название",
+    "expiration": "Срок действия",
+    "id": "ID",
+    "identifier": "Идентификатор",
+    "never": "Никогда"
+  },
+  "pairing": {
+    "manage": "Управлять файлом сопряжения",
+    "loading_apps": "Загрузка приложений...",
+    "apps_loaded_success": "Приложения успешно загружены!",
+    "failed_load_apps": "Не удалось загрузить приложения",
+    "placing_pairing_file": "Выберите файл сопряжения...",
+    "pairing_file_placed_success": "Файл сопряжения успешно выбран!",
+    "failed_place_pairing": "Не удалось подключиться",
+    "loading_app": "Загрузка приложения...",
+    "no_supported_apps_found": "Подходящие приложения не найдены.",
+    "name": "Название",
+    "bundle_id": "ID пакета",
+    "place_pairing_file": "Выберите файл сопряжения",
+    "place": "Разместить",
+    "advanced_export_title": "Дополнительно: экспорт файла сопряжения",
+    "advanced_export_message": "Не рекомендуется, если Вы не знаете, что делаете. Вместо этого нажмите \"Разместить\" напротив приложения, чтобы автоматически его передать на устройство. Вы уверены, что всё еще хотите экспортировать файл сопряжения?",
+    "exporting_pairing_file": "Экспорт файла сопряжения...",
+    "pairing_file_exported_success": "Файл сопряжения успешно экспортирован!",
+    "failed_export_pairing_file": "Не удалось экспортировать файл сопряжения",
+    "export_not_recommended": "Экспорт (Не рекомендуется)",
+    "refresh_installed_apps": "Обновить установленные приложения",
+    "place_all": "Установить во все приложения"
+  },
+  "settings": {
+    "anisette_server": "Сервер Anisette:",
+    "custom_anisette_placeholder": "Пользовательский сервер Anisette",
+    "custom_anisette": "Пользовательский",
+    "use_custom_anisette": "Использовать пользовательский сервер Anisette",
+    "back_preset_servers": "Вернуться к серверам по умолчанию",
+    "reset_anisette_title": "Сбросить Anisette",
+    "reset_anisette_message": "Вы уверены, что хотите сбросить Anisette? Вам потребуется снова ввести код двухэтапной аутентификации.",
+    "resetting_anisette_state": "Сброс Anisette...",
+    "anisette_state_reset_success": "Anisette сброшен",
+    "anisette_state_not_found": "Данные Anisette для сброса не найдены",
+    "failed_reset_anisette_state": "Не удалось сбросить Anisette",
+    "view_logs": "Посмотреть логи",
+    "logs": "Логи",
+    "log_level": "Уровень ведения логов:",
+    "no_logs_yet": "Логов пока нет.",
+    "debug": "Отладка",
+    "info": "Информация",
+    "warn": "Предупреждение",
+    "error": "Ошибка",
+    "language_hint": "Вы можете помочь с переводом <translation>здесь</translation>.",
+    "delete_stored_rppairing": "Удалить файл сопряжения",
+    "delete_stored_rppairing_message": "Вы уверены, что хотите удалить файл сопряжения для этого устройства? Вам потребуется выполнить сопряжение заново.",
+    "deleting_stored_rppairing": "Удаление файла сопряжения...",
+    "stored_rppairing_deleted_success": "Файл сопряжения успешно удален!",
+    "failed_delete_stored_rppairing": "Не удалось удалить файл сопряжения",
+    "dont_use_keyring": "Хранение без шифрования",
+    "dont_use_keyring_message": "Это снижает безопасность, так как файлы сопряжения, данные Anisette и сертификаты будут храниться на диске в открытом виде. Включайте эту опцию только если хранилище по умолчанию не работает и вы осознаёте риски."
+  },
+  "dialog": {
+    "confirm": "Подтвердить",
+    "cancel": "Закрыть"
+  },
+  "error": {
+    "title": "Произошла ошибка: {{msg}}",
+    "unknown": "Неизвестная ошибка",
+    "suggestions_heading": "Рекомендуемые действия",
+    "suggestions": {
+      "underage": [
+        "Ваш Apple ID может не подходить по возрасту для использования сервисов для разработчиков."
+      ],
+      "account_locked": [
+        "Без паники! Обычно это происходит после нескольких неудачных попыток входа и совершенно безопасно.",
+        "Перейдите на ((link:https://iforgot.apple.com/)), чтобы разблокировать учетную запись."
+      ],
+      "auth": [
+        "Убедитесь, что данные для входа верны, и попробуйте еще раз (даже если вы уверены в них).",
+        "Если проблема не исчезнет, попробуйте использовать другой Apple ID.",
+        "Двухфакторная аутентификация через ключи безопасности (Security Key) не поддерживается. Используйте Apple ID без 2FA или с подтверждением через доверенное устройство."
+      ],
+      "download": [
+        "Скачайте SideStore вручную с ((link:https://github.com/SideStore/SideStore/releases)) и используйте кнопку \"Import IPA\" для установки."
+      ],
+      "house_arrest": [
+        "[ios::26.3] Убедитесь, что на устройстве не установлена бета-версия iOS 26.3, так как в ней есть баг с house arrest."
+      ],
+      "pairing": [
+        "Попробуйте переподключить устройство и повторить действие.",
+        "Убедитесь, что на устройстве установлен пароль разблокировки.",
+        "Убедитесь, что устройство подключено по USB, а не по Wi-Fi."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows] Убедитесь, что ((link:https://apple.co/ms:iTunes)) установлен и видит ваше устройство.",
+        "[platform::windows] Удалите iTunes и Apple Mobile Device Support, затем установите приложение \"Устройства Apple\" из Microsoft Store.",
+        "[platform::linux] Убедитесь, что сервис usbmuxd установлен и запущен."
+      ],
+      "trust": [
+        "Разблокируйте устройство, перейдите на экран \"Домой\" и примите запрос кнопкой \"Доверять\", если он появится."
+      ],
+      "device_coms": [
+        "Убедитесь, что устройство правильно подключено к компьютеру.",
+        "Отключите и снова подключите устройство. Если проблема осталась, попробуйте другой USB-порт или кабель."
+      ],
+      "not_logged_in": ["Сначала войдите в свой Apple ID."],
+      "no_device_selected": ["Выберите устройство, прежде чем продолжить."],
+      "anisette": [
+        "Убедитесь, что компьютер подключен к интернету.",
+        "Смените сервер Anisette. Попробуйте несколько разных серверов.",
+        "Проверьте, открывается ли ссылка ((link:{{anisetteServerUrl}})) в браузере."
+      ],
+      "keyring": [
+        "Попробуйте включить опцию \"Хранение без шифрования\" в настройках. Учтите, что это менее безопасно."
+      ],
+      "misc": [
+        "Попробуйте еще раз. Перезагрузка приложения, компьютера или телефона также может помочь."
+      ],
+      "admin": [
+        "Попробуйте запустить приложение с повышенными привилегиями (от имени администратора или root)."
+      ],
+      "filesystem": [
+        "Убедитесь, что у iloader есть права на чтение и запись файлов в системе."
+      ],
+      "not_enough_app_ids": [
+        "У вас недостаточно свободных App ID для установки этого приложения.",
+        "Подождите 7 дней, пока истечет срок действия старых App ID (их нельзя удалить раньше), и попробуйте снова.",
+        "Установка через SideStore иногда позволяет использовать меньше App ID, попробуйте этот способ."
+      ],
+      "max_apps": [
+        "С бесплатным Apple ID можно установить не более 3 сторонних приложений одновременно.",
+        "Удалите другие установленные приложения, чтобы освободить слоты.",
+        "Приложения с истекшим сроком действия также учитываются в лимите из 3 приложений."
+      ]
+    },
+    "support_message": "Если ошибка сохраняется, нажмите \"Скопировать в буфер обмена\" и отправьте скопированную ошибку в <discord>Discord</discord> или <github>GitHub issue</github> для решения проблемы."
+  },
+  "update": {
+    "new_version_available": "Доступна новая версия: {{version}}. Обновить?",
+    "updating": "Обновление...",
+    "downloaded_restarting": "Обновление загружено! Перезагрузка приложения...",
+    "failed_download": "Не удалось загрузить обновление: {{error}}"
+  }
+}

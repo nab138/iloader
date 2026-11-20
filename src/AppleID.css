@@ -1,0 +1,197 @@
+.credentials-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.1rem;
+  width: 100%;
+}
+
+.credentials {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.credentials button,
+.credentials input,
+.credentials .save-credentials {
+  width: 100%;
+}
+
+.credentials .save-credentials {
+  margin: 0;
+  padding: 0.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.save-credentials input {
+  width: fit-content;
+  accent-color: var(--accent-secondary);
+}
+
+.logged-in-as {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.logged-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.logged-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.logged-value {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.credentials h3 {
+  margin-bottom: 0.25em;
+  margin-top: 1.5em;
+}
+
+.stored-ids {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.stored-container {
+  width: 100%;
+}
+
+.stored {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stored-email {
+  font-weight: 600;
+  color: #fff;
+}
+
+.action-row {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.action-button {
+  flex: 1;
+  min-width: 130px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: filter 0.2s ease;
+}
+
+.action-button.primary {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #fff;
+}
+
+.action-button.danger {
+  background: rgba(255, 69, 58, 0.12);
+  border-color: rgba(255, 69, 58, 0.55);
+  color: var(--danger);
+}
+
+.action-button:hover {
+  filter: brightness(1.25);
+}
+
+.add-account {
+  text-decoration: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 0 0;
+  border-bottom: none;
+  color: var(--accent-secondary);
+  font-weight: 600;
+}
+
+.add-account:hover {
+  color: #fff;
+}
+
+.certs-see {
+  color: var(--text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  margin-bottom: 0.25rem;
+}
+
+.certs-buttons {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.operation-header h2 {
+  margin-top: 0;
+}
+
+.cert-header {
+  margin-top: 0;
+}
+
+.certs-desc {
+  margin: 0;
+}
+
+.certs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cert-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 8px;
+  background-color: var(--glass-surface);
+  padding: 0.5rem;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+}
+
+.cert-item input {
+  pointer-events: none;
+}
+
+.cert-item label {
+  pointer-events: none;
+}
+
+.credentials-warning {
+  margin: 0;
+}

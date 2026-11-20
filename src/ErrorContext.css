@@ -1,0 +1,67 @@
+.error-inner {
+  background-color: rgba(0, 0, 0, 0.4);
+  overflow: auto;
+  padding: 0.65em;
+  border-radius: 12px;
+  font-family: "SF Mono", "Menlo", monospace;
+  font-size: 0.85rem;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.error-outer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.error-outer h2 {
+  margin: 0;
+}
+
+.error-outer p {
+  margin: 0;
+}
+
+.error-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.error-more-details {
+  cursor: pointer;
+  padding-top: 0.25rem;
+  padding-bottom: 0.5rem;
+  text-decoration: underline;
+}
+
+.error-details-measure {
+  visibility: hidden;
+  max-height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.error-details {
+  margin-top: 0;
+}
+
+.error-link {
+  /* color: var(--accent-primary); */
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.suggestions {
+  padding: 0 0 1rem 0;
+}
+
+.suggestions ul {
+  margin: 0 0 0.5rem 0;
+  padding-left: 2rem;
+}

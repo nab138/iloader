@@ -1,0 +1,29 @@
+iloader - Branding and Attribution Notice
+Copyright (C) 2026 nab138
+All rights reserved.
+
+The source code of iloader is licensed under the MIT License (see LICENSE).
+
+The following materials are NOT covered by the above license and are
+subject to separate restrictions:
+
+- Logos, icons, graphical branding, and promotional assets included
+  anywhere in the repository.
+- The name "iloader" and any associated wordmarks or trademarks.
+
+Rules for use:
+
+1. You may retain or use these branding materials in forks, derivative works,
+   documentation, tutorials, examples, or educational materials, provided that:
+   - You do **not** imply official affiliation, endorsement, or sponsorship
+     by the original author.
+   - Any use of the original branding **includes a clear link** to either:
+     - The official iloader website: <https://iloader.app>, or
+     - The respective source code repository:
+       - App: <https://github.com/nab138/iloader>
+       - Website: <https://github.com/nab138/iloader-website>
+2. You may not claim the work as the official release or use the branding
+   in a way that suggests endorsement.
+
+This notice applies to all forks, modifications, and derivative works
+of both the iloader app and the iloader website.

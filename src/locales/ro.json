@@ -1,0 +1,286 @@
+{
+  "subtitle": "Asistent pentru instalare laterală",
+  "version": "Versiune",
+  "common": {
+    "confirm": "Confirmă",
+    "cancel": "Anulează",
+    "dismiss": "Închide",
+    "refresh": "Reîmprospătează",
+    "delete": "Șterge",
+    "copy_to_clipboard": "Copiază în clipboard",
+    "more_details": "Mai multe detalii",
+    "no_error": "Nicio eroare",
+    "copied_success": "Copiat în clipboard"
+  },
+  "dropdown": {
+    "custom_value": "Valoare personalizată",
+    "custom": "Personalizat",
+    "use_custom_value": "Folosește valoare personalizată",
+    "back_preset_options": "Înapoi la opțiunile presetate",
+    "select": "Selectează"
+  },
+  "app": {
+    "language": "Limbă",
+    "github": "GitHub",
+    "open_github_failed": "Nu se poate deschide linkul GitHub",
+    "section_account": "Cont",
+    "section_placeholder": "Rezervă",
+    "section_management": "Administrare",
+    "manage_pairing_file": "Gestionează fișierul de asociere",
+    "refresh_devices": "Reîmprospătează dispozitivele",
+    "certificates": "Certificate",
+    "app_ids": "ID-uri de aplicații",
+    "devices": "Dispozitive",
+    "active_device": "Activ: {{name}}",
+    "select_device": "Selectează un dispozitiv",
+    "installers": "Instalatoare",
+    "choose_build": "Alege o versiune",
+    "sidestore_stable": "SideStore (Stabil)",
+    "sidestore_nightly": "SideStore (Nightly)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stabil)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
+    "import_ipa": "Importă IPA",
+    "settings": "Setări",
+    "must_be_logged_in": "Trebuie să fii autentificat!",
+    "must_select_device": "Trebuie să selectezi un dispozitiv!",
+    "ipa_files": "Fișiere IPA",
+    "logo_alt": "logo-ul iloader"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "Autentificat ca",
+    "sign_out": "Deconectare",
+    "signing_out": "Se deconectează...",
+    "sign_out_failed": "Deconectarea a eșuat",
+    "signed_out_success": "Deconectare reușită!",
+    "saved_logins": "Autentificări salvate",
+    "sign_in": "Autentifică-te",
+    "logging_in": "Se autentifică...",
+    "logged_in_success": "Autentificare reușită!",
+    "login_failed": "Autentificarea a eșuat",
+    "deleting": "Se șterge...",
+    "deletion_failed": "Ștergerea a eșuat",
+    "deleted_success": "Șters cu succes!",
+    "add_account": "Adaugă cont +",
+    "new_login": "Autentificare nouă",
+    "email_placeholder": "E-mail Apple ID...",
+    "password_placeholder": "Parolă Apple ID...",
+    "save_credentials": "Salvează datele de autentificare",
+    "enter_email_password": "Introdu atât adresa de e-mail, cât și parola.",
+    "valid_email": "Introdu o adresă de e-mail validă.",
+    "login": "Autentificare",
+    "two_factor_title": "Autentificare cu doi factori",
+    "two_factor_prompt": "Introdu codul de verificare trimis pe dispozitivul tău.",
+    "verification_placeholder": "Cod de verificare...",
+    "valid_6digit": "Introdu un cod valid din 6 cifre.",
+    "submit": "Trimite",
+    "max_certs_title": "S-a atins numărul maxim de certificate",
+    "max_certs_desc": "iloader va revoca certificatele existente și va genera unul nou.",
+    "hide_certificate_list": "Ascunde lista de certificate",
+    "choose_what_to_revoke": "Alege ce să fie revocat",
+    "continue": "Continuă",
+    "no_keyring_available": "Nu se pot salva datele de autentificare pe acest dispozitiv."
+  },
+  "device": {
+    "title": "Dispozitiv iOS",
+    "loading_devices": "Se încarcă dispozitivele...",
+    "no_devices_found": "Nu s-au găsit dispozitive",
+    "found_device": "Dispozitiv găsit",
+    "found_devices": "Dispozitive găsite",
+    "unable_load_devices_prefix": "Nu se pot încărca dispozitivele",
+    "no_devices_found_period": "Nu s-au găsit dispozitive.",
+    "selected": "Selectat",
+    "pairing_in_progress_header": "Se face asocierea cu {{device}}...",
+    "pairing_in_progress_hint": "Deblochează dispozitivul și apasă „Trust”, apoi introdu codul de acces dacă ți se solicită.",
+    "pairing_cancel": "Anulează",
+    "failed_select": "Selectarea dispozitivului a eșuat"
+  },
+  "operation": {
+    "failed": "Operațiunea a eșuat.",
+    "completed": "Operațiune finalizată",
+    "please_wait": "Te rugăm să aștepți...",
+    "copy_error_clipboard": "Copiază eroarea în clipboard"
+  },
+  "operations": {
+    "install_sidestore_title": "Se instalează SideStore",
+    "install_sidestore_success_title": "SideStore a fost instalat!",
+    "install_sidestore_success_message": "Deschide SideStore și reîmprospătează-l pentru a finaliza instalarea!",
+    "install_sidestore_step_download": "Descarcă SideStore",
+    "install_sidestore_step_install": "Semnează și instalează SideStore",
+    "install_sidestore_step_pairing": "Plasează fișierul de asociere",
+    "install_livecontainer_title": "Se instalează LiveContainer+SideStore",
+    "install_livecontainer_success_title": "LiveContainer+SideStore a fost instalat!",
+    "install_livecontainer_success_message": "Pentru a finaliza instalarea, deschide LiveContainer, alege setările și apasă „Import Certificate From SideStore”. Apoi alege aplicațiile, apasă pictograma SideStore și reîmprospătează LiveContainer.",
+    "install_livecontainer_step_download": "Descarcă LiveContainer+SideStore",
+    "install_livecontainer_step_install": "Semnează și instalează LiveContainer+SideStore",
+    "install_livecontainer_step_pairing": "Plasează fișierul de asociere",
+    "sideload_title": "Se instalează aplicația",
+    "sideload_step_install": "Semnează și instalează aplicația"
+  },
+  "certificates": {
+    "manage": "Gestionează certificatele",
+    "loading": "Se încarcă certificatele...",
+    "loaded_success": "Certificatele au fost încărcate cu succes!",
+    "failed_load": "Încărcarea certificatelor a eșuat",
+    "revoking": "Se revocă certificatul...",
+    "revoked_success": "Certificatul a fost revocat cu succes!",
+    "failed_revoke": "Revocarea certificatului a eșuat: ",
+    "none_found": "Nu s-au găsit certificate.",
+    "name": "Nume",
+    "serial_number": "Număr de serie",
+    "machine_name": "Nume mașină",
+    "machine_id": "ID mașină",
+    "revoke": "Revocă"
+  },
+  "app_ids": {
+    "manage": "Gestionează ID-urile de aplicații",
+    "loading": "Se încarcă ID-urile de aplicații...",
+    "loaded_success": "ID-urile de aplicații au fost încărcate cu succes!",
+    "failed_load": "Încărcarea ID-urilor de aplicații a eșuat",
+    "deleted_success": "ID-ul de aplicație a fost șters cu succes!",
+    "failed_delete": "Ștergerea ID-ului de aplicație a eșuat",
+    "available": "{{available}}/{{max}} ID-uri disponibile",
+    "none_found": "Nu s-au găsit ID-uri de aplicații.",
+    "name": "Nume",
+    "expiration": "Expirare",
+    "id": "ID",
+    "identifier": "Identificator",
+    "never": "Niciodată"
+  },
+  "pairing": {
+    "manage": "Gestionează fișierul de asociere",
+    "loading_apps": "Se încarcă aplicațiile...",
+    "apps_loaded_success": "Aplicațiile au fost încărcate cu succes!",
+    "failed_load_apps": "Încărcarea aplicațiilor a eșuat",
+    "placing_pairing_file": "Se plasează fișierul de asociere...",
+    "pairing_file_placed_success": "Fișierul de asociere a fost plasat cu succes!",
+    "failed_place_pairing": "Plasarea fișierului de asociere a eșuat",
+    "loading_app": "Se încarcă aplicația...",
+    "no_supported_apps_found": "Nu s-au găsit aplicații compatibile.",
+    "name": "Nume",
+    "bundle_id": "ID pachet",
+    "place_pairing_file": "Plasează fișierul de asociere",
+    "place": "Plasează",
+    "advanced_export_title": "Avansat: exportă fișierul de asociere",
+    "advanced_export_message": "Nu este recomandat decât dacă știi exact ce faci. Apasă „Plasează” lângă o aplicație pentru a o transfera automat în schimb. Sigur mai vrei să exporți fișierul de asociere?",
+    "exporting_pairing_file": "Se exportă fișierul de asociere...",
+    "pairing_file_exported_success": "Fișierul de asociere a fost exportat cu succes!",
+    "failed_export_pairing_file": "Exportul fișierului de asociere a eșuat",
+    "export_not_recommended": "Exportă (nerecomandat)",
+    "refresh_installed_apps": "Scanează din nou aplicațiile instalate",
+    "place_all": "Plasează în toate aplicațiile"
+  },
+  "settings": {
+    "anisette_server": "Server Anisette:",
+    "custom_anisette_placeholder": "Server Anisette personalizat",
+    "custom_anisette": "Personalizat",
+    "use_custom_anisette": "Folosește un server Anisette personalizat",
+    "back_preset_servers": "Înapoi la serverele presetate",
+    "reset_anisette_title": "Resetează starea Anisette",
+    "reset_anisette_message": "Sigur vrei să resetezi starea anisette? Va trebui să introduci din nou codul 2FA.",
+    "resetting_anisette_state": "Se resetează starea anisette...",
+    "anisette_state_reset_success": "Starea anisette a fost resetată cu succes",
+    "anisette_state_not_found": "Nu există nicio stare anisette de resetat",
+    "failed_reset_anisette_state": "Resetarea stării anisette a eșuat",
+    "view_logs": "Vezi jurnalele",
+    "logs": "Jurnale",
+    "log_level": "Nivel jurnal:",
+    "no_logs_yet": "Încă nu există jurnale.",
+    "debug": "Depanare",
+    "info": "Informații",
+    "warn": "Avertisment",
+    "error": "Eroare",
+    "language_hint": "Poți ajuta la traduceri <translation>aici</translation>.",
+    "delete_stored_rppairing": "Șterge asocierea salvată",
+    "delete_stored_rppairing_message": "Sigur vrei să ștergi fișierul de asociere salvat pentru acest dispozitiv? Va trebui să faci asocierea din nou.",
+    "deleting_stored_rppairing": "Se șterge asocierea salvată...",
+    "stored_rppairing_deleted_success": "Asocierea salvată a fost ștearsă cu succes!",
+    "failed_delete_stored_rppairing": "Ștergerea asocierii salvate a eșuat",
+    "dont_use_keyring": "Nu folosi keyring",
+    "dont_use_keyring_message": "Aceasta face iloader mai puțin sigur prin stocarea fișierelor de asociere, a stării anisette și a certificatelor pe disc. Activează această opțiune doar dacă stocarea implicită în keyring nu funcționează și înțelegi riscurile."
+  },
+  "dialog": {
+    "confirm": "Confirmă",
+    "cancel": "Anulează"
+  },
+  "error": {
+    "title": "A apărut o eroare: {{msg}}",
+    "unknown": "Necunoscut",
+    "suggestions_heading": "Sugestii",
+    "suggestions": {
+      "underage": [
+        "Contul tău Apple ID poate fi sub vârsta minimă necesară pentru a folosi serviciile de dezvoltare."
+      ],
+      "account_locked": [
+        "Nu te panica! De obicei se întâmplă după mai multe încercări eșuate de autentificare, dar este complet inofensiv.",
+        "Vizitează ((link:https://iforgot.apple.com/)) pentru a-ți debloca contul."
+      ],
+      "auth": [
+        "Verifică dacă datele tale de autentificare sunt corecte și încearcă din nou, chiar dacă erau corecte.",
+        "Dacă problema persistă, încearcă un alt Apple ID.",
+        "2FA cu Security Key nu este acceptat. Dacă este posibil, folosește un Apple ID fără 2FA sau cu 2FA pe dispozitiv de încredere."
+      ],
+      "download": [
+        "Descarcă manual SideStore de la ((link:https://github.com/SideStore/SideStore/releases)) și folosește butonul „Importă IPA” pentru a-l instala."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Asigură-te că dispozitivul tău nu rulează o versiune beta de dezvoltator pentru iOS 26.3, deoarece are o eroare legată de house arrest"
+      ],
+      "pairing": [
+        "Încearcă să reconectezi dispozitivul și să rulezi din nou acțiunea.",
+        "Asigură-te că dispozitivul are un cod de acces setat.",
+        "Asigură-te că dispozitivul este conectat prin USB, nu fără fir."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]Asigură-te că ai instalat ((link:https://apple.co/ms:iTunes)) și verifică dacă îți detectează dispozitivul.",
+        "[platform::windows]Dezinstalează iTunes și Apple Mobile Device Support, apoi instalează „Apple Devices” din Microsoft Store.",
+        "[platform::linux]Asigură-te că usbmuxd este instalat și rulează."
+      ],
+      "trust": [
+        "Deblochează dispozitivul, mergi pe ecranul principal și acceptă orice solicitări de încredere care apar."
+      ],
+      "device_coms": [
+        "Asigură-te că dispozitivul este conectat corect la computer.",
+        "Deconectează și reconectează dispozitivul. Dacă problema persistă, încearcă un alt port USB și un alt cablu."
+      ],
+      "not_logged_in": ["Autentifică-te mai întâi în Apple ID-ul tău."],
+      "no_device_selected": ["Selectează un dispozitiv înainte de a continua."],
+      "anisette": [
+        "Asigură-te că computerul tău este conectat la internet.",
+        "Schimbă serverul anisette. Încearcă mai multe servere diferite.",
+        "Asigură-te că poți accesa ((link:{{anisetteServerUrl}})) într-un browser."
+      ],
+      "keyring": [
+        "Încearcă să activezi opțiunea „Nu folosi keyring” din setări pentru a ocoli această problemă. Reține că aceasta este mai puțin sigură."
+      ],
+      "misc": [
+        "Încearcă din nou. Repornirea aplicației, a computerului și/sau a telefonului poate ajuta de asemenea."
+      ],
+      "admin": [
+        "Încearcă să rulezi aplicația cu permisiuni elevate (ca administrator/root)."
+      ],
+      "filesystem": [
+        "Asigură-te că iloader are permisiunea de a citi și scrie fișiere pe sistemul tău."
+      ],
+      "not_enough_app_ids": [
+        "Nu ai suficiente ID-uri de aplicații disponibile pentru a instala această aplicație.",
+        "Așteaptă ca ID-urile de aplicații să expire după 7 zile (nu pot fi șterse mai devreme), apoi încearcă din nou.",
+        "Instalarea aplicațiilor din SideStore îți permite uneori să folosești mai puține ID-uri de aplicații, așa că încearcă să instalezi de acolo."
+      ],
+      "max_apps": [
+        "Poți avea instalate doar 3 aplicații instalate lateral simultan cu un Apple ID gratuit.",
+        "Șterge alte aplicații instalate lateral pentru a elibera spațiu pentru aceasta.",
+        "Aplicațiile expirate contează în continuare în limita de 3 aplicații."
+      ]
+    },
+    "support_message": "Dacă problema persistă, apasă „Copiază în clipboard” și trimite eroarea copiată către <discord>Discord</discord> sau către un <github>issue GitHub</github> pentru asistență."
+  },
+  "update": {
+    "new_version_available": "Este disponibilă o versiune nouă: {{version}}. Vrei să actualizezi?",
+    "updating": "Se actualizează...",
+    "downloaded_restarting": "Actualizarea a fost descărcată! Aplicația se repornește...",
+    "failed_download": "Descărcarea actualizării a eșuat: {{error}}"
+  }
+}

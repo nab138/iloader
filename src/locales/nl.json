@@ -1,0 +1,290 @@
+{
+  "subtitle": "Sideloading Companion",
+  "version": "Versie",
+  "common": {
+    "confirm": "Bevestigen",
+    "cancel": "Annuleren",
+    "dismiss": "Afwijzen",
+    "refresh": "Vernieuwen",
+    "delete": "Verwijderen",
+    "copy_to_clipboard": "Kopieer naar klembord",
+    "more_details": "Meer details",
+    "no_error": "Geen fout",
+    "copied_success": "Gekopieerd naar klembord"
+  },
+  "dropdown": {
+    "custom_value": "Aangepaste waarde",
+    "custom": "Aangepast",
+    "use_custom_value": "Aangepaste waarde gebruiken",
+    "back_preset_options": "Terug naar vooraf ingestelde opties",
+    "select": "Selecteer"
+  },
+  "app": {
+    "language": "Taal",
+    "github": "GitHub",
+    "open_github_failed": "Kan GitHub link niet openen",
+    "section_account": "Account",
+    "section_placeholder": "Placeholder",
+    "section_management": "Beheer",
+    "manage_pairing_file": "Beheer koppelingsbestand",
+    "refresh_devices": "Herlaad apparaten",
+    "certificates": "Certificaten",
+    "app_ids": "App IDs",
+    "devices": "Apparaten",
+    "active_device": "Actief: {{name}}",
+    "select_device": "Selecteer apparaat",
+    "installers": "Installatieprogramma's",
+    "choose_build": "Kies een build",
+    "sidestore_stable": "SideStore (Stable)",
+    "sidestore_nightly": "SideStore (Nightly)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stable)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
+    "import_ipa": "Importeer IPA",
+    "settings": "Instellingen",
+    "must_be_logged_in": "Je moet ingelogd zijn!",
+    "must_select_device": "Je moet een apparaat selecteren!",
+    "ipa_files": "IPA Bestanden",
+    "logo_alt": "iloader logo"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "Ingelogd als",
+    "sign_out": "Uitloggen",
+    "signing_out": "Uitloggen...",
+    "sign_out_failed": "Uitloggen mislukt",
+    "signed_out_success": "Succesvol uitgelogd!",
+    "saved_logins": "Opgeslagen inloggegevens",
+    "sign_in": "Inloggen",
+    "logging_in": "Inloggen...",
+    "logged_in_success": "Succesvol ingelogd!",
+    "login_failed": "Inloggen mislukt",
+    "deleting": "Verwijderen...",
+    "deletion_failed": "Verwijderen mislukt",
+    "deleted_success": "Succesvol verwijderd!",
+    "add_account": "Account toevoegen +",
+    "new_login": "Nieuwe inloggegevens",
+    "email_placeholder": "Apple ID Email...",
+    "password_placeholder": "Apple ID Wachtwoord...",
+    "save_credentials": "Sla inloggegevens op",
+    "enter_email_password": "Voer zowel een geldig e-mailadres als wachtwoord in.",
+    "valid_email": "Voer een geldig e-mailadres in.",
+    "login": "Inloggen",
+    "two_factor_title": "Twee-Factor Authenticatie",
+    "two_factor_prompt": "Voer de verificatiecode in die naar je apparaat is verzonden.",
+    "verification_placeholder": "Verificatiecode...",
+    "valid_6digit": "Voer een geldige 6-cijferige code in.",
+    "submit": "Verzenden",
+    "max_certs_title": "Maximum aantal certificaten bereikt",
+    "max_certs_desc": "iloader zal je bestaande certificaten intrekken en een nieuw certificaat genereren.",
+    "hide_certificate_list": "Verberg certificaatlijst",
+    "choose_what_to_revoke": "Kies welke certificaten je wilt intrekken",
+    "continue": "Doorgaan",
+    "no_keyring_available": "Het is niet mogelijk om inloggegevens op dit apparaat op te slaan."
+  },
+  "device": {
+    "title": "iDevice",
+    "loading_devices": "Apparaten laden...",
+    "no_devices_found": "Geen apparaten gevonden",
+    "found_device": "Apparaat gevonden",
+    "found_devices": "Apparaten gevonden",
+    "unable_load_devices_prefix": "Kan apparaten niet laden",
+    "no_devices_found_period": "Geen apparaten gevonden.",
+    "selected": "Geselecteerd",
+    "pairing_in_progress_header": "Koppelen met {{device}}...",
+    "pairing_in_progress_hint": "Ontgrendel je apparaat, klik op \"Vertrouwen\" en voer vervolgens je pincode in als daarom wordt gevraagd.",
+    "pairing_cancel": "Annuleren",
+    "failed_select": "Kan apparaat niet selecteren"
+  },
+  "operation": {
+    "failed": "Actie mislukt.",
+    "completed": "Actie voltooid.",
+    "please_wait": "Wacht aub...",
+    "copy_error_clipboard": "Kopieer fout naar klembord"
+  },
+  "operations": {
+    "install_sidestore_title": "SideStore installeren",
+    "install_sidestore_success_title": "SideStore geïnstalleerd!",
+    "install_sidestore_success_message": "Open SideStore en herlaad SideStore om de installatie te voltooien!",
+    "install_sidestore_step_download": "Download SideStore",
+    "install_sidestore_step_install": "Onderteken & Installeer SideStore",
+    "install_sidestore_step_pairing": "Plaats koppelingsbestand",
+    "install_livecontainer_title": "LiveContainer+SideStore installeren",
+    "install_livecontainer_success_title": "LiveContainer+SideStore geïnstalleerd!",
+    "install_livecontainer_success_message": "Om de installatie te voltooien, open LiveContainer, kies instellingen, en klik op \"Import Certificate From SideStore.\" Kies vervolgens apps, klik op het SideStore icoon, en ververs LiveContainer.",
+    "install_livecontainer_step_download": "Download LiveContainer+SideStore",
+    "install_livecontainer_step_install": "Onderteken & Installeer LiveContainer+SideStore",
+    "install_livecontainer_step_pairing": "Plaats koppelingsbestand",
+    "sideload_title": "App installeren",
+    "sideload_step_install": "Onderteken & Installeer App"
+  },
+  "certificates": {
+    "manage": "Beheer Certificaten",
+    "loading": "Certificaten laden...",
+    "loaded_success": "Certificaten succesvol geladen!",
+    "failed_load": "Kon certificaten niet laden",
+    "revoking": "Certificaat intrekken...",
+    "revoked_success": "Certificaat succesvol ingetrokken!",
+    "failed_revoke": "Kon certificaat niet intrekken: ",
+    "none_found": "Geen certificaten gevonden.",
+    "name": "Naam",
+    "serial_number": "Serienummer",
+    "machine_name": "Machine Naam",
+    "machine_id": "Machine ID",
+    "revoke": "Intrekken"
+  },
+  "app_ids": {
+    "manage": "Beheer App IDs",
+    "loading": "App IDs laden...",
+    "loaded_success": "App IDs succesvol geladen!",
+    "failed_load": "Kon App IDs niet laden",
+    "deleted_success": "App ID succesvol verwijderd!",
+    "failed_delete": "Kon App ID niet verwijderen",
+    "available": "{{available}}/{{max}} IDs Beschikbaar",
+    "none_found": "Geen App IDs gevonden.",
+    "name": "Naam",
+    "expiration": "Verloopdatum",
+    "id": "ID",
+    "identifier": "Identificatiecode",
+    "never": "Nooit"
+  },
+  "pairing": {
+    "manage": "Beheer Koppelingsbestand",
+    "loading_apps": "Apps laden...",
+    "apps_loaded_success": "Apps succesvol geladen!",
+    "failed_load_apps": "Kon apps niet laden",
+    "placing_pairing_file": "Koppelingsbestand plaatsen...",
+    "pairing_file_placed_success": "Koppelingsbestand succesvol geplaatst!",
+    "failed_place_pairing": "Kon koppelingsbestand niet plaatsen",
+    "loading_app": "App laden...",
+    "no_supported_apps_found": "Geen ondersteunde apps gevonden.",
+    "name": "Naam",
+    "bundle_id": "Bundle-ID",
+    "place_pairing_file": "Plaats koppelingsbestand",
+    "place": "Plaats",
+    "advanced_export_title": "Geavanceerd: Exporteer Koppelingsbestand",
+    "advanced_export_message": "Dit wordt niet aangeraden tenzij je weet wat je doet. Druk op \"Plaats\" naast een app om het automatisch over te zetten. Weet je zeker dat je het koppelingsbestand wilt exporteren?",
+    "exporting_pairing_file": "Koppelingsbestand exporteren...",
+    "pairing_file_exported_success": "Koppelingsbestand succesvol geëxporteerd!",
+    "failed_export_pairing_file": "Kon koppelingsbestand niet exporteren",
+    "export_not_recommended": "Exporteren (Niet Aangeraden)",
+    "refresh_installed_apps": "Scan geïnstalleerde apps opnieuw",
+    "place_all": "Plaats In Alle Apps"
+  },
+  "settings": {
+    "anisette_server": "Anisette-Server:",
+    "custom_anisette_placeholder": "Aangepaste Anisette-Server",
+    "custom_anisette": "Aangepast",
+    "use_custom_anisette": "Gebruik een aangepaste Anisette-Server",
+    "back_preset_servers": "Terug naar vooraf ingestelde servers",
+    "reset_anisette_title": "Anisette-status Resetten",
+    "reset_anisette_message": "Weet je zeker dat je de Anisette-status wilt resetten? Je zult je 2FA code opnieuw moeten invoeren.",
+    "resetting_anisette_state": "Anisette-status resetten...",
+    "anisette_state_reset_success": "Anisette-status succesvol gereset",
+    "anisette_state_not_found": "Geen Anisette-status gevonden om te resetten",
+    "failed_reset_anisette_state": "Kon Anisette-status niet resetten",
+    "view_logs": "Logboeken bekijken",
+    "logs": "Logboeken",
+    "log_level": "Logniveau:",
+    "no_logs_yet": "Nog geen logboeken.",
+    "debug": "Foutopsporing",
+    "info": "Info",
+    "warn": "Waarschuwing",
+    "error": "Fout",
+    "language_hint": "Je kan <translation>hier</translation> helpen met vertalingen.",
+    "delete_stored_rppairing": "Verwijder opgeslagen koppeling",
+    "delete_stored_rppairing_message": "Weet je zeker dat je het opgeslagen koppelingsbestand voor dit apparaat wilt verwijderen? Je zal hierna opnieuw moeten koppelen.",
+    "deleting_stored_rppairing": "Opgeslagen koppeling verwijderen...",
+    "stored_rppairing_deleted_success": "Opgeslagen koppeling succesvol verwijderd!",
+    "failed_delete_stored_rppairing": "Kon opgeslagen koppeling niet verwijderen",
+    "dont_use_keyring": "Sleutelhanger niet gebruiken",
+    "dont_use_keyring_message": "Het opslaan van koppelingsbestanden, de Anisette-status en certificaten op de harde schijf maakt iloader kwetsbaarder. Gebruik deze optie alleen als de standaard opslag in de sleutelhanger niet werkt en je de risico's begrijpt."
+  },
+  "dialog": {
+    "confirm": "Bevestigen",
+    "cancel": "Annuleren"
+  },
+  "error": {
+    "title": "Er is een fout opgetreden: {{msg}}",
+    "unknown": "Onbekend",
+    "suggestions_heading": "Suggesties",
+    "suggestions": {
+      "underage": [
+        "Je Apple ID voldoet mogelijk niet aan de leeftijdseisen voor het gebruik van ontwikkelaarsdiensten."
+      ],
+      "account_locked": [
+        "Geen paniek! Dit gebeurt meestal na meerdere mislukte inlogpogingen, maar het is volkomen onschuldig.",
+        "Ga naar ((link:https://iforgot.apple.com/)) om je account te ontgrendelen."
+      ],
+      "auth": [
+        "Zorg ervoor dat je inloggegevens correct zijn en probeer het opnieuw, zelfs als ze correct waren.",
+        "Als het probleem aanhoudt, probeer dan een andere Apple ID te gebruiken.",
+        "Security Key 2FA wordt niet ondersteund. Gebruik, indien mogelijk, een Apple ID zonder 2FA of met een vertrouwd 2FA apparaat."
+      ],
+      "download": [
+        "Download SideStore handmatig op ((link:https://github.com/SideStore/SideStore/releases)) en gebruik de \"Import IPA\" knop om het te installeren."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Zorg ervoor dat je apparaat niet is uitgerust met een ontwikkelaarsbètaversie van iOS 26.3, aangezien deze een bug bevat met betrekking tot huisarrest."
+      ],
+      "pairing": [
+        "Probeer het apparaat opnieuw aan te sluiten en de actie opnieuw uit te voeren.",
+        "Zorg ervoor dat er een pincode staat ingesteld op je apparaat.",
+        "Zorg ervoor dat je apparaat via USB is aangesloten, niet draadloos."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]Zorg ervoor dat ((link:https://apple.co/ms:iTunes)) geïnstalleerd is en controleer of het je apparaat kan detecteren.",
+        "[platform::windows]Verwijder iTunes en Apple Mobile Device Support, en installeer vervolgens \"Apple Devices\" vanuit de Microsoft Store.",
+        "[platform::linux]Zorg ervoor dat usbmuxd is geïnstalleerd en actief is."
+      ],
+      "trust": [
+        "Ontgrendel je apparaat en klik op \"Vertrouwen\" wanneer daarom wordt gevraagd."
+      ],
+      "device_coms": [
+        "Zorg ervoor dat je apparaat correct is aangesloten op je computer.",
+        "Koppel het apparaat los en sluit het opnieuw aan. Als het probleem aanhoudt, probeer dan een andere USB-poort en kabel."
+      ],
+      "not_logged_in": [
+        "Meld je eerst aan met je Apple ID."
+      ],
+      "no_device_selected": [
+        "Selecteer een apparaat voordat je doorgaat."
+      ],
+      "anisette": [
+        "Zorg ervoor dat je computer is verbonden met het internet.",
+        "Wijzig je Anisette-server. Probeer meerdere verschillende servers.",
+        "Zorg ervoor dat je toegang hebt tot ((link:{{anisetteServerUrl}})) in een browser."
+      ],
+      "keyring": [
+        "Probeer \"Sleutelhanger niet gebruiken\" in de instellingen in te schakelen om dit probleem te omzeilen. Merk op dat dit minder veilig is."
+      ],
+      "misc": [
+        "Probeer het nogmaals. Het opnieuw opstarten van de app, je computer en/of je telefoon kan ook helpen."
+      ],
+      "admin": [
+        "Probeer de app met verhoogde bevoegdheden uit te voeren (als beheerder/root)."
+      ],
+      "filesystem": [
+        "Zorg ervoor dat iloader toegang heeft tot het lezen en schrijven van bestanden op je systeem."
+      ],
+      "not_enough_app_ids": [
+        "Je hebt niet genoeg App IDs beschikbaar om deze app te installeren.",
+        "Wacht tot App IDs verlopen zijn na 7 dagen (kunnen niet eerder worden verwijderd), en probeer het daarna opnieuw.",
+        "Soms is het mogelijk om vanuit SideStore minder App IDs te gebruiken, dus probeer de app te installeren via SideStore."
+      ],
+      "max_apps": [
+        "Je kan maximaal 3 gesideloade apps tegelijk geïnstalleerd hebben met een gratis Apple ID.",
+        "Verwijder andere gesideloade apps om ruimte vrij te maken voor deze.",
+        "Verlopen apps tellen nog steeds mee voor de limiet van 3 apps."
+      ]
+    },
+    "support_message": "Als het probleem aanhoudt, druk op \"Kopieer naar klembord\" en stuur de gekopieerde foutmelding naar de <discord>Discord</discord> of een <github>GitHub issue</github> voor ondersteuning."
+  },
+  "update": {
+    "new_version_available": "Een nieuwe versie is beschikbaar: {{version}}. Wil je updaten?",
+    "updating": "Updaten...",
+    "downloaded_restarting": "Update gedownload! De app herstarten...",
+    "failed_download": "Kon de update niet downloaden: {{error}}"
+  }
+}

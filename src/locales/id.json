@@ -1,0 +1,286 @@
+{
+  "subtitle": "Pendamping Sideloading",
+  "version": "Versi",
+  "common": {
+    "confirm": "Konfirmasi",
+    "cancel": "Batal",
+    "dismiss": "Tutup",
+    "refresh": "Segarkan",
+    "delete": "Hapus",
+    "copy_to_clipboard": "Salin ke clipboard",
+    "more_details": "Detail Lainnya",
+    "no_error": "Tidak ada kesalahan",
+    "copied_success": "Tersalin ke clipboard"
+  },
+  "dropdown": {
+    "custom_value": "Nilai khusus",
+    "custom": "Khusus",
+    "use_custom_value": "Gunakan nilai khusus",
+    "back_preset_options": "Kembali ke opsi preset",
+    "select": "Pilih"
+  },
+  "app": {
+    "language": "Bahasa",
+    "github": "GitHub",
+    "open_github_failed": "Tidak dapat membuka tautan GitHub",
+    "section_account": "Akun",
+    "section_placeholder": "Placeholder",
+    "section_management": "Manajemen",
+    "manage_pairing_file": "Kelola Berkas Pairing",
+    "refresh_devices": "Segarkan Perangkat",
+    "certificates": "Sertifikat",
+    "app_ids": "ID Aplikasi",
+    "devices": "Perangkat",
+    "active_device": "Aktif: {{name}}",
+    "select_device": "Pilih perangkat",
+    "installers": "Pemasang",
+    "choose_build": "Pilih sebuah build",
+    "sidestore_stable": "SideStore (Stabil)",
+    "sidestore_nightly": "SideStore (Nightly)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stabil)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
+    "import_ipa": "Impor IPA",
+    "settings": "Pengaturan",
+    "must_be_logged_in": "Anda harus masuk terlebih dahulu!",
+    "must_select_device": "Anda harus memilih perangkat!",
+    "ipa_files": "Berkas IPA",
+    "logo_alt": "logo iloader"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "Masuk sebagai",
+    "sign_out": "Keluar",
+    "signing_out": "Sedang Keluar...",
+    "sign_out_failed": "Keluar gagal",
+    "signed_out_success": "Berhasil keluar!",
+    "saved_logins": "Login Tersimpan",
+    "sign_in": "Masuk",
+    "logging_in": "Sedang Masuk...",
+    "logged_in_success": "Berhasil masuk!",
+    "login_failed": "Masuk gagal",
+    "deleting": "Menghapus...",
+    "deletion_failed": "Penghapusan gagal",
+    "deleted_success": "Berhasil dihapus!",
+    "add_account": "Tambah Akun +",
+    "new_login": "Login Baru",
+    "email_placeholder": "Email Apple ID...",
+    "password_placeholder": "Kata Sandi Apple ID...",
+    "save_credentials": "Simpan Kredensial",
+    "enter_email_password": "Harap masukkan email dan kata sandi.",
+    "valid_email": "Harap masukkan alamat email yang valid.",
+    "login": "Masuk",
+    "two_factor_title": "Autentikasi Dua Faktor",
+    "two_factor_prompt": "Harap masukkan kode verifikasi yang dikirim ke perangkat Anda.",
+    "verification_placeholder": "Kode Verifikasi...",
+    "valid_6digit": "Harap masukkan kode 6 digit yang valid.",
+    "submit": "Kirim",
+    "max_certs_title": "Sertifikat maksimum tercapai",
+    "max_certs_desc": "iloader akan mencabut sertifikat Anda yang ada dan membuat yang baru.",
+    "hide_certificate_list": "Sembunyikan daftar sertifikat",
+    "choose_what_to_revoke": "Pilih apa yang akan dicabut",
+    "continue": "Lanjutkan",
+    "no_keyring_available": "Tidak dapat menyimpan kredensial di perangkat ini."
+  },
+  "device": {
+    "title": "iDevice",
+    "loading_devices": "Memuat perangkat...",
+    "no_devices_found": "Tidak ada perangkat ditemukan",
+    "found_device": "Perangkat ditemukan",
+    "found_devices": "Perangkat ditemukan",
+    "unable_load_devices_prefix": "Tidak dapat memuat perangkat",
+    "no_devices_found_period": "Tidak ada perangkat ditemukan.",
+    "selected": "Dipilih",
+    "pairing_in_progress_header": "Memasangkan dengan {{device}}...",
+    "pairing_in_progress_hint": "Harap buka kunci perangkat Anda dan klik \"Percaya\", lalu masukkan kode sandi Anda jika diminta.",
+    "pairing_cancel": "Batal",
+    "failed_select": "Gagal memilih perangkat"
+  },
+  "operation": {
+    "failed": "Operasi gagal.",
+    "completed": "Operasi selesai",
+    "please_wait": "Harap tunggu...",
+    "copy_error_clipboard": "Salin kesalahan ke clipboard"
+  },
+  "operations": {
+    "install_sidestore_title": "Memasang SideStore",
+    "install_sidestore_success_title": "SideStore Terpasang!",
+    "install_sidestore_success_message": "Buka SideStore dan segarkan untuk menyelesaikan pemasangan!",
+    "install_sidestore_step_download": "Unduh SideStore",
+    "install_sidestore_step_install": "Tanda Tangan & Pasang SideStore",
+    "install_sidestore_step_pairing": "Tempatkan Berkas Pairing",
+    "install_livecontainer_title": "Memasang LiveContainer+SideStore",
+    "install_livecontainer_success_title": "LiveContainer+SideStore Terpasang!",
+    "install_livecontainer_success_message": "Untuk menyelesaikan pemasangan, buka LiveContainer, pilih pengaturan, dan klik \"Impor Sertifikat Dari SideStore.\" Kemudian, pilih aplikasi, klik ikon sidestore, dan segarkan LiveContainer.",
+    "install_livecontainer_step_download": "Unduh LiveContainer+SideStore",
+    "install_livecontainer_step_install": "Tanda Tangan & Pasang LiveContainer+SideStore",
+    "install_livecontainer_step_pairing": "Tempatkan Berkas Pairing",
+    "sideload_title": "Memasang Aplikasi",
+    "sideload_step_install": "Tanda Tangan & Pasang Aplikasi"
+  },
+  "certificates": {
+    "manage": "Kelola Sertifikat",
+    "loading": "Memuat sertifikat...",
+    "loaded_success": "Sertifikat berhasil dimuat!",
+    "failed_load": "Gagal memuat sertifikat",
+    "revoking": "Mencabut sertifikat...",
+    "revoked_success": "Sertifikat berhasil dicabut!",
+    "failed_revoke": "Gagal mencabut sertifikat: ",
+    "none_found": "Tidak ada sertifikat ditemukan.",
+    "name": "Nama",
+    "serial_number": "Nomor Seri",
+    "machine_name": "Nama Mesin",
+    "machine_id": "ID Mesin",
+    "revoke": "Cabut"
+  },
+  "app_ids": {
+    "manage": "Kelola ID Aplikasi",
+    "loading": "Memuat ID Aplikasi...",
+    "loaded_success": "ID Aplikasi berhasil dimuat!",
+    "failed_load": "Gagal memuat ID Aplikasi",
+    "deleted_success": "ID Aplikasi berhasil dihapus!",
+    "failed_delete": "Gagal menghapus ID Aplikasi",
+    "available": "{{available}}/{{max}} ID Tersedia",
+    "none_found": "Tidak ada ID Aplikasi ditemukan.",
+    "name": "Nama",
+    "expiration": "Kedaluwarsa",
+    "id": "ID",
+    "identifier": "Pengenal",
+    "never": "Tidak Pernah"
+  },
+  "pairing": {
+    "manage": "Kelola Berkas Pairing",
+    "loading_apps": "Memuat Aplikasi...",
+    "apps_loaded_success": "Aplikasi berhasil dimuat!",
+    "failed_load_apps": "Gagal memuat aplikasi",
+    "placing_pairing_file": "Menempatkan berkas pairing...",
+    "pairing_file_placed_success": "Berkas pairing berhasil ditempatkan!",
+    "failed_place_pairing": "Gagal menempatkan pairing",
+    "loading_app": "Memuat Aplikasi...",
+    "no_supported_apps_found": "Tidak ada aplikasi yang didukung ditemukan.",
+    "name": "Nama",
+    "bundle_id": "ID Bundel",
+    "place_pairing_file": "Tempatkan Berkas Pairing",
+    "place": "Tempatkan",
+    "advanced_export_title": "Lanjutan: Ekspor Berkas Pairing",
+    "advanced_export_message": "Ini tidak disarankan kecuali Anda benar-benar mengerti risikonya. Tekan \"Tempatkan\" di samping aplikasi untuk mentransfernya secara otomatis. Anda yakin masih ingin mengekspor berkas pairing Anda?",
+    "exporting_pairing_file": "Mengekspor berkas pairing...",
+    "pairing_file_exported_success": "Berkas pairing berhasil diekspor!",
+    "failed_export_pairing_file": "Gagal mengekspor berkas pairing",
+    "export_not_recommended": "Ekspor (Tidak Disarankan)",
+    "refresh_installed_apps": "Pindai Ulang Aplikasi Terpasang",
+    "place_all": "Tempatkan Di Semua Aplikasi"
+  },
+  "settings": {
+    "anisette_server": "Server Anisette:",
+    "custom_anisette_placeholder": "Server Anisette Khusus",
+    "custom_anisette": "Khusus",
+    "use_custom_anisette": "Gunakan server Anisette khusus",
+    "back_preset_servers": "Kembali ke server preset",
+    "reset_anisette_title": "Atur Ulang State Anisette",
+    "reset_anisette_message": "Anda yakin ingin mereset state anisette? Anda akan diminta untuk memasukkan kode 2FA Anda lagi.",
+    "resetting_anisette_state": "Meriset state anisette...",
+    "anisette_state_reset_success": "State anisette berhasil direset",
+    "anisette_state_not_found": "Tidak ada state anisette untuk direset",
+    "failed_reset_anisette_state": "Gagal mereset state anisette",
+    "view_logs": "Lihat Log",
+    "logs": "Log",
+    "log_level": "Tingkat Log:",
+    "no_logs_yet": "Belum ada log.",
+    "debug": "Debug",
+    "info": "Info",
+    "warn": "Peringatan",
+    "error": "Kesalahan",
+    "language_hint": "Anda dapat membantu terjemahan <translation>di sini</translation>.",
+    "delete_stored_rppairing": "Hapus Pairing Tersimpan",
+    "delete_stored_rppairing_message": "Anda yakin ingin menghapus berkas pairing yang tersimpan untuk perangkat ini? Ini akan mengharuskan Anda untuk memasangkan kembali.",
+    "deleting_stored_rppairing": "Menghapus pairing tersimpan...",
+    "stored_rppairing_deleted_success": "Pairing tersimpan berhasil dihapus!",
+    "failed_delete_stored_rppairing": "Gagal menghapus pairing tersimpan",
+    "dont_use_keyring": "Jangan gunakan keyring",
+    "dont_use_keyring_message": "Ini membuat iloader kurang aman dengan menyimpan berkas pairing, state anisette, dan sertifikat di disk. Aktifkan ini hanya jika penyimpanan keyring default tidak berfungsi dan Anda memahami risikonya."
+  },
+  "dialog": {
+    "confirm": "Konfirmasi",
+    "cancel": "Batal"
+  },
+  "error": {
+    "title": "Terjadi Kesalahan: {{msg}}",
+    "unknown": "Tidak diketahui",
+    "suggestions_heading": "Saran",
+    "suggestions": {
+      "underage": [
+        "Apple ID Anda mungkin di bawah usia yang diperlukan untuk menggunakan layanan pengembang."
+      ],
+      "account_locked": [
+        "Jangan panik! Ini biasanya terjadi setelah beberapa kali upaya masuk yang gagal, tetapi ini sama sekali tidak berbahaya.",
+        "Kunjungi ((link:https://iforgot.apple.com/)) untuk membuka kunci akun Anda."
+      ],
+      "auth": [
+        "Pastikan kredensial Anda benar dan coba lagi, meskipun sebelumnya sudah benar.",
+        "Jika masalah masih berlanjut, coba gunakan Apple ID lain.",
+        "Kunci Keamanan 2FA tidak didukung. Jika memungkinkan, gunakan Apple ID tanpa 2FA atau dengan 2FA perangkat tepercaya."
+      ],
+      "download": [
+        "Unduh SideStore secara manual dari ((link:https://github.com/SideStore/SideStore/releases)) dan gunakan tombol \"Impor IPA\" untuk memasangnya."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Pastikan perangkat Anda tidak menggunakan beta pengembang iOS 26.3, karena memiliki bug dengan house arrest"
+      ],
+      "pairing": [
+        "Coba sambungkan kembali perangkat dan jalankan tindakan lagi.",
+        "Pastikan perangkat Anda memiliki kode sandi.",
+        "Pastikan perangkat Anda terhubung melalui USB, bukan nirkabel."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]Pastikan Anda telah menginstal ((link:https://apple.co/ms:iTunes)) dan periksa apakah iTunes dapat mendeteksi perangkat Anda.",
+        "[platform::windows]Copot pemasangan iTunes dan Apple Mobile Device Support, lalu instal \"Apple Devices\" dari Microsoft Store.",
+        "[platform::linux]Pastikan usbmuxd terinstal dan berjalan."
+      ],
+      "trust": [
+        "Buka kunci perangkat Anda, buka layar beranda, dan terima permintaan kepercayaan yang muncul."
+      ],
+      "device_coms": [
+        "Pastikan perangkat Anda terhubung dengan benar ke komputer.",
+        "Cabut dan sambungkan kembali perangkat. Jika masalah masih berlanjut, coba port USB dan kabel yang berbeda."
+      ],
+      "not_logged_in": ["Masuk ke Apple ID Anda terlebih dahulu."],
+      "no_device_selected": ["Pilih perangkat sebelum melanjutkan."],
+      "anisette": [
+        "Pastikan komputer Anda terhubung ke internet.",
+        "Ubah server anisette Anda. Coba beberapa server yang berbeda.",
+        "Pastikan Anda dapat mengakses ((link:{{anisetteServerUrl}})) di peramban."
+      ],
+      "keyring": [
+        "Coba aktifkan \"Jangan gunakan keyring\" di pengaturan untuk melewati masalah ini. Perhatikan bahwa ini kurang aman."
+      ],
+      "misc": [
+        "Coba lagi. Memulai ulang aplikasi, komputer, dan/atau ponsel Anda mungkin juga membantu."
+      ],
+      "admin": [
+        "Coba jalankan aplikasi dengan izin yang ditinggikan (sebagai administrator/root)."
+      ],
+      "filesystem": [
+        "Pastikan iloader memiliki izin untuk membaca dan menulis berkas di sistem Anda."
+      ],
+      "not_enough_app_ids": [
+        "Anda tidak memiliki cukup ID Aplikasi yang tersedia untuk memasang aplikasi ini.",
+        "Tunggu hingga ID Aplikasi kedaluwarsa setelah 7 hari (tidak dapat dihapus lebih cepat), lalu coba lagi.",
+        "Memasang aplikasi dari SideStore terkadang memungkinkan Anda menggunakan lebih sedikit ID Aplikasi, jadi coba pasang dari sana sebagai gantinya."
+      ],
+      "max_apps": [
+        "Anda hanya dapat memiliki 3 aplikasi sideload yang terpasang sekaligus dengan Apple ID gratis.",
+        "Hapus aplikasi sideload lain untuk mengosongkan ruang bagi aplikasi ini.",
+        "Aplikasi yang kedaluwarsa tetap dihitung dalam batas 3 aplikasi."
+      ]
+    },
+    "support_message": "Jika masalah masih berlanjut, tekan \"Salin ke clipboard\" dan kirimkan kesalahan yang disalin ke <discord>Discord</discord> atau <github>isu GitHub</github> untuk mendapatkan dukungan."
+  },
+  "update": {
+    "new_version_available": "Versi baru tersedia: {{version}}. Apakah Anda ingin memperbarui?",
+    "updating": "Memperbarui...",
+    "downloaded_restarting": "Pembaruan diunduh! Memulai ulang aplikasi...",
+    "failed_download": "Gagal mengunduh pembaruan: {{error}}"
+  }
+}

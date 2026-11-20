@@ -1,0 +1,140 @@
+.operation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25em;
+  overflow-y: hidden;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.operation-header h2 {
+  margin-top: 0;
+}
+
+.operation-content-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.operation-step {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.operation-step-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.operation-extra-details {
+  background-color: rgba(0, 0, 0, 0.4);
+  overflow-x: auto;
+  padding: 0.65em;
+  border-radius: 12px;
+  margin: 0.5rem 0 0;
+  font-family: "SF Mono", "Menlo", monospace;
+  font-size: 0.85rem;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.operation-step-internal {
+  flex-shrink: 1;
+  text-align: left;
+  overflow-x: auto;
+  flex-grow: 1;
+}
+
+.operation-step-internal p {
+  margin: 0;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  border-radius: 50%;
+  border-color: #fff #fff transparent transparent;
+  border-style: solid;
+  border-width: 3px;
+  width: 1.5rem;
+  height: 1.5rem;
+  box-sizing: border-box;
+  line-height: 1.5rem;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+.waiting-icon {
+  display: inline-block;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  width: 1.5rem;
+  height: 1.5rem;
+  box-sizing: border-box;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.operation-check {
+  color: var(--success);
+}
+
+.operation-error {
+  color: var(--danger);
+}
+
+.operation-skipped {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.operation-header {
+  margin-bottom: 1em;
+}
+
+.operation-header p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.operation-success-message {
+  font-weight: 600;
+  color: rgb(241, 212, 115);
+}
+
+.operation-more-details {
+  cursor: pointer;
+  padding-top: 0.25rem;
+  text-decoration: underline;
+}
+
+.operation-suggestions {
+  padding: 0rem 0 1rem 0;
+}
+
+.operation-suggestions ul {
+  margin: 0 0 0.5rem 0;
+  padding-left: 2rem;
+}

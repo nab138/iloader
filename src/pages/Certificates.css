@@ -1,0 +1,47 @@
+.certificate-table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.certificate-table {
+  border-collapse: collapse;
+  width: 100%;
+  padding: 0.5em;
+}
+
+.certificate-table td,
+.certificate-table th {
+  padding: 0.65em 1em;
+  text-align: left;
+}
+
+.certificate-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin: 0;
+  padding: 0.5em;
+}
+
+.cert-item-last {
+  border-bottom: none;
+}
+
+.cert-item-part {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding-right: 0.5em;
+}
+
+.cert-item-revoke {
+  cursor: pointer;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.pairing-place {
+  cursor: pointer;
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.cert-item-revoke:hover {
+  color: #ffbb9c;
+}

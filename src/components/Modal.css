@@ -1,0 +1,88 @@
+.modal-container {
+  position: fixed;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--glass-surface-alt);
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 35px 65px rgba(0, 0, 0, 0.65);
+  padding: 2em;
+  max-width: 95vw;
+  max-height: 90vh;
+  box-sizing: border-box;
+  position: relative;
+  color: inherit;
+}
+
+.modal-close {
+  font-size: 1.5rem;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  margin: 0;
+  width: 1.7rem;
+  height: 1.7rem;
+  text-align: center;
+  line-height: 1.7rem;
+  background-color: transparent !important;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  color: #fff;
+}
+
+.modal-circles {
+  position: absolute;
+  bottom: 15px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.modal-next {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+}
+
+.modal-prev {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+}
+
+.page-circle {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #fff6;
+  transition: all 0.2s;
+  align-self: center;
+  position: relative;
+}
+
+.active-page {
+  background-color: #fffffff0;
+}
+
+.modal-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-width: 100%;
+  max-height: calc(85vh - 4em);
+  padding: 5px;
+  box-sizing: border-box;
+}

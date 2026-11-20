@@ -1,0 +1,286 @@
+{
+  "subtitle": "Sideloading Companion",
+  "version": "Verzió",
+  "common": {
+    "confirm": "Megerősítés",
+    "cancel": "Megszakítás",
+    "dismiss": "Elutasítás",
+    "refresh": "Frissítés",
+    "delete": "Törlés",
+    "copy_to_clipboard": "Kimásolás a vágólapra",
+    "more_details": "Több információ",
+    "no_error": "Nincs hiba",
+    "copied_success": "Kimásolva a vágólapra"
+  },
+  "dropdown": {
+    "custom_value": "Egyedi érték",
+    "custom": "Egyedi",
+    "use_custom_value": "Egyedi érték használata",
+    "back_preset_options": "Vissza az előre beállított beállításokra",
+    "select": "Kiválasztás"
+  },
+  "app": {
+    "language": "Nyelv",
+    "github": "GitHub",
+    "open_github_failed": "Nem sikerült megnyitni a GitHub Linket",
+    "section_account": "Fiók",
+    "section_placeholder": "Helyőrző",
+    "section_management": "Kezelés",
+    "manage_pairing_file": "Párosítófájl kezelése",
+    "refresh_devices": "Eszköz frissítése",
+    "certificates": "Tanusítványok",
+    "app_ids": "Alkalmazás ID-k",
+    "devices": "Eszközök",
+    "active_device": "Aktív: {{name}}",
+    "select_device": "Válassz ki egy eszközt.",
+    "installers": "Telepítők",
+    "choose_build": "Válassz ki egy változatot",
+    "sidestore_stable": "SideStore (Stabil)",
+    "sidestore_nightly": "SideStore (Nightly)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stabil)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
+    "import_ipa": "IPA importálása",
+    "settings": "Beállítások",
+    "must_be_logged_in": "Be kell jelentkezned!",
+    "must_select_device": "Ki kell választanod egy eszközt!",
+    "ipa_files": "IPA Fájlok",
+    "logo_alt": "iloader logó"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "Bejelentkezve mint",
+    "sign_out": "Kijelentkezés",
+    "signing_out": "Kijelentkezés folyamatban...",
+    "sign_out_failed": "Kijelentkezés sikertelen",
+    "signed_out_success": "Kijelentkezve sikeresen!",
+    "saved_logins": "Elmentett bejelentkezések",
+    "sign_in": "Bejelentkezés",
+    "logging_in": "Bejelentkezés folyamatban...",
+    "logged_in_success": "Bejelentkezve sikeresen!",
+    "login_failed": "Bejelentkezés sikertelen",
+    "deleting": "Törlés folyamatban...",
+    "deletion_failed": "Törlés sikertelen",
+    "deleted_success": "Törlés sikeres!",
+    "add_account": "Fiók hozzáadása +",
+    "new_login": "Új bejelentkezés",
+    "email_placeholder": "Apple ID Email...",
+    "password_placeholder": "Apple ID Jelszó...",
+    "save_credentials": "Hitelesítő adatok mentése",
+    "enter_email_password": "Írj be email címet és jelszót.",
+    "valid_email": "Írj be érvényes email címet.",
+    "login": "Bejelentkezés",
+    "two_factor_title": "Kétfaktoros hitelesítés",
+    "two_factor_prompt": "Írd be a megerősítő kódot ami érkezett az eszközödre.",
+    "verification_placeholder": "Hitelesítő kód...",
+    "valid_6digit": "Írj be egy érvényes hitelesítő kódot.",
+    "submit": "Beküldés",
+    "max_certs_title": "Maximum tanusítvány elérve",
+    "max_certs_desc": "Az iloader visszavonja a meglévő tanúsítványokat, és újat állít ki..",
+    "hide_certificate_list": "Tanusítványlista elrejtése",
+    "choose_what_to_revoke": "Jelöld ki mit vonjunk vissza",
+    "continue": "Folytatás",
+    "no_keyring_available": "A hitelesítő adatok nem menthetők el ezen az eszközön."
+  },
+  "device": {
+    "title": "iDevice",
+    "failed_select_prefix": "Nem sikerült kiválasztani az eszközt: ",
+    "loading_devices": "Eszközök betöltése...",
+    "no_devices_found": "Nem találtunk eszközöket",
+    "found_device": "Találtunk eszközt",
+    "found_devices": "Talált eszközök",
+    "unable_load_devices_prefix": "Nem sikerült betölteni az eszközt: ",
+    "no_devices_found_period": "Nincs talált eszköz.",
+    "selected": "Kiválasztva",
+    "pairing_in_progress_header": "Párosítás a {{device}} készülékkel...",
+    "pairing_in_progress_hint": "Kérjük, oldja fel a készülék zárolását és kattintson a \"Trust,\" gombra, majd ha a rendszer kéri, írja be a jelszavát.",
+    "pairing_cancel": "Megszakítás"
+  },
+  "operation": {
+    "failed": "Sikertelen művelet.",
+    "completed": "Művelet befejezve",
+    "please_wait": "Kérlek várj...",
+    "copy_error_clipboard": "Hiba kimásolása a vágólapra"
+  },
+  "operations": {
+    "install_sidestore_title": "SideStore telepítése",
+    "install_sidestore_success_title": "SideStore telepítve!",
+    "install_sidestore_success_message": "Nyisd meg a SideStoret és frissítsd újra a művelet befejezéséhez!",
+    "install_sidestore_step_download": "SideStore letöltése",
+    "install_sidestore_step_install": "SideStore aláírása és telepítése",
+    "install_sidestore_step_pairing": "Párosítófájl telepítése",
+    "install_livecontainer_title": "LiveContainer+SideStore települ",
+    "install_livecontainer_success_title": "LiveContainer+SideStore telepítve!",
+    "install_livecontainer_success_message": "A telepítés befejezéséhez nyissa meg a LiveContainer alkalmazást, válassza a „Beállítások” menüpontot, majd kattintson az „Import Certificate From SideStore” gombra. Ezután válassza az „Alkalmazások” menüpontot, kattintson a SideStore ikonra, majd frissítse a LiveContainer alkalmazást.",
+    "install_livecontainer_step_download": "LiveContainer+SideStore letöltése",
+    "install_livecontainer_step_install": "LiveContainer+SideStore aláírása és telepítése",
+    "install_livecontainer_step_pairing": "Párosítófájl telepítése",
+    "sideload_title": "App települ",
+    "sideload_step_install": "App aláírása és telepítése"
+  },
+  "certificates": {
+    "manage": "Tanusítványok kezelése",
+    "loading": "Tanusítványok betöltése...",
+    "loaded_success": "Tanusítványok sikeresen betöltve!",
+    "failed_load": "Nem sikerült betölteni a tanusítványokat.",
+    "revoking": "Tanusítvány visszavonása...",
+    "revoked_success": "Tanusítvány sikeresen visszavonva!",
+    "failed_revoke": "Nem sikerült visszavonni a tanusítványt: ",
+    "none_found": "Nem találtunk tanusítványokat.",
+    "name": "Név",
+    "serial_number": "Szériaszám",
+    "machine_name": "Gép neve",
+    "machine_id": "Gép azonosítója",
+    "revoke": "Visszavonás"
+  },
+  "app_ids": {
+    "manage": "Appazonosítók kezelése",
+    "loading": "Appazonosítók betöltése...",
+    "loaded_success": "Appazonosítók sikeresen betöltve!",
+    "failed_load": "Nem sikerült betölteni az appazonosítókat",
+    "deleted_success": "Appazonosítók sikeresen törölve!",
+    "failed_delete": "Nem sikerült törölni az appazonosítót",
+    "available": "{{available}}/{{max}} azonosító elérhető",
+    "none_found": "Nem találtunk appazonosítót.",
+    "name": "Név",
+    "expiration": "Lejárat",
+    "id": "Azonosító",
+    "identifier": "Azonosító",
+    "never": "Soha"
+  },
+  "pairing": {
+    "manage": "Párosítófájl kezelése",
+    "loading_apps": "Alkalmazások betöltése...",
+    "apps_loaded_success": "Alkalmazások sikeresen betöltve!",
+    "failed_load_apps": "Nem sikerült betölteni az alkalmazásokat",
+    "placing_pairing_file": "Párosítófájl telepítése folyamatban...",
+    "pairing_file_placed_success": "Párosítófájl telepítése sikeres!",
+    "failed_place_pairing": "Párosítófájl telepítése sikertelen",
+    "loading_app": "Alkalmazás betöltése...",
+    "no_supported_apps_found": "Nincsen támogatott alkalmazás.",
+    "name": "Név",
+    "bundle_id": "Csomagazonosító",
+    "place_pairing_file": "Párosítófájl telepítése",
+    "place": "Elhelyezés",
+    "advanced_export_title": "Egyéni: Párosítófájl exportálása",
+    "advanced_export_message": "Ezt csak akkor javasoljuk, ha pontosan tudja, mit csinál. Az alkalmazás mellett található „Helyezés” gombra kattintva az alkalmazás automatikusan átkerül. Biztosan továbbra is exportálni szeretné a párosítási fájlt?",
+    "exporting_pairing_file": "Párosítófájl exportálása...",
+    "pairing_file_exported_success": "Párosítófájl exportálása sikeres!",
+    "failed_export_pairing_file": "Párosítófájl exportálása sikertelen.",
+    "export_not_recommended": "Exportálás (Nem ajánlott)",
+    "refresh_installed_apps": "Telepített alkalmazások újraszkennelése",
+    "place_all": "Telepítés összes alkalmazásba"
+  },
+  "settings": {
+    "anisette_server": "Anisette Szerver:",
+    "custom_anisette_placeholder": "Egyéni Anisette Server",
+    "custom_anisette": "Egyéni",
+    "use_custom_anisette": "Használj egyéni Anisette server",
+    "back_preset_servers": "Vissza az alap szerverekre",
+    "reset_anisette_title": "Anisette állapot visszaállítása",
+    "reset_anisette_message": "Biztosan vissza szeretné állítani az anisette állapotát? Ehhez újra meg kell adnia a kétfaktoros hitelesítési kódját.",
+    "resetting_anisette_state": "Anisette állapot visszaállítása folyamatban...",
+    "anisette_state_reset_success": "Anisette állapot visszaállítva sikeresen",
+    "anisette_state_not_found": "Nincs Anisette állapot amit visszaállítsunk",
+    "failed_reset_anisette_state": "Nem sikerült visszaállítani az Anisette állapotát",
+    "view_logs": "Log megtekintése",
+    "logs": "Logok",
+    "log_level": "Log szint:",
+    "no_logs_yet": "Nincsenek logok egyenlőre.",
+    "debug": "Hibakeresés",
+    "info": "Információ",
+    "warn": "Figyelmeztetés",
+    "error": "Hiba",
+    "language_hint": "Tudsz segíteni fordítással <translation>itt</translation>.",
+    "delete_stored_rppairing": "Eltárolt párosítófájlok törlése",
+    "delete_stored_rppairing_message": "Biztosan törölni szeretné az eszközhöz mentett párosítási fájlt? Ez esetben újra kell párosítania az eszközt.",
+    "deleting_stored_rppairing": "Tárolt párosítófájlok törlése...",
+    "stored_rppairing_deleted_success": "Tárolt párosítófáljok törölve!",
+    "failed_delete_stored_rppairing": "Nem sikerült törölni a tárolt párosítófájlokat",
+    "dont_use_keyring": "Ne használjon keyringet",
+    "dont_use_keyring_message": "Ezáltal az iloader kevésbé biztonságos lesz, mivel a párosítási fájlokat, az Anisette állapotát és a tanúsítványokat a merevlemezen tárolja. Ezt a beállítást csak akkor kapcsolja be, ha az alapértelmezett kulcstartó-tárolás nem működik, és tisztában van a kockázatokkal."
+  },
+  "dialog": {
+    "confirm": "Megerősítés",
+    "cancel": "Megszakítás"
+  },
+  "error": {
+    "title": "Egy hiba történt: {{msg}}",
+    "unknown": "Ismeretlen",
+    "suggestions_heading": "Tippek",
+    "suggestions": {
+      "underage": [
+        "Lehet, hogy az Apple ID-d nem éri el a fejlesztői szolgáltatások igénybevételéhez szükséges életkort.."
+      ],
+      "account_locked": [
+        "Ne ess pánikba! Ez általában több sikertelen bejelentkezési kísérlet után fordul elő, de teljesen ártalmatlan.",
+        "Látogass el a ((link:https://iforgot.apple.com/)) oldalra a fiókod feloldásához!"
+      ],
+      "auth": [
+        "Ellenőrizze, hogy a bejelentkezési adatai helyesek-e, és próbálja meg újra, még akkor is, ha helyes volt.",
+        "Ha ez a probléma fennmarad, próbálkozz egy másik Apple ID-vel",
+        "A biztonsági kulcsos kétfaktoros hitelesítés (2FA) nem támogatott. Ha lehetséges, használjon olyan Apple ID-t, amelynél nincs beállítva a kétfaktoros hitelesítés, vagy amelynél a megbízható eszközökön történő hitelesítés van beállítva."
+      ],
+      "download": [
+        "Töltsd le a SideStoret manuálisan innen: ((link:https://github.com/SideStore/SideStore/releases)) és nyomj az \"IPA importálása\" gombra hogy települjön."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Biztosítsa, hogy a készüléke nem egy iOS 26.3 fejlesztői bétán van, mivel a házi őrizet funkcióban hiba van."
+      ],
+      "pairing": [
+        "Próbáld meg újra csatlakoztatni a készüléket, majd próbáld újra a lépést.",
+        "Biztosítsd, hogy a készüléken nincs jelkód beállítva.",
+        "Biztosítsd, hogy a készüléken USB-n van csatlakoztatva, nem vezeték nélkül."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]Biztosítsd, hogy az ((link:https://apple.co/ms:iTunes)) fel van telepítve és hogy látja-e a készüléked.",
+        "[platform::windows]Távolítsa el az iTunes és az Apple Mobile Device Support alkalmazást, majd telepítse az \"Apple Devices\" alkalmazást a Microsoft Store-ból.",
+        "[platform::linux]Nézd meg hogy az usbmuxd telepítve van, és hogy el van indítva."
+      ],
+      "trust": [
+        "Oldd fel a készüléked, menj a kezdőképernyőre, és fogadd el az esetleges Trust felhivásokat."
+      ],
+      "device_coms": [
+        "Biztosítsd, hogy a készüléked rendesen csatlakoztatva van a gépedhez.",
+        "Húzd ki és csatlakoztasd újra a készüléket. Ha a probléma még mindig fennáll, próbálj egy másik USB portot vagy kábelt."
+      ],
+      "not_logged_in": ["Jelentkezz be az Apple fiókoddal először."],
+      "no_device_selected": ["Válassz ki egy készüléket mielőtt folytatnád."],
+      "anisette": [
+        "Biztosítsd, hogy a géped csatlakozva van az internedhez.",
+        "Caseréld le az Anisette szervered. Próbálj meg másik szervereket.",
+        "Nézd meg hogy eléred-e ezt a linket: ((link:{{anisetteServerUrl}})) egy böngészőben."
+      ],
+      "keyring": [
+        "Próbáld meg bekapcsolni a \"Ne használjon keyringet\" a beállításokban hogy kikerüld ezt a hibát. Tudd, hogy ez kevésbé biztonságos."
+      ],
+      "misc": [
+        "Próbáld újra. Indítsd újra az appot, a géped, vagy / próbáld a készüléked újraindítani."
+      ],
+      "admin": [
+        "Próbáld meg az appott nagyobb jogosultsággal megnyitni (adminisztrátor/root)."
+      ],
+      "filesystem": [
+        "Nézd meg, hogy az iloadernek van-e jogosultsága írás/olvasáshoz a rendszereden."
+      ],
+      "not_enough_app_ids": [
+        "Nincs elég app id a fiókodon, hogy telepítsd ezt az alkalmazást.",
+        "Várj, amíg az App ID-k leválnak 7 nap múlva (nem lehet hamarabb törölni), és próbáld újra.",
+        "Az alkalmazások SideStore-ból történő telepítése néha kevesebb App ID használatát teszi lehetővé, ezért próbáld meg inkább onnan telepíteni őket."
+      ],
+      "max_apps": [
+        "Csak 3 sideloadolt appod lehet egyidőben ingyenes Apple ID-vel.",
+        "Törölj le egyéb sideloadolt appokat, hogy szabaduljon fel hely ennek az appnak.",
+        "A lejárt alkalmazások is beleszámítanak a 3 alkalmazásos korlátba."
+      ]
+    },
+    "support_message": "Ha a hiba még mindig fennáll, kattintson a \"Kimásolás a vágólap\" gombra és küldje el a kimásolt hibát <discord>Discordon</discord> vagy <github>GitHub hibában</github> támogatásért."
+  },
+  "update": {
+    "new_version_available": "Egy új verzió elérhető: {{version}}. Akarsz frissíteni?",
+    "updating": "Frissítés...",
+    "downloaded_restarting": "Frissítés letöltve! Alkalmazás újraindítása folyamatban...",
+    "failed_download": "Nem sikerült letölteni a frissítést: {{error}}"
+  }
+}

@@ -1,0 +1,290 @@
+{
+  "subtitle": "サイドロード支援ツール",
+  "version": "バージョン",
+  "common": {
+    "confirm": "確定",
+    "cancel": "キャンセル",
+    "dismiss": "閉じる",
+    "refresh": "更新",
+    "delete": "削除",
+    "copy_to_clipboard": "クリップボードにコピー",
+    "more_details": "詳細表示",
+    "no_error": "エラーなし",
+    "copied_success": "クリップボードにコピーしました"
+  },
+  "dropdown": {
+    "custom_value": "カスタム値",
+    "custom": "カスタム",
+    "use_custom_value": "カスタム値を使用する",
+    "back_preset_options": "プリセット設定に戻る",
+    "select": "選択"
+  },
+  "app": {
+    "language": "言語",
+    "github": "GitHub",
+    "open_github_failed": "GitHubのリンクを開けませんでした",
+    "section_account": "アカウント",
+    "section_placeholder": "プレースホルダー",
+    "section_management": "管理",
+    "manage_pairing_file": "ペアリングファイルの管理",
+    "refresh_devices": "デバイス一覧を更新",
+    "certificates": "証明書",
+    "app_ids": "App ID",
+    "devices": "デバイス",
+    "active_device": "アクティブ: {{name}}",
+    "select_device": "デバイスを選択してください",
+    "installers": "インストーラー",
+    "choose_build": "ビルドを選択",
+    "sidestore_stable": "SideStore (Stable)",
+    "sidestore_nightly": "SideStore (Nightly)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Stable)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
+    "import_ipa": "IPAをインポート",
+    "settings": "設定",
+    "must_be_logged_in": "ログインが必要です！",
+    "must_select_device": "デバイスを選択してください！",
+    "ipa_files": "IPAファイル",
+    "logo_alt": "iloader ロゴ"
+  },
+  "apple_id": {
+    "title": "Apple ID",
+    "logged_in_as": "ログイン中:",
+    "sign_out": "サインアウト",
+    "signing_out": "サインアウト中...",
+    "sign_out_failed": "サインアウトに失敗しました",
+    "signed_out_success": "正常にサインアウトしました！",
+    "saved_logins": "保存済みログイン情報",
+    "sign_in": "サインイン",
+    "logging_in": "ログイン中...",
+    "logged_in_success": "正常にログインしました！",
+    "login_failed": "ログインに失敗しました",
+    "deleting": "削除中...",
+    "deletion_failed": "削除に失敗しました",
+    "deleted_success": "正常に削除されました！",
+    "add_account": "アカウントを追加 +",
+    "new_login": "新規ログイン",
+    "email_placeholder": "Apple ID メールアドレス...",
+    "password_placeholder": "Apple ID パスワード...",
+    "save_credentials": "ログイン情報を保存する",
+    "enter_email_password": "メールアドレスとパスワードの両方を入力してください。",
+    "valid_email": "有効なメールアドレスを入力してください。",
+    "login": "ログイン",
+    "two_factor_title": "2要素認証",
+    "two_factor_prompt": "デバイスに送信された確認コードを入力してください。",
+    "verification_placeholder": "確認コード...",
+    "valid_6digit": "有効な6桁のコードを入力してください。",
+    "submit": "送信",
+    "max_certs_title": "証明書の上限に達しました",
+    "max_certs_desc": "iloaderは既存の証明書を無効化（Revoke）し、新しいものを生成します。",
+    "hide_certificate_list": "証明書リストを隠す",
+    "choose_what_to_revoke": "無効化するものを選択",
+    "continue": "続行",
+    "no_keyring_available": "ログイン情報をこのデバイスに保存できません。"
+  },
+  "device": {
+    "title": "デバイス",
+    "loading_devices": "デバイスを読み込み中...",
+    "no_devices_found": "デバイスが見つかりません",
+    "found_device": "デバイスが見つかりました。",
+    "found_devices": "デバイスが複数見つかりました。",
+    "unable_load_devices_prefix": "デバイスを読み込めません: ",
+    "no_devices_found_period": "デバイスは検出されませんでした。",
+    "selected": "選択済み",
+    "pairing_in_progress_header": "{{device}} とペアリング中...",
+    "pairing_in_progress_hint": "デバイスのロックを解除して「信頼」をタップし、パスコードを求められたら入力してください。",
+    "pairing_cancel": "キャンセル",
+    "failed_select": "デバイスの選択に失敗しました"
+  },
+  "operation": {
+    "failed": "操作に失敗しました。",
+    "completed": "操作が完了しました。",
+    "please_wait": "お待ちください...",
+    "copy_error_clipboard": "エラー内容をクリップボードにコピー"
+  },
+  "operations": {
+    "install_sidestore_title": "SideStoreをインストール中",
+    "install_sidestore_success_title": "SideStoreのインストール完了！",
+    "install_sidestore_success_message": "SideStoreを開き、Refresh（更新）してインストールを完了させてください！",
+    "install_sidestore_step_download": "SideStoreをダウンロード中",
+    "install_sidestore_step_install": "SideStoreを署名してインストール中",
+    "install_sidestore_step_pairing": "ペアリングファイルを配置中",
+    "install_livecontainer_title": "LiveContainer+SideStoreをインストール中",
+    "install_livecontainer_success_title": "LiveContainer+SideStoreのインストール完了！",
+    "install_livecontainer_success_message": "インストールを完了するには、LiveContainerを開き、設定から「Import Certificate From SideStore」をクリックしてください。その後、アプリ一覧からSideStoreアイコンをクリックし、LiveContainerをリフレッシュしてください。",
+    "install_livecontainer_step_download": "LiveContainer+SideStoreをダウンロード中",
+    "install_livecontainer_step_install": "LiveContainer+SideStoreを署名してインストール中",
+    "install_livecontainer_step_pairing": "ペアリングファイルを配置中",
+    "sideload_title": "アプリをインストール中",
+    "sideload_step_install": "アプリを署名してインストール中"
+  },
+  "certificates": {
+    "manage": "証明書の管理",
+    "loading": "証明書を読み込み中...",
+    "loaded_success": "証明書を正常に読み込みました！",
+    "failed_load": "証明書の読み込みに失敗しました",
+    "revoking": "証明書を無効化中...",
+    "revoked_success": "証明書を正常に無効化しました！",
+    "failed_revoke": "証明書の無効化に失敗しました: ",
+    "none_found": "証明書が見つかりません。",
+    "name": "名前",
+    "serial_number": "シリアル番号",
+    "machine_name": "マシン名",
+    "machine_id": "マシンID",
+    "revoke": "無効化 (Revoke)"
+  },
+  "app_ids": {
+    "manage": "App IDの管理",
+    "loading": "App IDを読み込み中...",
+    "loaded_success": "App IDを正常に読み込みました！",
+    "failed_load": "App IDの読み込みに失敗しました",
+    "deleted_success": "App IDを正常に削除しました！",
+    "failed_delete": "App IDの削除に失敗しました",
+    "available": "利用可能 ID: {{available}}/{{max}}",
+    "none_found": "App IDが見つかりません。",
+    "name": "名前",
+    "expiration": "有効期限",
+    "id": "ID",
+    "identifier": "識別子 (Identifier)",
+    "never": "期限なし"
+  },
+  "pairing": {
+    "manage": "ペアリングファイルの管理",
+    "loading_apps": "アプリを読み込み中...",
+    "apps_loaded_success": "アプリを正常に読み込みました！",
+    "failed_load_apps": "アプリの読み込みに失敗しました",
+    "placing_pairing_file": "ペアリングファイルを配置中...",
+    "pairing_file_placed_success": "ペアリングファイルを正常に配置しました！",
+    "failed_place_pairing": "ペアリングファイルの配置に失敗しました",
+    "loading_app": "アプリを読み込み中...",
+    "no_supported_apps_found": "サポートされているアプリが見つかりません。",
+    "name": "名前",
+    "bundle_id": "バンドルID",
+    "place_pairing_file": "ペアリングファイルを配置",
+    "place": "配置",
+    "advanced_export_title": "高度な設定: ペアリングファイルのエクスポート",
+    "advanced_export_message": "この操作は仕組みを理解している場合を除き推奨されません。代わりにアプリの横にある「配置」ボタンを押して自動的に転送してください。それでも本当にペアリングファイルをエクスポートしますか？",
+    "exporting_pairing_file": "ペアリングファイルをエクスポート中...",
+    "pairing_file_exported_success": "ペアリングファイルを正常にエクスポートしました！",
+    "failed_export_pairing_file": "ペアリングファイルのエクスポートに失敗しました",
+    "export_not_recommended": "エクスポート (非推奨)",
+    "refresh_installed_apps": "インストール済みアプリを更新",
+    "place_all": "全てのアプリに配置"
+  },
+  "settings": {
+    "anisette_server": "Anisette サーバー:",
+    "custom_anisette_placeholder": "カスタム Anisette サーバー",
+    "custom_anisette": "カスタム",
+    "use_custom_anisette": "カスタム Anisette サーバーを使用する",
+    "back_preset_servers": "プリセットサーバーに戻る",
+    "reset_anisette_title": "Anisette の状態をリセット",
+    "reset_anisette_message": "Anisette の状態をリセットしてもよろしいですか？再度2要素認証コードの入力が必要になります。",
+    "resetting_anisette_state": "Anisette の状態をリセット中...",
+    "anisette_state_reset_success": "Anisette の状態を正常にリセットしました",
+    "anisette_state_not_found": "リセットする Anisette の状態はありません",
+    "failed_reset_anisette_state": "Anisette の状態のリセットに失敗しました",
+    "view_logs": "ログを表示",
+    "logs": "ログ",
+    "log_level": "ログレベル:",
+    "no_logs_yet": "ログはまだありません。",
+    "debug": "デバッグ",
+    "info": "情報",
+    "warn": "警告",
+    "error": "エラー",
+    "language_hint": "翻訳の協力は<translation>こちら</translation>から行えます。",
+    "delete_stored_rppairing": "保存済みのペアリングファイルを削除",
+    "delete_stored_rppairing_message": "このデバイスの保存済みのペアリングファイルを削除してもよろしいですか？削除すると再度ペアリングが必要になります。",
+    "deleting_stored_rppairing": "保存済みのペアリングファイルを削除中...",
+    "stored_rppairing_deleted_success": "保存済みのペアリングファイルが正常に削除されました！",
+    "failed_delete_stored_rppairing": "保存済みのペアリングファイルの削除に失敗しました",
+    "dont_use_keyring": "キーチェーンを使わない",
+    "dont_use_keyring_message": "この設定を有効にするとペアリングファイル、Anisetteの状態、証明書をディスク上に保存するようになるため、iloaderの安全性が低下します。デフォルトのキーチェーン保存が機能せず、リスクを理解している場合にのみ有効にしてください。"
+  },
+  "dialog": {
+    "confirm": "確定",
+    "cancel": "キャンセル"
+  },
+  "error": {
+    "title": "エラーが発生しました: {{msg}}",
+    "unknown": "不明なエラー",
+    "suggestions_heading": "提案",
+    "suggestions": {
+      "underage": [
+        "あなたのApple IDはデベロッパーサービスを使用できない年齢である可能性があります。"
+      ],
+      "account_locked": [
+        "慌てなくて大丈夫です！これは通常ログインが何度も失敗すると発生しますが、完全に無害です。",
+        "((link:https://iforgot.apple.com/)) でアカウントのロックを解除できます。"
+      ],
+      "auth": [
+        "ログイン情報が正しいことを確認し、正しい場合でも再試行してください。",
+        "解決しない場合は、別のApple IDで試してみてください。",
+        "セキュリティキーによる2要素認証はサポートされていません。可能であれば2要素認証がないApple IDを使用するか、信頼済みデバイスによる2要素認証を使用してください。"
+      ],
+      "download": [
+        "((link:https://github.com/SideStore/SideStore/releases)) から手動でSideStoreをダウンロードし、「IPAをインポート」ボタンを使ってインストールしてください。"
+      ],
+      "house_arrest": [
+        "[ios::26.3]house arrest（アプリのファイル領域アクセス）に不具合があるため、デバイスが iOS 26.3 の開発者ベータでないことを確認してください。"
+      ],
+      "pairing": [
+        "デバイスを再接続して、もう一度試してみてください。",
+        "デバイスにパスコードが設定されているか確認してください。",
+        "デバイスがワイヤレスではなくUSBで接続されていることを確認してください。"
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]((link:https://apple.co/ms:iTunes)) がインストールされ、デバイスが検出できることを確認してください。",
+        "[platform::windows]iTunes と Apple Mobile Device Support をアンインストールし、Microsoft Store から「Apple Devices」をインストールしてください。",
+        "[platform::linux]usbmuxd がインストールされ、実行されていることを確認してください。"
+      ],
+      "trust": [
+        "デバイスのロックを解除してホーム画面に移動し、表示される確認画面で「信頼」をタップしてください。"
+      ],
+      "device_coms": [
+        "デバイスがコンピュータに正しく接続されていることを確認してください。",
+        "デバイスを再接続してください。それでも問題が続く場合は、別のUSBポートとケーブルで試してください。"
+      ],
+      "not_logged_in": [
+        "まずあなたのApple IDでサインインしてください。"
+      ],
+      "no_device_selected": [
+        "続ける前にデバイスを選択してください。"
+      ],
+      "anisette": [
+        "コンピュータがインターネットに接続されていることを確認してください。",
+        "別のAnisetteサーバーに変更してみてください。複数のサーバーを試すことをおすすめします。",
+        "ブラウザで ((link:{{anisetteServerUrl}})) にアクセスできることを確認してください。"
+      ],
+      "keyring": [
+        "この問題を回避するには、設定の「キーチェーンを使わない」を有効にしてみてください。ただし安全性は低下します。"
+      ],
+      "misc": [
+        "もう一度試してください。アプリ・コンピュータ・スマートフォンを再起動することをお勧めします。"
+      ],
+      "admin": [
+        "アプリを管理者/root権限で実行してみてください。"
+      ],
+      "filesystem": [
+        "iloaderがシステム上のファイルを読み書きする権限を持っているか確認してください。"
+      ],
+      "not_enough_app_ids": [
+        "このアプリをインストールするのに十分なApp IDがありません。",
+        "App IDが7日後に期限切れになるのを待ってから、もう一度試してください（それより早く削除することはできません）。",
+        "SideStoreでアプリをインストールするとApp IDを節約できる場合があるため、代わりにそちらから試してください。"
+      ],
+      "max_apps": [
+        "無料のApple IDではサイドロードしたアプリを一度に三つまでしかインストールできません。",
+        "他のサイドロードしたアプリを削除してアプリのスペースを一つ開けてください。",
+        "期限切れのアプリもこの制限に含まれます。"
+      ]
+    },
+    "support_message": "問題が解決しない場合は、「クリップボードにコピー」を押して、コピーされたエラー内容を <discord>Discord</discord> または <github>GitHubのIssue</github> に送ってサポートを受けてください。"
+  },
+  "update": {
+    "new_version_available": "新しいバージョンが利用可能です: {{version}}。アップデートしますか？",
+    "updating": "アップデート中...",
+    "downloaded_restarting": "アップデートをダウンロードしました！アプリを再起動します...",
+    "failed_download": "アップデートのダウンロードに失敗しました: {{error}}"
+  }
+}

@@ -1,0 +1,290 @@
+{
+  "subtitle": "Dışarıdan Yükleme Yardımcısı",
+  "version": "Sürüm",
+  "common": {
+    "confirm": "Onayla",
+    "cancel": "İptal",
+    "dismiss": "Kapat",
+    "refresh": "Yenile",
+    "delete": "Sil",
+    "copy_to_clipboard": "Panoya Kopyala",
+    "more_details": "Daha Fazla Ayrıntı",
+    "no_error": "Hata yok",
+    "copied_success": "Panoya kopyalandı"
+  },
+  "dropdown": {
+    "custom_value": "Özel değer",
+    "custom": "Özel",
+    "use_custom_value": "Özel değer kullan",
+    "back_preset_options": "Ön ayarlı seçeneklere dön",
+    "select": "Seç"
+  },
+  "app": {
+    "language": "Dil",
+    "github": "GitHub",
+    "open_github_failed": "GitHub bağlantısı açılamadı",
+    "section_account": "Hesap",
+    "section_placeholder": "Yer Tutucu",
+    "section_management": "Yönetim",
+    "manage_pairing_file": "Eşleştirme Dosyasını Yönet",
+    "refresh_devices": "Aygıtları Yenile",
+    "certificates": "Sertifikalar",
+    "app_ids": "Uygulama Kimlikleri",
+    "devices": "Aygıtlar",
+    "active_device": "Aktif: {{name}}",
+    "select_device": "Bir aygıt seçin",
+    "installers": "Yükleyiciler",
+    "choose_build": "Bir derleme seçin",
+    "sidestore_stable": "SideStore (Kararlı)",
+    "sidestore_nightly": "SideStore (Geliştirme Sürümü)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Kararlı)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Geliştirme Sürümü)",
+    "import_ipa": "iPA İçe Aktar",
+    "settings": "Ayarlar",
+    "must_be_logged_in": "Oturum açmış olmalısınız!",
+    "must_select_device": "Bir aygıt seçmelisiniz!",
+    "ipa_files": "iPA Dosyaları",
+    "logo_alt": "iloader logosu"
+  },
+  "apple_id": {
+    "title": "Apple Kimliği",
+    "logged_in_as": "Şu hesapla girildi",
+    "sign_out": "Çıkış Yap",
+    "signing_out": "Çıkış Yapılıyor...",
+    "sign_out_failed": "Çıkış yapılamadı",
+    "signed_out_success": "Başarıyla çıkış yapıldı!",
+    "saved_logins": "Kayıtlı Girişler",
+    "sign_in": "Giriş Yap",
+    "logging_in": "Giriş Yapılıyor...",
+    "logged_in_success": "Başarıyla giriş yapıldı!",
+    "login_failed": "Giriş yapılamadı",
+    "deleting": "Siliniyor...",
+    "deletion_failed": "Silme işlemi başarısız oldu.",
+    "deleted_success": "Başarıyla silindi!",
+    "add_account": "Hesap Ekle +",
+    "new_login": "Yeni Giriş",
+    "email_placeholder": "Apple Kimliği E-postası...",
+    "password_placeholder": "Apple Kimliği Parolası...",
+    "save_credentials": "Kimlik Bilgilerini Kaydet",
+    "enter_email_password": "Lütfen hem e-posta adresinizi hem de parolanızı girin.",
+    "valid_email": "Lütfen geçerli bir e-posta adresi girin.",
+    "login": "Giriş Yap",
+    "two_factor_title": "İki Faktörlü Doğrulama",
+    "two_factor_prompt": "Lütfen aygıtınıza gönderilen doğrulama kodunu girin.",
+    "verification_placeholder": "Doğrulama Kodu...",
+    "valid_6digit": "Lütfen geçerli 6 haneli bir kod girin.",
+    "submit": "Gönder",
+    "max_certs_title": "Maksimum sertifika sınırına ulaşıldı",
+    "max_certs_desc": "iloader mevcut sertifikalarınızı iptal edip yeni bir tane oluşturacak.",
+    "hide_certificate_list": "Sertifika listesini gizle",
+    "choose_what_to_revoke": "İptal edilecek sertifikayı seçin",
+    "continue": "Devam Et",
+    "no_keyring_available": "Kimlik bilgileri bu aygıta kaydedilemiyor."
+  },
+  "device": {
+    "title": "iDevice",
+    "loading_devices": "Aygıtlar yükleniyor...",
+    "no_devices_found": "Aygıt bulunamadı",
+    "found_device": "Aygıt bulundu",
+    "found_devices": "Aygıtlar bulundu",
+    "unable_load_devices_prefix": "Aygıtlar yüklenemedi",
+    "no_devices_found_period": "Aygıt bulunamadı.",
+    "selected": "Seçildi",
+    "pairing_in_progress_header": "{{device}} ile eşleştiriliyor...",
+    "pairing_in_progress_hint": "Lütfen aygıtınızın kilidini açıp \"Güven\" seçeneğine dokunun ve istenirse parolanızı girin.",
+    "pairing_cancel": "İptal",
+    "failed_select": "Aygıt seçilemedi"
+  },
+  "operation": {
+    "failed": "İşlem başarısız oldu.",
+    "completed": "İşlem tamamlandı.",
+    "please_wait": "Lütfen bekleyin...",
+    "copy_error_clipboard": "Hatayı panoya kopyala"
+  },
+  "operations": {
+    "install_sidestore_title": "SideStore Yükleniyor",
+    "install_sidestore_success_title": "SideStore Yüklendi!",
+    "install_sidestore_success_message": "Kurulumu tamamlamak için SideStore'u açın ve yenileyin!",
+    "install_sidestore_step_download": "SideStore'u İndir",
+    "install_sidestore_step_install": "SideStore'u İmzala ve Yükle",
+    "install_sidestore_step_pairing": "Eşleştirme Dosyasını Aktar",
+    "install_livecontainer_title": "LiveContainer + SideStore Yükleniyor",
+    "install_livecontainer_success_title": "LiveContainer + SideStore Yüklendi!",
+    "install_livecontainer_success_message": "Kurulumu tamamlamak için LiveContainer'ı açın, ayarları seçip \"Import Certificate From SideStore\" seçeneğine dokunun. Ardından uygulamaları seçin, SideStore simgesine dokunun ve LiveContainer'ı yenileyin.",
+    "install_livecontainer_step_download": "LiveContainer + SideStore'u İndir",
+    "install_livecontainer_step_install": "LiveContainer + SideStore'u İmzala ve Yükle",
+    "install_livecontainer_step_pairing": "Eşleştirme Dosyasını Aktar",
+    "sideload_title": "Uygulama Yükleniyor",
+    "sideload_step_install": "Uygulamayı İmzala ve Yükle"
+  },
+  "certificates": {
+    "manage": "Sertifikaları Yönet",
+    "loading": "Sertifikalar yükleniyor...",
+    "loaded_success": "Sertifikalar başarıyla yüklendi!",
+    "failed_load": "Sertifikalar yüklenemedi",
+    "revoking": "Sertifika iptal ediliyor...",
+    "revoked_success": "Sertifika başarıyla iptal edildi!",
+    "failed_revoke": "Sertifika iptal edilemedi: ",
+    "none_found": "Sertifika bulunamadı.",
+    "name": "Ad",
+    "serial_number": "Seri Numarası",
+    "machine_name": "Cihaz Adı",
+    "machine_id": "Cihaz Kimliği",
+    "revoke": "İptal"
+  },
+  "app_ids": {
+    "manage": "Uygulama Kimliklerini Yönet",
+    "loading": "Uygulama Kimlikleri yükleniyor...",
+    "loaded_success": "Uygulama Kimlikleri başarıyla yüklendi!",
+    "failed_load": "Uygulama Kimlikleri yüklenemedi",
+    "deleted_success": "Uygulama Kimliği başarıyla silindi!",
+    "failed_delete": "Uygulama Kimliği silinemedi",
+    "available": "{{available}}/{{max}} Kimlik Kullanılabilir",
+    "none_found": "Uygulama Kimliği bulunamadı.",
+    "name": "Ad",
+    "expiration": "Bitiş Tarihi",
+    "id": "Kimlik",
+    "identifier": "Tanımlayıcı",
+    "never": "Asla"
+  },
+  "pairing": {
+    "manage": "Eşleştirme Dosyasını Yönet",
+    "loading_apps": "Uygulamalar Yükleniyor...",
+    "apps_loaded_success": "Uygulamalar başarıyla yüklendi!",
+    "failed_load_apps": "Uygulamalar yüklenemedi",
+    "placing_pairing_file": "Eşleştirme dosyası aktarılıyor...",
+    "pairing_file_placed_success": "Eşleştirme dosyası başarıyla aktarıldı!",
+    "failed_place_pairing": "Eşleştirme dosyası aktarılamadı",
+    "loading_app": "Uygulama Yükleniyor...",
+    "no_supported_apps_found": "Desteklenen uygulama bulunamadı.",
+    "name": "Ad",
+    "bundle_id": "Paket Kimliği",
+    "place_pairing_file": "Eşleştirme Dosyasını Aktar",
+    "place": "Aktar",
+    "advanced_export_title": "Gelişmiş: Eşleştirme Dosyasını Dışa Aktar",
+    "advanced_export_message": "Ne yaptığınızı bilmiyorsanız bu işlem önerilmez. Otomatik olarak aktarmak için uygulamanın yanındaki \"Aktar\" düğmesine basın. Eşleştirme dosyanızı yine de dışa aktarmak istediğinizden emin misiniz?",
+    "exporting_pairing_file": "Eşleştirme dosyası dışa aktarılıyor...",
+    "pairing_file_exported_success": "Eşleştirme dosyası başarıyla dışa aktarıldı!",
+    "failed_export_pairing_file": "Eşleştirme dosyası dışa aktarılamadı",
+    "export_not_recommended": "Dışa Aktar (Önerilmez)",
+    "refresh_installed_apps": "Yüklü Uygulamaları Yeniden Tara",
+    "place_all": "Tüm Uygulamalara Aktar"
+  },
+  "settings": {
+    "anisette_server": "Anisette Sunucusu:",
+    "custom_anisette_placeholder": "Özel Anisette Sunucusu",
+    "custom_anisette": "Özel",
+    "use_custom_anisette": "Özel Anisette sunucusu kullan",
+    "back_preset_servers": "Ön ayarlı sunuculara dön",
+    "reset_anisette_title": "Anisette verilerini Sıfırla",
+    "reset_anisette_message": "Anisette verilerini sıfırlamak istediğinizden emin misiniz? İki faktörlü doğrulama (2FA) kodunuzu tekrar girmeniz gerekecek.",
+    "resetting_anisette_state": "Anisette verileri sıfırlanıyor...",
+    "anisette_state_reset_success": "Anisette verileri başarıyla sıfırlandı",
+    "anisette_state_not_found": "Sıfırlanacak bir anisette verisi bulunamadı",
+    "failed_reset_anisette_state": "Anisette verileri sıfırlanamadı",
+    "view_logs": "Kayıtları Görüntüle",
+    "logs": "Kayıtlar",
+    "log_level": "Kayıt Düzeyi:",
+    "no_logs_yet": "Henüz kayıt yok.",
+    "debug": "Hata Ayıklama",
+    "info": "Bilgi",
+    "warn": "Uyarı",
+    "error": "Hata",
+    "language_hint": "Çevirilere <translation>buradan</translation> katkıda bulunabilirsiniz.",
+    "delete_stored_rppairing": "Kayıtlı Eşleştirmeyi Sil",
+    "delete_stored_rppairing_message": "Bu aygıt için kaydedilmiş eşleştirme dosyasını silmek istediğinizden emin misiniz? Bu işlem yeniden eşleştirme yapmanızı gerektirecektir.",
+    "deleting_stored_rppairing": "Kayıtlı eşleştirme siliniyor...",
+    "stored_rppairing_deleted_success": "Kayıtlı eşleştirme başarıyla silindi!",
+    "failed_delete_stored_rppairing": "Kayıtlı eşleştirme silinemedi",
+    "dont_use_keyring": "Anahtar Zinciri'ni kullanma",
+    "dont_use_keyring_message": "Bu seçenek eşleştirme dosyalarını, anisette verilerini ve sertifikaları doğrudan diskte saklayarak iloader'ı daha az güvenli hâle getirir. Bunu yalnızca varsayılan anahtar zinciri depolaması çalışmıyorsa ve risklerin farkındaysanız etkinleştirin."
+  },
+  "dialog": {
+    "confirm": "Onayla",
+    "cancel": "İptal"
+  },
+  "error": {
+    "title": "Bir Hata Oluştu: {{msg}}",
+    "unknown": "Bilinmiyor",
+    "suggestions_heading": "Öneriler",
+    "suggestions": {
+      "underage": [
+        "Apple Kimliğiniz, geliştirici hizmetlerini kullanmak için gereken yaş sınırının altında olabilir."
+      ],
+      "account_locked": [
+        "Panik yapmayın! Bu durum genellikle art arda gelen başarısız giriş denemelerinden sonra ortaya çıkar ve tamamen zararsızdır.",
+        "Hesabınızın kilidini açmak için ((link:https://iforgot.apple.com/)) adresini ziyaret edin."
+      ],
+      "auth": [
+        "Kimlik bilgilerinizin doğru olduğundan emin olun ve doğru olsalar bile tekrar deneyin.",
+        "Sorun devam ederse farklı bir Apple ID kullanmayı deneyin.",
+        "Güvenlik Anahtarı ile 2FA desteklenmemektedir. Mümkünse 2FA'sı olmayan veya güvenilen aygıt 2FA'sına sahip bir Apple ID kullanın."
+      ],
+      "download": [
+        "SideStore'u ((link:https://github.com/SideStore/SideStore/releases)) üzerinden manuel olarak indirin ve yüklemek için \"iPA İçe Aktar\" düğmesini kullanın."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Cihazınızın iOS 26.3 geliştirici beta sürümünde olmadığından emin olun, bu sürüm house arrest ile ilgili bir hata barındırır."
+      ],
+      "pairing": [
+        "Cihazı yeniden bağlayıp işlemi tekrar çalıştırmayı deneyin.",
+        "Cihazınızda bir parola olduğundan emin olun.",
+        "Cihazınızın kablosuz değil, USB üzerinden bağlı olduğundan emin olun."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]iTunes uygulamasının yüklü olduğundan ve aygıtınızı algılayabildiğinden emin olun.",
+        "[platform::windows]iTunes ve Apple Mobile Device Support uygulamalarını kaldırıp Microsoft Store üzerinden \"Apple Devices\" uygulamasını yükleyin.",
+        "[platform::linux]usbmuxd paketinin kurulu olduğundan ve çalıştığından emin olun."
+      ],
+      "trust": [
+        "Cihazınızın kilidini açın, Ana Ekran'a gidin ve karşınıza çıkan tüm güven uyarılarını kabul edin."
+      ],
+      "device_coms": [
+        "Cihazınızın bilgisayarınıza düzgün şekilde bağlı olduğundan emin olun.",
+        "Cihazı çıkarıp yeniden bağlayın. Sorun devam ederse farklı bir USB bağlantı noktası ve kablo ile deneyin."
+      ],
+      "not_logged_in": [
+        "Öncelikle Apple Kimliğinize giriş yapın."
+      ],
+      "no_device_selected": [
+        "Devam etmeden önce bir cihaz seçin."
+      ],
+      "anisette": [
+        "Bilgisayarınızın internete bağlı olduğundan emin olun.",
+        "Anisette sunucunuzu değiştirin. Listeden birkaç farklı sunucu denemesi yapın.",
+        "Tarayıcıdan ((link:{{anisetteServerUrl}})) adresine erişebildiğinizden emin olun."
+      ],
+      "keyring": [
+        "Bu sorunu atlamak için ayarlarda \"Kimlik Bilgilerini kullanma\" seçeneğini etkinleştirmeyi deneyin. Unutmayın, bu yöntem daha az güvenlidir."
+      ],
+      "misc": [
+        "Tekrar deneyin. Uygulamayı, bilgisayarınızı ve/veya aygıtınızı yeniden başlatmak da yardımcı olabilir."
+      ],
+      "admin": [
+        "Uygulamayı yetkili izinlerle (yönetici/root olarak) açmayı deneyin."
+      ],
+      "filesystem": [
+        "iloader'ın sisteminizdeki dosyaları okuma ve yazma erişimine sahip olduğundan emin olun."
+      ],
+      "not_enough_app_ids": [
+        "Bu uygulamayı yüklemek için kullanımda olan yeterli App ID'niz yok.",
+        "App ID'lerinin dışarıdan yüklenmiş süresinin dolması için 7 gün bekleyin (daha erken silinemezler), daha sonra tekrar deneyin.",
+        "Uygulamaları SideStore üzerinden yüklemek bazen daha az App ID harcamanızı sağlar, uygulamayı oradan kurmayı deneyin."
+      ],
+      "max_apps": [
+        "Ücretsiz bir Apple Kimliği ile aynı anda en fazla 3 adet dışarıdan yüklenmiş uygulama kurabilirsiniz.",
+        "Bu uygulamaya yer açmak için dışarıdan yüklenmiş diğer uygulamaları silin.",
+        "Süresi dolmuş uygulamalar da 3 uygulama sınırına dâhildir."
+      ]
+    },
+    "support_message": "Sorun devam ederse \"Panoya Kopyala\" düğmesine basın ve kopyalanan hatayı destek almak için <discord>Discord</discord>'a ya da bir <github>GitHub issue</github>'suna gönderin."
+  },
+  "update": {
+    "new_version_available": "Yeni bir sürüm mevcut: {{version}}. Güncellemek istiyor musunuz?",
+    "updating": "Güncelleniyor...",
+    "downloaded_restarting": "Güncelleme indirildi! Uygulama yeniden başlatılıyor...",
+    "failed_download": "Güncelleme indirilemedi: {{error}}"
+  }
+}

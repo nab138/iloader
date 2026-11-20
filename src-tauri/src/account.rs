@@ -206,9 +206,9 @@ async fn login(
                 // just temporary while waiting for the anisette servers to start reporting this
                 .set_client_info_override(Some(AnisetteClientInfo {
                     client_info:
-                        "<Mac15,7> <macOS;27.0;26A5378j> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
+                        "<MacBookPro13,3> <Mac OS X;10.12.6;16G29> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
                             .to_string(),
-                    user_agent: "akd/1.0 CFNetwork/811.5.4".to_string(),
+                    user_agent: "akd/1.0 CFNetwork/811.5.4 Darwin/16.7.0".to_string(),
                 }))
                 .set_url(&anisette_url),
         )

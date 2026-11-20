@@ -159,6 +159,18 @@ pub fn reset_anisette_state() -> Result<bool, AppError> {
     }
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(tag = "action", rename_all = "camelCase")]
+enum TwoFactorActionResponse {
+    #[serde(rename = "submitCode")]
+    SubmitCode { code: String },
+    #[serde(rename = "sendSms")]
+    SendSms { number_id: u32 },
+    SendToDevices,
+    ResendCode,
+    Abort,
+}
+
 async fn login(
     app: &AppHandle,
     window: Window,
@@ -176,17 +188,35 @@ async fn login(
                     .emit("2fa-required", params)
                     .context("Failed to emit 2fa-required event")?;
 
-                let (tx, rx) = std::sync::mpsc::channel::<String>();
+                let (tx, rx) = std::sync::mpsc::channel::<TwoFactorActionResponse>();
                 let handler_id = window_clone.listen("2fa-recieved", move |event| {
-                    let code = event.payload();
-                    let _ = tx.send(code.to_string());
+                    match serde_json::from_str::<TwoFactorActionResponse>(event.payload()) {
+                        Ok(response) => {
+                            let _ = tx.send(response);
+                        }
+                        Err(e) => {
+                            debug!("Failed to parse 2FA response: {}", e);
+                        }
+                    }
                 });
 
-                let result = rx.recv_timeout(Duration::from_secs(120))?;
+                let result = rx.recv_timeout(Duration::from_secs(300));
                 window_clone.unlisten(handler_id);
+                let response = result.context("Timed out waiting for 2FA response")?;
 
-                let code = result.trim_matches('"').to_string();
-                Ok(TwoFactorCallbackResponse::SubmitCode(code))
+                Ok(match response {
+                    TwoFactorActionResponse::SubmitCode { code } => {
+                        TwoFactorCallbackResponse::SubmitCode(code.trim().to_string())
+                    }
+                    TwoFactorActionResponse::SendSms { number_id } => {
+                        TwoFactorCallbackResponse::SendSms(number_id)
+                    }
+                    TwoFactorActionResponse::SendToDevices => {
+                        TwoFactorCallbackResponse::SendToDevices
+                    }
+                    TwoFactorActionResponse::ResendCode => TwoFactorCallbackResponse::ResendCode,
+                    TwoFactorActionResponse::Abort => TwoFactorCallbackResponse::Abort,
+                })
             }
             .boxed()
         }

@@ -1,7 +1,13 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod appimage_wayland;
+
 fn main() {
+    // Must run before anything touches EGL. Re-execs on Linux when our AppImage
+    // shadows the system libwayland-client, so this may not return.
+    appimage_wayland::preload_system_wayland_client();
+
     #[cfg(target_os = "linux")]
     {
         use std::env;

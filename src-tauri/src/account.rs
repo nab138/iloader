@@ -203,12 +203,16 @@ async fn login(
             RemoteV3AnisetteProvider::default()?
                 .set_serial_number("0".to_string())
                 .set_storage(create_sideloading_storage(app)?)
-                // just temporary while waiting for the anisette servers to start reporting this
+                // Apple's edge rejects `<macOS;` client info with HTTP 503 (since 2026-11-19),
+                // and the account layer rejects anything older than macOS 10.13 with
+                // -23782 / -22410. The anisette servers still report a 10.12.6 identity,
+                // so override it with a current one using the `Mac OS X` spelling Apple's
+                // own frameworks send.
                 .set_client_info_override(Some(AnisetteClientInfo {
                     client_info:
-                        "<MacBookPro13,3> <Mac OS X;10.12.6;16G29> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
+                        "<MacBookAir10,1> <Mac OS X;27.3;26C5035r> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
                             .to_string(),
-                    user_agent: "akd/1.0 CFNetwork/811.5.4 Darwin/16.7.0".to_string(),
+                    user_agent: "akd/1.0 CFNetwork/3896.300.31 Darwin/27.3.0".to_string(),
                 }))
                 .set_url(&anisette_url),
         )

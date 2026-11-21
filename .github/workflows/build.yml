@@ -185,6 +185,7 @@ jobs:
           name: windows-exe
           path: |
             ${{ github.workspace }}/src-tauri/target/release/bundle/**/*.exe
+            ${{ github.workspace }}/src-tauri/target/release/bundle/**/*.msi
 
   mark-latest:
     needs: build

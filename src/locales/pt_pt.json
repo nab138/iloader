@@ -1,0 +1,287 @@
+{
+  "subtitle": "Assistente de Sideloading",
+  "version": "Versão",
+  "common": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "dismiss": "Fechar",
+    "refresh": "Atualizar",
+    "delete": "Eliminar",
+    "copy_to_clipboard": "Copiar para a área de transferência",
+    "more_details": "Mais detalhes",
+    "no_error": "Sem erros",
+    "copied_success": "Copiado para a área de transferência"
+  },
+  "dropdown": {
+    "custom_value": "Valor personalizado",
+    "custom": "Personalizado",
+    "use_custom_value": "Usar valor personalizado",
+    "back_preset_options": "Voltar às opções predefinidas",
+    "select": "Selecionar"
+  },
+  "app": {
+    "language": "Idioma",
+    "github": "GitHub",
+    "donate": "Doar",
+    "open_github_failed": "Não foi possível abrir a ligação do GitHub",
+    "section_account": "Conta",
+    "section_placeholder": "Marcador de posição",
+    "section_management": "Gestão",
+    "manage_pairing_file": "Gerir ficheiro de emparelhamento",
+    "refresh_devices": "Atualizar dispositivos",
+    "certificates": "Certificados",
+    "app_ids": "App IDs",
+    "devices": "Dispositivos",
+    "active_device": "Ativo: {{name}}",
+    "select_device": "Selecione um dispositivo",
+    "installers": "Instaladores",
+    "choose_build": "Escolha uma versão",
+    "sidestore_stable": "SideStore (Estável)",
+    "sidestore_nightly": "SideStore (Nightly)",
+    "livecontainer_sidestore_stable": "LiveContainer + SideStore (Estável)",
+    "livecontainer_sidestore_nightly": "LiveContainer + SideStore (Nightly)",
+    "import_ipa": "Importar IPA",
+    "settings": "Definições",
+    "must_be_logged_in": "Tem de ter sessão iniciada!",
+    "must_select_device": "Tem de selecionar um dispositivo!",
+    "ipa_files": "Ficheiros IPA",
+    "logo_alt": "Logótipo do iloader"
+  },
+  "apple_id": {
+    "title": "ID Apple",
+    "logged_in_as": "Sessão iniciada como",
+    "sign_out": "Terminar sessão",
+    "signing_out": "A terminar sessão...",
+    "sign_out_failed": "Falha ao terminar sessão",
+    "signed_out_success": "Sessão terminada com sucesso!",
+    "saved_logins": "Contas guardadas",
+    "sign_in": "Iniciar sessão",
+    "logging_in": "A iniciar sessão...",
+    "logged_in_success": "Sessão iniciada com sucesso!",
+    "login_failed": "Falha ao iniciar sessão",
+    "deleting": "A eliminar...",
+    "deletion_failed": "Falha ao eliminar",
+    "deleted_success": "Eliminado com sucesso!",
+    "add_account": "Adicionar conta +",
+    "new_login": "Nova conta",
+    "email_placeholder": "E-mail do ID Apple...",
+    "password_placeholder": "Palavra-passe do ID Apple...",
+    "save_credentials": "Guardar credenciais",
+    "enter_email_password": "Introduza o e-mail e a palavra-passe.",
+    "valid_email": "Introduza um endereço de e-mail válido.",
+    "login": "Iniciar sessão",
+    "two_factor_title": "Autenticação de dois fatores",
+    "two_factor_prompt": "Introduza o código de verificação enviado para o seu dispositivo.",
+    "verification_placeholder": "Código de verificação...",
+    "valid_6digit": "Introduza um código válido de 6 dígitos.",
+    "submit": "Enviar",
+    "max_certs_title": "Número máximo de certificados atingido",
+    "max_certs_desc": "O iloader irá revogar os seus certificados existentes e gerar um novo.",
+    "hide_certificate_list": "Ocultar lista de certificados",
+    "choose_what_to_revoke": "Escolha o que pretende revogar",
+    "continue": "Continuar",
+    "no_keyring_available": "Não é possível guardar as credenciais neste dispositivo."
+  },
+  "device": {
+    "title": "iDevice",
+    "loading_devices": "A carregar dispositivos...",
+    "no_devices_found": "Nenhum dispositivo encontrado",
+    "found_device": "Dispositivo encontrado",
+    "found_devices": "Dispositivos encontrados",
+    "unable_load_devices_prefix": "Não foi possível carregar os dispositivos",
+    "no_devices_found_period": "Nenhum dispositivo encontrado.",
+    "selected": "Selecionado",
+    "pairing_in_progress_header": "A emparelhar com {{device}}...",
+    "pairing_in_progress_hint": "Desbloqueie o seu dispositivo e toque em \"Confiar\". Em seguida, introduza o seu código, se lhe for pedido.",
+    "pairing_cancel": "Cancelar",
+    "failed_select": "Falha ao selecionar o dispositivo"
+  },
+  "operation": {
+    "failed": "A operação falhou.",
+    "completed": "Operação concluída",
+    "please_wait": "Aguarde...",
+    "copy_error_clipboard": "Copiar erro para a área de transferência"
+  },
+  "operations": {
+    "install_sidestore_title": "A instalar o SideStore",
+    "install_sidestore_success_title": "SideStore instalado!",
+    "install_sidestore_success_message": "Abra o SideStore e atualize-o para concluir a instalação!",
+    "install_sidestore_step_download": "Transferir o SideStore",
+    "install_sidestore_step_install": "Assinar e instalar o SideStore",
+    "install_sidestore_step_pairing": "Colocar ficheiro de emparelhamento",
+    "install_livecontainer_title": "A instalar o LiveContainer+SideStore",
+    "install_livecontainer_success_title": "LiveContainer+SideStore instalado!",
+    "install_livecontainer_success_message": "Para concluir a instalação, abra o LiveContainer, aceda às definições e toque em \"Import Certificate From SideStore\". Depois, aceda às apps, toque no ícone do SideStore e atualize o LiveContainer.",
+    "install_livecontainer_step_download": "Transferir o LiveContainer+SideStore",
+    "install_livecontainer_step_install": "Assinar e instalar o LiveContainer+SideStore",
+    "install_livecontainer_step_pairing": "Colocar ficheiro de emparelhamento",
+    "sideload_title": "A instalar a app",
+    "sideload_step_install": "Assinar e instalar a app"
+  },
+  "certificates": {
+    "manage": "Gerir certificados",
+    "loading": "A carregar certificados...",
+    "loaded_success": "Certificados carregados com sucesso!",
+    "failed_load": "Falha ao carregar os certificados",
+    "revoking": "A revogar o certificado...",
+    "revoked_success": "Certificado revogado com sucesso!",
+    "failed_revoke": "Falha ao revogar o certificado: ",
+    "none_found": "Nenhum certificado encontrado.",
+    "name": "Nome",
+    "serial_number": "Número de série",
+    "machine_name": "Nome da máquina",
+    "machine_id": "ID da máquina",
+    "revoke": "Revogar"
+  },
+  "app_ids": {
+    "manage": "Gerir App IDs",
+    "loading": "A carregar App IDs...",
+    "loaded_success": "App IDs carregados com sucesso!",
+    "failed_load": "Falha ao carregar os App IDs",
+    "deleted_success": "App ID eliminado com sucesso!",
+    "failed_delete": "Falha ao eliminar o App ID",
+    "available": "{{available}}/{{max}} IDs disponíveis",
+    "none_found": "Nenhum App ID encontrado.",
+    "name": "Nome",
+    "expiration": "Expiração",
+    "id": "ID",
+    "identifier": "Identificador",
+    "never": "Nunca"
+  },
+  "pairing": {
+    "manage": "Gerir ficheiro de emparelhamento",
+    "loading_apps": "A carregar apps...",
+    "apps_loaded_success": "Apps carregadas com sucesso!",
+    "failed_load_apps": "Falha ao carregar as apps",
+    "placing_pairing_file": "A colocar o ficheiro de emparelhamento...",
+    "pairing_file_placed_success": "Ficheiro de emparelhamento colocado com sucesso!",
+    "failed_place_pairing": "Falha ao colocar o ficheiro de emparelhamento",
+    "loading_app": "A carregar a app...",
+    "no_supported_apps_found": "Nenhuma app compatível encontrada.",
+    "name": "Nome",
+    "bundle_id": "Bundle ID",
+    "place_pairing_file": "Colocar ficheiro de emparelhamento",
+    "place": "Colocar",
+    "advanced_export_title": "Avançado: Exportar ficheiro de emparelhamento",
+    "advanced_export_message": "Isto não é recomendado, a menos que saiba o que está a fazer. Em alternativa, carregue em \"Colocar\" junto a uma app para o transferir automaticamente para a respetiva app. Tem a certeza de que pretende mesmo exportar o seu ficheiro de emparelhamento?",
+    "exporting_pairing_file": "A exportar o ficheiro de emparelhamento...",
+    "pairing_file_exported_success": "Ficheiro de emparelhamento exportado com sucesso!",
+    "failed_export_pairing_file": "Falha ao exportar o ficheiro de emparelhamento",
+    "export_not_recommended": "Exportar (não recomendado)",
+    "refresh_installed_apps": "Analisar novamente as apps instaladas",
+    "place_all": "Colocar em todas as apps"
+  },
+  "settings": {
+    "anisette_server": "Servidor Anisette:",
+    "custom_anisette_placeholder": "Servidor Anisette personalizado",
+    "custom_anisette": "Personalizado",
+    "use_custom_anisette": "Usar servidor Anisette personalizado",
+    "back_preset_servers": "Voltar aos servidores predefinidos",
+    "reset_anisette_title": "Repor estado do Anisette",
+    "reset_anisette_message": "Tem a certeza de que pretende repor o estado do Anisette? Terá de introduzir novamente o seu código de autenticação de dois fatores.",
+    "resetting_anisette_state": "A repor o estado do Anisette...",
+    "anisette_state_reset_success": "Estado do Anisette reposto com sucesso",
+    "anisette_state_not_found": "Não existe estado do Anisette para repor",
+    "failed_reset_anisette_state": "Falha ao repor o estado do Anisette",
+    "view_logs": "Ver registos",
+    "logs": "Registos",
+    "log_level": "Nível de registo:",
+    "no_logs_yet": "Ainda não existem registos.",
+    "debug": "Depuração",
+    "info": "Informação",
+    "warn": "Aviso",
+    "error": "Erro",
+    "language_hint": "Pode ajudar com as traduções <translation>aqui</translation>.",
+    "delete_stored_rppairing": "Eliminar emparelhamento guardado",
+    "delete_stored_rppairing_message": "Tem a certeza de que pretende eliminar o ficheiro de emparelhamento guardado para este dispositivo? Terá de emparelhar novamente.",
+    "deleting_stored_rppairing": "A eliminar o emparelhamento guardado...",
+    "stored_rppairing_deleted_success": "Emparelhamento guardado eliminado com sucesso!",
+    "failed_delete_stored_rppairing": "Falha ao eliminar o emparelhamento guardado",
+    "dont_use_keyring": "Não usar o porta-chaves",
+    "dont_use_keyring_message": "Isto torna o iloader menos seguro, pois guarda os ficheiros de emparelhamento, o estado do Anisette e os certificados no disco. Ative esta opção apenas se o armazenamento predefinido no porta-chaves não funcionar e compreender os riscos."
+  },
+  "dialog": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
+  },
+  "error": {
+    "title": "Ocorreu um erro: {{msg}}",
+    "unknown": "Desconhecido",
+    "suggestions_heading": "Sugestões",
+    "suggestions": {
+      "underage": [
+        "O seu ID Apple pode não ter a idade mínima necessária para utilizar os serviços de programador."
+      ],
+      "account_locked": [
+        "Não entre em pânico! Isto acontece normalmente após várias tentativas de início de sessão falhadas, mas é totalmente inofensivo.",
+        "Visite ((link:https://iforgot.apple.com/)) para desbloquear a sua conta."
+      ],
+      "auth": [
+        "Certifique-se de que as suas credenciais estão corretas e tente novamente, mesmo que tenha a certeza de que estão corretas.",
+        "Se o problema persistir, experimente usar outro ID Apple.",
+        "A autenticação de dois fatores com chave de segurança não é suportada. Se possível, use um ID Apple sem autenticação de dois fatores ou com autenticação de dois fatores por dispositivo de confiança."
+      ],
+      "download": [
+        "Transfira o SideStore manualmente a partir de ((link:https://github.com/SideStore/SideStore/releases)) e use o botão \"Importar IPA\" para o instalar."
+      ],
+      "house_arrest": [
+        "[ios::26.3]Certifique-se de que o seu dispositivo não tem uma versão beta de programador do iOS 26.3, pois esta tem um erro com o house arrest"
+      ],
+      "pairing": [
+        "Experimente voltar a ligar o dispositivo e executar a ação novamente.",
+        "Certifique-se de que o seu dispositivo tem um código definido.",
+        "Certifique-se de que o seu dispositivo está ligado por USB e não sem fios."
+      ],
+      "canceled": [],
+      "operation_update": [],
+      "usbmuxd": [
+        "[platform::windows]Certifique-se de que tem o ((link:https://apple.co/ms:iTunes)) instalado e verifique se este deteta o seu dispositivo.",
+        "[platform::windows]Desinstale o iTunes e o Apple Mobile Device Support e, em seguida, instale o \"Dispositivos Apple\" a partir da Microsoft Store.",
+        "[platform::linux]Certifique-se de que o usbmuxd está instalado e em execução."
+      ],
+      "trust": [
+        "Desbloqueie o seu dispositivo, vá para o ecrã principal e aceite quaisquer pedidos de confiança que apareçam."
+      ],
+      "device_coms": [
+        "Certifique-se de que o seu dispositivo está corretamente ligado ao computador.",
+        "Desligue e volte a ligar o dispositivo. Se o problema persistir, experimente outra porta USB e outro cabo."
+      ],
+      "not_logged_in": ["Inicie sessão com o seu ID Apple primeiro."],
+      "no_device_selected": ["Selecione um dispositivo antes de continuar."],
+      "anisette": [
+        "Certifique-se de que o seu computador está ligado à Internet.",
+        "Altere o seu servidor Anisette. Experimente vários servidores diferentes.",
+        "Certifique-se de que consegue aceder a ((link:{{anisetteServerUrl}})) num navegador."
+      ],
+      "keyring": [
+        "Experimente ativar \"Não usar o porta-chaves\" nas definições para contornar este problema. Tenha em atenção que esta opção é menos segura."
+      ],
+      "misc": [
+        "Tente novamente. Reiniciar a app, o computador e/ou o telemóvel também pode ajudar."
+      ],
+      "admin": [
+        "Experimente executar a app com permissões elevadas (como administrador/root)."
+      ],
+      "filesystem": [
+        "Certifique-se de que o iloader tem permissão para ler e escrever ficheiros no seu sistema."
+      ],
+      "not_enough_app_ids": [
+        "Não tem App IDs suficientes disponíveis para instalar esta app.",
+        "Aguarde que os App IDs expirem após 7 dias (não podem ser eliminados antes disso) e tente novamente.",
+        "Instalar apps a partir do SideStore permite, por vezes, usar menos App IDs, por isso experimente instalar a partir daí."
+      ],
+      "max_apps": [
+        "Só pode ter 3 apps instaladas por sideload em simultâneo com um ID Apple gratuito.",
+        "Elimine outras apps instaladas por sideload para libertar espaço para esta.",
+        "As apps expiradas continuam a contar para o limite de 3 apps."
+      ]
+    },
+    "support_message": "Se o problema persistir, carregue em \"Copiar para a área de transferência\" e envie o erro copiado para o <discord>Discord</discord> ou crie uma <github>issue no GitHub</github> para obter suporte."
+  },
+  "update": {
+    "new_version_available": "Está disponível uma nova versão: {{version}}. Pretende atualizar?",
+    "updating": "A atualizar...",
+    "downloaded_restarting": "Atualização transferida! A reiniciar a app...",
+    "failed_download": "Falha ao transferir a atualização: {{error}}"
+  }
+}

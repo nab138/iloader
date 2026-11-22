@@ -257,14 +257,16 @@ async fn login(
                 .set_serial_number("0".to_string())
                 .set_storage(create_sideloading_storage(app)?)
                 // Apple's GSA edge rejects `macOS;` with HTTP 503, and then rejects
-                // the old 10.12.6 identity with -22410. Use a modern `Mac OS X;`
-                // identity. Changing this string also gives the stored anisette
-                // identity a different client_info, so a fresh one is provisioned.
+                // the old 10.12.6 identity with -22410. Use the current Mac OS X
+                // identity verified end-to-end in nab138/iloader#1203 (also
+                // nab138/iloader#1205). Changing this string also gives the stored
+                // anisette identity a different client_info, so a fresh one is
+                // provisioned automatically.
                 .set_client_info_override(Some(AnisetteClientInfo {
                     client_info:
-                        "<MacBookPro13,3> <Mac OS X;26.6;25F84> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
+                        "<MacBookAir10,1> <Mac OS X;27.3;26C5035r> <com.apple.AuthKit/1 (com.apple.akd/1.0)>"
                             .to_string(),
-                    user_agent: "akd/1.0 CFNetwork/811.5.4 Darwin/16.7.0".to_string(),
+                    user_agent: "akd/1.0 CFNetwork/3896.300.31 Darwin/27.3.0".to_string(),
                 }))
                 .set_url(&anisette_url),
         )

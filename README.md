@@ -136,6 +136,7 @@ Thank you to everyone who has contributed translations! See the [Translating](#t
 - [474FrediFred](https://github.com/474FrediFred): Swiss German (de_ch)
 - [bovae](https://github.com/bovae) & [b1twalker](https://github.com/b1twalker): Ukranian (uk)
 - [SabaZhvania](https://github.com/SabaZhvania): Georgian (ge)
+- [Masterkey55](https://github.com/Masterkey55): European Portuguese (pt_pt) & Improved Brazilian Portuguese (pt_br)
 
 ## License
 

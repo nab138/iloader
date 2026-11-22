@@ -21,7 +21,7 @@ use serde_json::Value;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Listener, State, Window};
 use tauri_plugin_store::StoreExt;
-use tracing::debug;
+use tracing::{debug, warn};
 
 use crate::{
     error::AppError,
@@ -39,7 +39,8 @@ pub async fn login_new(
     anisette_server: String,
     save_credentials: bool,
 ) -> Result<(), AppError> {
-    let account = login(&handle, window, &email, &password, anisette_server).await?;
+    let account =
+        login_with_anisette_recovery(&handle, window, &email, &password, anisette_server).await?;
     let mut sideloader_guard = sideloader_state.lock().unwrap();
     *sideloader_guard = Some(account);
 
@@ -88,7 +89,8 @@ pub async fn login_stored(
     let password = pass_entry.get_password().map_err(|e| {
         AppError::KeyringWithMessage("Failed to get credentials".to_string(), e.to_string())
     })?;
-    let account = login(&handle, window, &email, &password, anisette_server).await?;
+    let account =
+        login_with_anisette_recovery(&handle, window, &email, &password, anisette_server).await?;
     let mut sideloader_guard = sideloader_state.lock().unwrap();
     *sideloader_guard = Some(account);
 
@@ -156,6 +158,57 @@ pub fn reset_anisette_state() -> Result<bool, AppError> {
             "Failed to delete anisette state".into(),
             e.to_string(),
         )),
+    }
+}
+
+/// Remove the persisted Anisette state so the next login provisions a fresh
+/// device identity. Works for both the keyring and filesystem storage backends.
+fn clear_anisette_state(app: &AppHandle) -> Result<(), AppError> {
+    // The default backend is the keyring; remove the credential outright.
+    // Ignore anything except a real failure here - the active backend is
+    // cleared below as well, which covers the filesystem fallback.
+    if let Ok(entry) = Entry::new("iloader", "anisette_state") {
+        match entry.delete_credential() {
+            Ok(()) | Err(keyring::Error::NoEntry) => {}
+            Err(e) => warn!("Failed to delete keyring anisette state: {}", e),
+        }
+    }
+
+    create_sideloading_storage(app)?
+        .delete("anisette_state")
+        .map_err(|e| AppError::Anisette(format!("Failed to clear Anisette state: {}", e)))
+}
+
+fn is_stale_anisette_error(error: &AppError) -> bool {
+    matches!(error, AppError::Auth(message) if message.contains("-22410"))
+}
+
+/// Apple rejects an old Anisette device identity with `Auth error -22410`.
+/// The known workaround is to reset the state and sign in again; do that
+/// automatically, once, so users don't have to dig through Settings.
+async fn login_with_anisette_recovery(
+    app: &AppHandle,
+    window: Window,
+    email: &str,
+    password: &str,
+    anisette_server: String,
+) -> Result<Sideloader<MaxCertsCallbackBox, ExtensionsBehaviorCallbackBox>, AppError> {
+    match login(
+        app,
+        window.clone(),
+        email,
+        password,
+        anisette_server.clone(),
+    )
+    .await
+    {
+        Ok(sideloader) => Ok(sideloader),
+        Err(first_error) if is_stale_anisette_error(&first_error) => {
+            warn!("Apple rejected the saved Anisette state (-22410); resetting it and retrying login once");
+            clear_anisette_state(app)?;
+            login(app, window, email, password, anisette_server).await
+        }
+        Err(error) => Err(error),
     }
 }
 

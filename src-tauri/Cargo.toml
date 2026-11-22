@@ -47,3 +47,7 @@ uuid = { version = "1", features = ["v4"] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"
+
+# Temporary: SMS 2FA recovery, upstream PR pending on nab138/isideload
+[patch.crates-io]
+isideload = { git = "https://github.com/mindflowgo/isideload", branch = "sms-2fa-id-recovery" }

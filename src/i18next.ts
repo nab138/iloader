@@ -4,6 +4,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 
 const languages = [
   ["az", "Azərbaycan"],
+  ["ca", "Català"],
   ["en", "English"],
   ["el", "Ελληνικά"],
   ["am", "Հայերեն"],

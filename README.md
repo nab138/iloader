@@ -137,6 +137,7 @@ Thank you to everyone who has contributed translations! See the [Translating](#t
 - [bovae](https://github.com/bovae) & [b1twalker](https://github.com/b1twalker): Ukranian (uk)
 - [SabaZhvania](https://github.com/SabaZhvania): Georgian (ge)
 - [Masterkey55](https://github.com/Masterkey55): European Portuguese (pt_pt) & Improved Brazilian Portuguese (pt_br)
+- [tortilladepatatas123](https://github.com/tortilladepatatas123): Catalan (ca)
 
 ## License
 
